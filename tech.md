@@ -30,6 +30,7 @@
 | Harita | `react-native-maps` (Google Maps) |
 | Dosya depolama | Cloudinary |
 | Push bildirim | Expo Notifications |
+| Admin panel | AdminJS (`@adminjs/nestjs` + `@adminjs/mongoose`) — backend içine modül olarak entegre, ayrı servis değil |
 
 ## 3. Klasör Yapısı (öneri — proje iskeleti kurulurken uygulanacak)
 
@@ -47,6 +48,7 @@ kapakli-bel-app/
 ├── backend/                 # NestJS API
 │   ├── src/
 │   │   ├── modules/          # her domain için ayrı modül (auth, appointments, requests, ...)
+│   │   ├── admin/             # AdminJS modülü (rol tanımları, resource konfigürasyonu)
 │   │   ├── common/           # guard, pipe, interceptor
 │   │   └── main.ts
 │   └── package.json
@@ -93,6 +95,8 @@ CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
 SENTRY_DSN_BACKEND=
 PAYMENT_GATEWAY_API_KEY=      # iyzico/PayTR seçimi netleşince
+ADMIN_COOKIE_SECRET=          # AdminJS oturum çerezi imzalama
+ADMIN_SESSION_SECRET=
 
 # Mobile (.env / app.config)
 API_BASE_URL=

@@ -70,7 +70,7 @@ Kamu kurumu verisi için Türkiye sınırları içinde barındırma zorunluluğu
 - Yurt dışı barındırma sorun değilse → mevcut seçimlerle devam edilir
 - Yurt içi barındırma şartsa → MongoDB Atlas'ın Türkiye bölgesi (varsa) veya yerli bulut sağlayıcılar (Türk Telekom Bulut, Turkcell Bulut vb.) araştırılıp mimari buna göre revize edilir
 
-Bu teyit alınana kadar bu madde **açık risk** olarak işaretlenmiştir (bkz. Bölüm 9).
+Bu teyit alınana kadar bu madde **açık risk** olarak işaretlenmiştir (bkz. Bölüm 10).
 
 ### Ödeme güvenliği (KRİTİK)
 - Kart bilgileri asla kendi backend/DB'mize dokunmaz
@@ -119,10 +119,52 @@ Her ortam ayrı `.env` dosyası ve ayrı MongoDB Atlas cluster'ı (veya en azın
 - **Loglama disiplini:** Merkezi log toplama yapılır ama loglara şifre/token/kart bilgisi asla yazılmaz
 - **Bağımlılık güvenliği:** `npm audit` / Dependabot ile düzenli güvenlik açığı taraması
 
-## 9. Açık Konular / Sonraki Kararlar
+## 9. Admin Panel Mimarisi
+
+Belediye personelinin duyuru/randevu/talep/harita POI gibi içerikleri yönetebileceği, birden fazla kişinin **eşzamanlı ve rol bazlı** kullanabileceği bir web admin paneli gerekiyor.
+
+### Teknoloji kararı: AdminJS
+
+- **AdminJS** (`@adminjs/nestjs` + `@adminjs/mongoose`), mevcut NestJS backend'ine ayrı bir modül olarak eklenir — ayrı bir servis/deploy değildir, aynı backend process'i içinde çalışır
+- Mevcut Mongoose şemaları (`announcements`, `appointments`, `requests`, `pharmacies` vb.) üzerinden otomatik CRUD arayüzü üretir; şemaları tekrar yazmaya gerek yoktur
+- Gerekçe: sıfırdan özel bir admin web app'i yazmaktan çok daha az geliştirme süresi ister, RBAC ve temel audit desteği hazır gelir — staj projesinin zaman/kaynak kısıtına uygun
+
+### Rol bazlı yetkilendirme (RBAC)
+
+Birden fazla kişi aynı anda panele erişebilmeli ama herkes her şeyi yapamamalı:
+
+| Rol | Yetki kapsamı |
+|---|---|
+| Süper Admin | Tüm koleksiyonlar + admin kullanıcı yönetimi (yeni admin ekleme/silme, rol atama) |
+| İçerik Yöneticisi | `announcements`, harita POI verileri üzerinde create/update/delete |
+| Randevu/Talep Operatörü | `appointments`, `requests` üzerinde read/update (durum değiştirme) — silme yetkisi yok |
+| Salt-okunur Denetçi | Tüm koleksiyonlarda yalnızca read — denetim/raporlama amaçlı |
+
+- Admin kullanıcıları, mobil uygulamanın `users` koleksiyonundan **ayrı** bir `adminUsers` koleksiyonunda tutulur (vatandaş hesapları ile karışmaması, yetki yükseltme riskinin izole edilmesi için)
+- Admin hesapları için **2FA zorunlu** (TOTP) — yetkileri normal kullanıcıdan çok daha geniş olduğu için
+
+### Eşzamanlı düzenleme ve hesap verebilirlik
+
+- Yönetilen her koleksiyona `updatedAt` + `updatedBy` (hangi admin) alanları eklenir
+- Basit çakışma önleme: "son kaydeden kazanır" fakat kayıt en son kim tarafından ne zaman değiştirildiyse arayüzde gösterilir, sessiz üzerine yazma yapılmaz
+- `auditLogs` koleksiyonu (bkz. Bölüm 3) admin panel işlemlerini de kapsayacak şekilde genişletilir: hangi admin, hangi kaydı, ne zaman, hangi alanları değiştirdi — KVKK'nın hesap verebilirlik ve 72 saatlik ihlal bildirimi gerekliliği için de kullanılır
+
+### Erişim kanalı: web, mobil uygulama değil
+
+- Admin paneli **tarayıcı üzerinden erişilen bir web arayüzüdür** — React Native mobil uygulamanın içinde bir ekran/bölüm değildir, vatandaşların indirdiği uygulamayla hiçbir bağlantısı yoktur
+- AdminJS, backend'in HTTP sunucusu üzerinden kendi web arayüzünü (React tabanlı) servis eder; belediye personeli bir bilgisayar/tablet tarayıcısından bu URL'ye giriş yapar
+- Bu tercihin gerekçesi: masa başı veri girişi/tablo yönetimi tarayıcıda daha pratik, ayrıca mobil app'e admin özelliği eklemek App Store/Play Store onay süreciyle sınırlı kalırdı — web panelde anında deploy edilir
+
+### Erişim kısıtlama
+
+- Admin paneli mobil kullanıcıların erişemeyeceği ayrı bir route/subdomain üzerinden sunulur (örn. `/admin` veya `admin.` subdomain), arama motoru indekslemesinden hariç tutulur
+- Mümkünse ek katman: sabit IP aralığı/VPN kısıtlaması (belediye içi ağ) — üretim aşamasında değerlendirilecek
+
+## 10. Açık Konular / Sonraki Kararlar
 
 - **[YÜKSEK ÖNCELİK] Veri lokasyonu:** Belediye/amirden, kamu verisinin yurt içinde barındırılması gerekip gerekmediği teyit edilecek (bkz. Bölüm 4 — Açık risk). Bu cevaba göre MongoDB Atlas/Cloudinary/Sentry bölge seçimi veya yerli alternatiflere geçiş kararı verilecek
 - TESKİ, GAZDAŞ, TREPAŞ ile gerçek API entegrasyonu için belediyeden erişim bekleniyor — bu ekranlar şimdilik **mock veriyle** UI olarak inşa edilecek, gerçek entegrasyon erişim sağlandığında yapılacak
 - Ödeme gateway'i (iyzico/PayTR arası kesin seçim) gerçek ödeme entegrasyonu aşamasında netleştirilecek
 - Nöbetçi eczane / hava durumu / hava kalitesi gibi dış veri kaynaklarının resmi API'leri (örn. İl Sağlık Müdürlüğü, meteoroloji) belirlenip entegre edilecek
 - Belediyenin VERBİS kaydı ve hukuk biriminin KVKK aydınlatma metni onayı alınacak
+- Admin panelini kimlerin (kaç kişi, hangi birimler) kullanacağı netleşince Bölüm 9'daki rol tablosu gerçek isim/birimlerle güncellenecek

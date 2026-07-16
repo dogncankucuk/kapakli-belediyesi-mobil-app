@@ -39,6 +39,7 @@ Bu dört doküman birbirine çapraz referans verir ve `/team` sürecindeki ajanl
 | Dosya depolama | Cloudinary |
 | Bildirim | Expo Notifications |
 | Hata izleme | Sentry |
+| Admin panel | AdminJS (NestJS backend'ine modül olarak entegre) |
 
 Detaylı gerekçeler ve alternatiflerle karşılaştırma için [`architecture.md`](./architecture.md) ve [`tech.md`](./tech.md) dosyalarına bakın.
 
