@@ -162,6 +162,7 @@ Birden fazla kişi aynı anda panele erişebilmeli ama herkes her şeyi yapamama
 
 ## 10. Açık Konular / Sonraki Kararlar
 
+- **[ORTA ÖNCELİK] Rate limiting eksik:** İlk mobil-backend bağlantısı için eklenen `GET /announcements` ve `POST /appointments` uç noktaları misafir erişimine açık (auth yok) ama henüz `@nestjs/throttler` ile rate-limit'lenmedi — code review'da tespit edildi, production öncesi eklenmesi gerekiyor (bkz. Bölüm 4 — API güvenliği)
 - **[YÜKSEK ÖNCELİK] Veri lokasyonu:** Belediye/amirden, kamu verisinin yurt içinde barındırılması gerekip gerekmediği teyit edilecek (bkz. Bölüm 4 — Açık risk). Bu cevaba göre MongoDB Atlas/Cloudinary/Sentry bölge seçimi veya yerli alternatiflere geçiş kararı verilecek
 - TESKİ, GAZDAŞ, TREPAŞ ile gerçek API entegrasyonu için belediyeden erişim bekleniyor — bu ekranlar şimdilik **mock veriyle** UI olarak inşa edilecek, gerçek entegrasyon erişim sağlandığında yapılacak
 - Ödeme gateway'i (iyzico/PayTR arası kesin seçim) gerçek ödeme entegrasyonu aşamasında netleştirilecek

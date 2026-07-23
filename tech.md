@@ -6,9 +6,9 @@
 
 | Konu | Karar |
 |---|---|
-| Framework | React Native — Expo (managed workflow) |
+| Framework | React Native — Expo SDK 57 (managed workflow, `blank-typescript` şablonu) |
 | Dil | TypeScript |
-| Navigasyon | React Navigation (bottom tabs + stack navigator) |
+| Navigasyon | React Navigation v7 (bottom tabs + native-stack, static configuration API) |
 | Server-state yönetimi | TanStack Query (React Query) |
 | Yerel/UI state | React Context veya Zustand (ağır Redux boilerplate'inden kaçınılır) |
 | Güvenli depolama | `expo-secure-store` (token'lar için) — düz metin `AsyncStorage` kullanılmaz |
@@ -31,8 +31,12 @@
 | Dosya depolama | Cloudinary |
 | Push bildirim | Expo Notifications |
 | Admin panel | AdminJS (`@adminjs/nestjs` + `@adminjs/mongoose`) — backend içine modül olarak entegre, ayrı servis değil |
+| Admin panel kimlik doğrulama | Şifre (bcryptjs) + TOTP 2FA (`otplib` v13) — admin hesapları normal kullanıcı JWT akışından ayrı, `adminUsers` koleksiyonu üzerinden |
+| Yerel geliştirme veritabanı | Docker (MongoDB container, `docker-compose.yml`) — gerçek Atlas kredensiyali gerekmeden backend'in yerelde ayağa kalkması için |
 
-## 3. Klasör Yapısı (öneri — proje iskeleti kurulurken uygulanacak)
+> Not (AdminJS entegrasyonu): `adminjs`, `@adminjs/nestjs`, `@adminjs/mongoose` ESM-only paketlerdir; backend NestJS CLI varsayılanıyla CommonJS derlendiği için statik `import` çalışmaz. `backend/src/admin/admin.module.ts` bu nedenle `AdminModule.register()` adında async bir statik metotla, gerçek AdminJS/adapter referanslarını runtime'da `await import(...)` ile alıp `DynamicModule` döndürür.
+
+## 3. Klasör Yapısı (`mobile/` ve `backend/` iskeletleri kuruldu)
 
 ```
 kapakli-bel-app/
