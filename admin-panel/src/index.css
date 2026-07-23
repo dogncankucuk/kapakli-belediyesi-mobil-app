@@ -1,0 +1,32 @@
+:root {
+  --text: #333;
+  --text-h: #111;
+  --bg: #f5f6f8;
+  --border: #d9dde3;
+  --accent: #1f6feb;
+  --danger: #d1242f;
+
+  font: 16px/1.45 system-ui, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
