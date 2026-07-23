@@ -1,0 +1,235 @@
+import { MaterialIcons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import { getHavaDurumu } from "../api/havaDurumu";
+import { HavaDurumu } from "../api/types";
+import { Card } from "../components";
+import { havaDurumuIkonu } from "../constants/havaDurumu";
+import { colors, spacing, typography } from "../theme";
+
+function formatGun(iso: string, index: number): string {
+  if (index === 0) return "Bugün";
+  return new Date(iso).toLocaleDateString("tr-TR", { weekday: "short" });
+}
+
+export default function HavaDurumuDetayScreen() {
+  const navigation = useNavigation();
+  const [veri, setVeri] = useState<HavaDurumu | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    getHavaDurumu()
+      .then(setVeri)
+      .catch(() => setError(true))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  return (
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <View style={styles.header}>
+        <Pressable
+          onPress={() => navigation.goBack()}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Geri dön"
+          style={styles.backButton}
+        >
+          <MaterialIcons name="arrow-back" size={24} color={colors.onPrimary} />
+        </Pressable>
+        <Text style={styles.headerTitle} numberOfLines={1}>
+          Hava Durumu
+        </Text>
+      </View>
+      <View style={styles.content}>
+        {isLoading && <ActivityIndicator color={colors.primaryContainer} />}
+        {!isLoading && error && (
+          <Text style={styles.errorText}>Hava durumu verisi yüklenemedi.</Text>
+        )}
+
+        {!isLoading && !error && veri && (
+          <>
+            <Card style={styles.currentCard}>
+              <View>
+                <Text style={styles.location}>Kapaklı, Tekirdağ</Text>
+                <Text style={styles.condition}>{veri.durumAdi}</Text>
+                <Text style={styles.hissedilen}>
+                  Hissedilen {Math.round(veri.hissedilenSicaklik)}°C
+                </Text>
+              </View>
+              <View style={styles.tempRow}>
+                <MaterialIcons
+                  name={havaDurumuIkonu(veri.durumKodu)}
+                  size={40}
+                  color={colors.secondary}
+                />
+                <Text style={styles.temp}>{Math.round(veri.sicaklik)}°C</Text>
+              </View>
+            </Card>
+            <View style={styles.metricsRow}>
+              <Card style={styles.metricCard}>
+                <MaterialIcons
+                  name="water-drop"
+                  size={24}
+                  color={colors.secondary}
+                />
+                <Text style={styles.metricLabel}>Nem</Text>
+                <Text style={styles.metricValue}>%{veri.nem}</Text>
+              </Card>
+              <Card style={styles.metricCard}>
+                <MaterialIcons name="air" size={24} color={colors.secondary} />
+                <Text style={styles.metricLabel}>Rüzgar</Text>
+                <Text style={styles.metricValue}>
+                  {Math.round(veri.ruzgarHiz)} km/s
+                </Text>
+              </Card>
+            </View>
+
+            {veri.gunlukTahmin.length > 0 && (
+              <>
+                <Text style={styles.sectionTitle}>5 Günlük Tahmin</Text>
+                <View style={styles.forecastRow}>
+                  {veri.gunlukTahmin.slice(1, 6).map((gun, index) => (
+                    <Card key={gun.tarih} style={styles.forecastCard}>
+                      <Text style={styles.forecastDay}>
+                        {formatGun(gun.tarih, index + 1)}
+                      </Text>
+                      <MaterialIcons
+                        name={havaDurumuIkonu(gun.durumKodu)}
+                        size={20}
+                        color={colors.secondary}
+                      />
+                      <Text style={styles.forecastTemp}>
+                        {Math.round(gun.enYuksek)}°/{Math.round(gun.enDusuk)}°
+                      </Text>
+                    </Card>
+                  ))}
+                </View>
+              </>
+            )}
+
+            <Text style={styles.sourceText}>
+              Kaynak: T.C. Meteoroloji Genel Müdürlüğü (MGM)
+            </Text>
+          </>
+        )}
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.stackGap,
+    paddingHorizontal: spacing.containerMargin,
+    paddingVertical: spacing.stackGap,
+    backgroundColor: colors.primaryContainer,
+  },
+  backButton: {
+    width: spacing.touchTargetMin,
+    height: spacing.touchTargetMin,
+    marginLeft: -spacing.stackGap,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerTitle: {
+    ...typography.titleLg,
+    color: colors.onPrimary,
+    flexShrink: 1,
+  },
+  content: {
+    flex: 1,
+    padding: spacing.containerMargin,
+    gap: spacing.stackGap,
+  },
+  errorText: {
+    ...typography.bodyMd,
+    color: colors.error,
+  },
+  currentCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: spacing.containerMargin,
+  },
+  location: {
+    ...typography.titleMd,
+    color: colors.onBackground,
+  },
+  condition: {
+    ...typography.bodyMd,
+    color: colors.outline,
+  },
+  hissedilen: {
+    ...typography.labelSm,
+    color: colors.outline,
+  },
+  tempRow: {
+    alignItems: "center",
+    gap: 4,
+  },
+  temp: {
+    ...typography.headlineMdMobile,
+    color: colors.onBackground,
+  },
+  metricsRow: {
+    flexDirection: "row",
+    gap: spacing.gridGutter,
+  },
+  metricCard: {
+    flex: 1,
+    alignItems: "center",
+    gap: 4,
+    padding: spacing.stackGap,
+  },
+  metricLabel: {
+    ...typography.bodyMd,
+    color: colors.outline,
+  },
+  metricValue: {
+    ...typography.labelLg,
+    color: colors.onBackground,
+  },
+  sectionTitle: {
+    ...typography.titleMd,
+    color: colors.onBackground,
+  },
+  forecastRow: {
+    flexDirection: "row",
+    gap: spacing.stackGap / 2,
+  },
+  forecastCard: {
+    flex: 1,
+    alignItems: "center",
+    gap: 4,
+    padding: spacing.stackGap / 2,
+  },
+  forecastDay: {
+    ...typography.labelSm,
+    color: colors.outline,
+  },
+  forecastTemp: {
+    ...typography.labelSm,
+    color: colors.onBackground,
+  },
+  sourceText: {
+    ...typography.labelSm,
+    color: colors.outline,
+    textAlign: "center",
+  },
+});
