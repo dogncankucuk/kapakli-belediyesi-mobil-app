@@ -1,32 +1,18 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { useMemo } from "react";
+import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { getUlasimHatlari } from "../api/ulasimHatlari";
-import { UlasimHatti } from "../api/types";
-import { Card, PrimaryButton } from "../components";
-import { colors, spacing, typography } from "../theme";
+import { Card } from "../components";
+import { useTranslation } from "../i18n/LocaleContext";
+import { Colors, spacing, typography, useThemeColors } from "../theme";
 
 export default function UlasimHizmetleriScreen() {
   const navigation = useNavigation();
-  const [hatlar, setHatlar] = useState<UlasimHatti[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    getUlasimHatlari()
-      .then(setHatlar)
-      .catch(() => setError(true))
-      .finally(() => setIsLoading(false));
-  }, []);
+  const { t } = useTranslation();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -35,153 +21,130 @@ export default function UlasimHizmetleriScreen() {
           onPress={() => navigation.goBack()}
           hitSlop={8}
           accessibilityRole="button"
-          accessibilityLabel="Geri dön"
+          accessibilityLabel={t("common_back")}
           style={styles.backButton}
         >
           <MaterialIcons name="arrow-back" size={24} color={colors.onPrimary} />
         </Pressable>
-        <Text style={styles.headerTitle}>Ulaşım Hizmetleri</Text>
+        <Text style={styles.headerTitle}>{t("ulasim_title")}</Text>
       </View>
+
       <View style={styles.content}>
-        <Text style={styles.description}>
-          Otobüs hatları, güzergahlar ve ücret tarifesi.
-        </Text>
+        <Pressable
+          onPress={() =>
+            Linking.openURL(
+              "https://www.tekulas.com.tr/tekirdag-kart-bakiye-yukleme-islemi/",
+            )
+          }
+          accessibilityRole="button"
+        >
+          <Card style={styles.optionCard}>
+            <View style={styles.iconCircle}>
+              <MaterialIcons
+                name="account-balance-wallet"
+                size={26}
+                color={colors.onPrimary}
+              />
+            </View>
+            <View style={styles.optionTextGroup}>
+              <Text style={styles.optionTitle}>{t("ulasim_cardTitle")}</Text>
+              <Text style={styles.optionSubtitle}>
+                {t("ulasim_cardSubtitle")}
+              </Text>
+            </View>
+            <MaterialIcons
+              name="chevron-right"
+              size={24}
+              color={colors.outline}
+            />
+          </Card>
+        </Pressable>
 
-        <Card style={styles.liveCard}>
-          <Text style={styles.liveBadge}>CANLI TAKIP</Text>
-          <Text style={styles.liveTitle}>Otobüsüm Nerede?</Text>
-          <PrimaryButton
-            label="Haritayı Aç"
-            onPress={() => navigation.navigate("Map" as never)}
-          />
-        </Card>
-
-        <Text style={styles.sectionTitle}>Aktif Hatlar</Text>
-
-        {isLoading && <ActivityIndicator color={colors.primaryContainer} />}
-        {!isLoading && error && (
-          <Text style={styles.errorText}>Hat bilgileri yüklenemedi.</Text>
-        )}
-        {!isLoading && !error && hatlar.length === 0 && (
-          <Text style={styles.emptyText}>Henüz hat bilgisi eklenmemiş.</Text>
-        )}
-
-        <View style={styles.lines}>
-          {!isLoading &&
-            !error &&
-            hatlar.map((hat) => (
-              <Card key={hat.id} style={styles.lineCard}>
-                <View style={styles.lineHeader}>
-                  <Text style={styles.lineName}>{hat.hatAdi}</Text>
-                  <Text
-                    style={[
-                      styles.lineStatus,
-                      hat.canli && styles.lineStatusLive,
-                    ]}
-                  >
-                    {hat.canli ? "CANLI" : hat.durum}
-                  </Text>
-                </View>
-                <Text style={styles.lineRoute}>{hat.guzergah}</Text>
-                {hat.canli ? (
-                  <Text style={styles.lineDetail}>{hat.durum}</Text>
-                ) : null}
-              </Card>
-            ))}
-        </View>
+        <Pressable
+          onPress={() => navigation.navigate("OtobusTakip" as never)}
+          accessibilityRole="button"
+        >
+          <Card style={styles.optionCard}>
+            <View style={styles.iconCircle}>
+              <MaterialIcons
+                name="directions-bus"
+                size={26}
+                color={colors.onPrimary}
+              />
+            </View>
+            <View style={styles.optionTextGroup}>
+              <Text style={styles.optionTitle}>{t("ulasim_busTitle")}</Text>
+              <Text style={styles.optionSubtitle}>
+                {t("ulasim_busSubtitle")}
+              </Text>
+            </View>
+            <MaterialIcons
+              name="chevron-right"
+              size={24}
+              color={colors.outline}
+            />
+          </Card>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.stackGap,
-    paddingHorizontal: spacing.containerMargin,
-    paddingVertical: spacing.stackGap,
-    backgroundColor: colors.primaryContainer,
-  },
-  backButton: {
-    width: spacing.touchTargetMin,
-    height: spacing.touchTargetMin,
-    marginLeft: -spacing.stackGap,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerTitle: {
-    ...typography.titleLg,
-    color: colors.onPrimary,
-  },
-  content: {
-    flex: 1,
-    padding: spacing.containerMargin,
-    gap: spacing.stackGap,
-  },
-  description: {
-    ...typography.bodyMd,
-    color: colors.outline,
-  },
-  liveCard: {
-    padding: spacing.stackGap,
-    gap: spacing.stackGap / 2,
-    backgroundColor: colors.primaryContainer,
-  },
-  liveBadge: {
-    ...typography.labelSm,
-    color: colors.secondaryContainer,
-  },
-  liveTitle: {
-    ...typography.titleMd,
-    color: colors.onPrimary,
-    marginBottom: spacing.stackGap / 2,
-  },
-  sectionTitle: {
-    ...typography.titleMd,
-    color: colors.onBackground,
-  },
-  errorText: {
-    ...typography.bodyMd,
-    color: colors.error,
-  },
-  emptyText: {
-    ...typography.bodyMd,
-    color: colors.outline,
-  },
-  lines: {
-    gap: spacing.stackGap,
-  },
-  lineCard: {
-    padding: spacing.stackGap,
-    gap: 2,
-  },
-  lineHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  lineName: {
-    ...typography.labelLg,
-    color: colors.onBackground,
-  },
-  lineStatus: {
-    ...typography.labelSm,
-    color: colors.outline,
-  },
-  lineStatusLive: {
-    color: colors.secondary,
-  },
-  lineRoute: {
-    ...typography.bodyMd,
-    color: colors.onBackground,
-  },
-  lineDetail: {
-    ...typography.labelSm,
-    color: colors.outline,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.stackGap,
+      paddingHorizontal: spacing.containerMargin,
+      paddingVertical: spacing.stackGap,
+      backgroundColor: colors.primaryContainer,
+    },
+    backButton: {
+      width: spacing.touchTargetMin,
+      height: spacing.touchTargetMin,
+      marginLeft: -spacing.stackGap,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    headerTitle: {
+      ...typography.titleLg,
+      color: colors.onPrimary,
+    },
+    content: {
+      flex: 1,
+      padding: spacing.containerMargin,
+      gap: spacing.stackGap,
+    },
+    optionCard: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.stackGap,
+      padding: spacing.stackGap,
+      minHeight: spacing.touchTargetMin,
+    },
+    iconCircle: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: colors.primaryContainer,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    optionTextGroup: {
+      flex: 1,
+      gap: 2,
+    },
+    optionTitle: {
+      ...typography.titleMd,
+      color: colors.onBackground,
+    },
+    optionSubtitle: {
+      ...typography.bodyMd,
+      color: colors.outline,
+    },
+  });

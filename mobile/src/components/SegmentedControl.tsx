@@ -1,6 +1,7 @@
+import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors, shape, spacing, typography } from "../theme";
+import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
 
 type SegmentedControlOption<T extends string> = {
   label: string;
@@ -18,6 +19,9 @@ export default function SegmentedControl<T extends string>({
   value,
   onChange,
 }: SegmentedControlProps<T>) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.container}>
       {options.map((option) => {
@@ -40,32 +44,33 @@ export default function SegmentedControl<T extends string>({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    backgroundColor: colors.surfaceContainerLowest,
-    borderRadius: shape.roundedLg,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    padding: 4,
-    gap: 4,
-  },
-  segment: {
-    flex: 1,
-    minHeight: spacing.touchTargetMin - 8,
-    borderRadius: shape.roundedLg,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: spacing.stackGap,
-  },
-  segmentActive: {
-    backgroundColor: colors.primaryContainer,
-  },
-  label: {
-    ...typography.labelLg,
-    color: colors.onBackground,
-  },
-  labelActive: {
-    color: colors.onPrimary,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    container: {
+      flexDirection: "row",
+      backgroundColor: colors.surfaceContainerLowest,
+      borderRadius: shape.roundedLg,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      padding: 4,
+      gap: 4,
+    },
+    segment: {
+      flex: 1,
+      minHeight: spacing.touchTargetMin - 8,
+      borderRadius: shape.roundedLg,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: spacing.stackGap,
+    },
+    segmentActive: {
+      backgroundColor: colors.primaryContainer,
+    },
+    label: {
+      ...typography.labelLg,
+      color: colors.onBackground,
+    },
+    labelActive: {
+      color: colors.onPrimary,
+    },
+  });

@@ -1,11 +1,13 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { ComponentProps } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { ComponentProps, useMemo } from "react";
+import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Card } from "../components";
-import { colors, spacing, typography } from "../theme";
+import { useTranslation } from "../i18n/LocaleContext";
+import { TranslationKey } from "../i18n/tr";
+import { Colors, spacing, typography, useThemeColors } from "../theme";
 
 type IconName = ComponentProps<typeof MaterialIcons>["name"];
 
@@ -13,32 +15,49 @@ type Institution = {
   id: string;
   icon: IconName;
   name: string;
-  description: string;
+  descriptionKey: TranslationKey;
   onPress?: () => void;
 };
 
 export default function FaturaOdemeScreen() {
   const navigation = useNavigation();
+  const { t } = useTranslation();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const institutions: Institution[] = [
     {
       id: "teski",
       icon: "water-drop",
       name: "TESKİ",
-      description: "Su ve Kanalizasyon",
-      onPress: () => navigation.navigate("SuHizmetleri" as never),
+      descriptionKey: "faturaOdeme_teskiDesc",
+      onPress: () =>
+        Linking.openURL("https://www.teski.gov.tr/sube/index.aspx"),
     },
     {
       id: "gazdas",
       icon: "local-fire-department",
       name: "GAZDAŞ",
-      description: "Doğal Gaz",
+      descriptionKey: "faturaOdeme_gazdasDesc",
+      onPress: () =>
+        Linking.openURL("https://odeme.com.tr/fatura/dogalgaz/TRAKYAGAZ"),
+    },
+    {
+      id: "belediye-vergileri",
+      icon: "receipt-long",
+      name: t("faturaOdeme_vergiName"),
+      descriptionKey: "faturaOdeme_vergiDesc",
+      onPress: () =>
+        Linking.openURL(
+          "https://canli.belediye.gov.tr/vpos/debt-inquiry/natural-type-person-form?token=312d7f87-e8e6-4417-9419-77c7f40874d0",
+        ),
     },
     {
       id: "trepas",
       icon: "bolt",
       name: "TREPAŞ",
-      description: "Elektrik Dağıtım",
+      descriptionKey: "faturaOdeme_trepasDesc",
+      onPress: () => Linking.openURL("https://trepas.com.tr/borc-sorgulama"),
     },
   ];
 
@@ -49,19 +68,17 @@ export default function FaturaOdemeScreen() {
           onPress={() => navigation.goBack()}
           hitSlop={8}
           accessibilityRole="button"
-          accessibilityLabel="Geri"
+          accessibilityLabel={t("common_back")}
         >
           <MaterialIcons name="arrow-back" size={24} color={colors.onPrimary} />
         </Pressable>
-        <Text style={styles.headerTitle}>Fatura Ödeme</Text>
+        <Text style={styles.headerTitle}>{t("faturaOdeme_title")}</Text>
       </View>
 
       <View style={styles.content}>
         <View>
-          <Text style={styles.title}>Ödeme Yapılacak Kurum</Text>
-          <Text style={styles.subtitle}>
-            Hızlı ve güvenli ödeme için kurum seçiniz.
-          </Text>
+          <Text style={styles.title}>{t("faturaOdeme_sectionTitle")}</Text>
+          <Text style={styles.subtitle}>{t("faturaOdeme_subtitle")}</Text>
         </View>
 
         <View style={styles.grid}>
@@ -83,7 +100,7 @@ export default function FaturaOdemeScreen() {
                   </View>
                   <Text style={styles.institutionName}>{institution.name}</Text>
                   <Text style={styles.institutionDescription}>
-                    {institution.description}
+                    {t(institution.descriptionKey)}
                   </Text>
                 </Card>
               )}
@@ -99,7 +116,9 @@ export default function FaturaOdemeScreen() {
                   color={colors.outline}
                 />
               </View>
-              <Text style={styles.otherLabel}>Diğer Kurumlar</Text>
+              <Text style={styles.otherLabel}>
+                {t("faturaOdeme_otherInstitutions")}
+              </Text>
             </Card>
           </View>
         </View>
@@ -108,83 +127,84 @@ export default function FaturaOdemeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.stackGap,
-    paddingHorizontal: spacing.containerMargin,
-    paddingVertical: spacing.stackGap,
-    backgroundColor: colors.primaryContainer,
-  },
-  headerTitle: {
-    ...typography.titleLg,
-    color: colors.onPrimary,
-  },
-  content: {
-    flex: 1,
-    padding: spacing.containerMargin,
-    gap: spacing.containerMargin,
-  },
-  title: {
-    ...typography.titleLg,
-    color: colors.onBackground,
-  },
-  subtitle: {
-    ...typography.bodyMd,
-    color: colors.outline,
-  },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.gridGutter,
-  },
-  gridItem: {
-    width: "47%",
-  },
-  card: {
-    aspectRatio: 1,
-    justifyContent: "center",
-    gap: spacing.stackGap / 2,
-    padding: spacing.containerMargin,
-  },
-  cardPressed: {
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  otherCard: {
-    aspectRatio: 1,
-    justifyContent: "center",
-    gap: spacing.stackGap / 2,
-    padding: spacing.containerMargin,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    borderStyle: "dashed",
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.secondaryContainer,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  institutionName: {
-    ...typography.titleMd,
-    color: colors.onBackground,
-  },
-  institutionDescription: {
-    ...typography.bodyMd,
-    color: colors.outline,
-  },
-  otherLabel: {
-    ...typography.labelLg,
-    color: colors.outline,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.stackGap,
+      paddingHorizontal: spacing.containerMargin,
+      paddingVertical: spacing.stackGap,
+      backgroundColor: colors.primaryContainer,
+    },
+    headerTitle: {
+      ...typography.titleLg,
+      color: colors.onPrimary,
+    },
+    content: {
+      flex: 1,
+      padding: spacing.containerMargin,
+      gap: spacing.containerMargin,
+    },
+    title: {
+      ...typography.titleLg,
+      color: colors.onBackground,
+    },
+    subtitle: {
+      ...typography.bodyMd,
+      color: colors.outline,
+    },
+    grid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing.gridGutter,
+    },
+    gridItem: {
+      width: "47%",
+    },
+    card: {
+      aspectRatio: 1,
+      justifyContent: "center",
+      gap: spacing.stackGap / 2,
+      padding: spacing.containerMargin,
+    },
+    cardPressed: {
+      shadowOpacity: 0,
+      elevation: 0,
+    },
+    otherCard: {
+      aspectRatio: 1,
+      justifyContent: "center",
+      gap: spacing.stackGap / 2,
+      padding: spacing.containerMargin,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      borderStyle: "dashed",
+      shadowOpacity: 0,
+      elevation: 0,
+    },
+    iconCircle: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: colors.secondaryContainer,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    institutionName: {
+      ...typography.titleMd,
+      color: colors.onBackground,
+    },
+    institutionDescription: {
+      ...typography.bodyMd,
+      color: colors.outline,
+    },
+    otherLabel: {
+      ...typography.labelLg,
+      color: colors.outline,
+    },
+  });

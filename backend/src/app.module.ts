@@ -23,6 +23,7 @@ import { HavaDurumuModule } from './modules/hava-durumu/hava-durumu.module';
 import { AdminUsersModule } from './modules/admin-users/admin-users.module';
 import { CamilerModule } from './modules/camiler/camiler.module';
 import { OnemliKurumlarModule } from './modules/onemli-kurumlar/onemli-kurumlar.module';
+import { UsersModule } from './modules/users/users.module';
 import { AdminModule } from './admin/admin.module';
 
 @Module({
@@ -56,6 +57,7 @@ import { AdminModule } from './admin/admin.module';
     AdminUsersModule,
     CamilerModule,
     OnemliKurumlarModule,
+    UsersModule,
     AdminModule,
   ],
   controllers: [AppController],

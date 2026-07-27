@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Alert,
   Pressable,
@@ -14,20 +14,30 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { createRequest } from "../api/requests";
 import { TalepKategorisi } from "../api/types";
 import { Card, PrimaryButton, SegmentedControl } from "../components";
-import { talepKategorileri } from "../constants/talepKategorileri";
+import { buildTalepKategorileri } from "../constants/talepKategorileri";
+import { useTranslation } from "../i18n/LocaleContext";
+import { TranslationKey } from "../i18n/tr";
 import { takipNumarasiEkle } from "../storage/talepStorage";
-import { colors, shape, spacing, typography } from "../theme";
+import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
 
 const MAX_LENGTH = 500;
 
-const ekDosyaSecenekleri = [
-  { id: "belge", icon: "description" as const, label: "Belge Ekle" },
-  { id: "fotograf", icon: "photo-camera" as const, label: "Fotoğraf Ekle" },
-  { id: "video", icon: "videocam" as const, label: "Video Ekle" },
+const ekDosyaSecenekleri: {
+  id: string;
+  icon: "description" | "photo-camera" | "videocam";
+  labelKey: TranslationKey;
+}[] = [
+  { id: "belge", icon: "description", labelKey: "yeniTalep_belgeEkle" },
+  { id: "fotograf", icon: "photo-camera", labelKey: "yeniTalep_fotografEkle" },
+  { id: "video", icon: "videocam", labelKey: "yeniTalep_videoEkle" },
 ];
 
 export default function YeniTalepOlusturScreen() {
   const navigation = useNavigation();
+  const { t } = useTranslation();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const talepKategorileri = useMemo(() => buildTalepKategorileri(t), [t]);
   const [kategori, setKategori] = useState<TalepKategorisi>("ariza-bakim");
   const [adSoyad, setAdSoyad] = useState("");
   const [telefon, setTelefon] = useState("");
@@ -51,16 +61,10 @@ export default function YeniTalepOlusturScreen() {
         telefon: telefon.trim(),
       });
       await takipNumarasiEkle(talep.id);
-      Alert.alert(
-        "Talebiniz Alındı",
-        "Talebiniz oluşturuldu. Durumunu Taleplerim ekranından takip edebilirsiniz.",
-      );
+      Alert.alert(t("yeniTalep_successTitle"), t("yeniTalep_successMessage"));
       navigation.navigate("Taleplerim" as never);
     } catch {
-      Alert.alert(
-        "Hata",
-        "Talep gönderilirken bir hata oluştu. Tekrar deneyin.",
-      );
+      Alert.alert(t("yeniTalep_errorTitle"), t("yeniTalep_errorMessage"));
     } finally {
       setIsSubmitting(false);
     }
@@ -73,16 +77,16 @@ export default function YeniTalepOlusturScreen() {
           onPress={() => navigation.goBack()}
           hitSlop={8}
           accessibilityRole="button"
-          accessibilityLabel="Geri"
+          accessibilityLabel={t("common_back")}
         >
           <MaterialIcons name="arrow-back" size={24} color={colors.onPrimary} />
         </Pressable>
-        <Text style={styles.headerTitle}>Yeni Talep</Text>
+        <Text style={styles.headerTitle}>{t("yeniTalep_title")}</Text>
       </View>
 
       <View style={styles.content}>
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Kategori</Text>
+          <Text style={styles.sectionLabel}>{t("yeniTalep_kategori")}</Text>
           <SegmentedControl
             options={talepKategorileri}
             value={kategori}
@@ -91,33 +95,37 @@ export default function YeniTalepOlusturScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>İletişim Bilgileri</Text>
+          <Text style={styles.sectionLabel}>
+            {t("yeniTalep_iletisimBilgileri")}
+          </Text>
           <Card style={styles.contactCard}>
             <TextInput
               style={styles.input}
-              placeholder="Ad Soyad"
+              placeholder={t("yeniTalep_adSoyadPlaceholder")}
               placeholderTextColor={colors.outline}
               value={adSoyad}
               onChangeText={setAdSoyad}
-              accessibilityLabel="Ad Soyad"
+              accessibilityLabel={t("yeniTalep_adSoyadPlaceholder")}
             />
             <TextInput
               style={styles.input}
-              placeholder="Telefon"
+              placeholder={t("yeniTalep_telefonPlaceholder")}
               placeholderTextColor={colors.outline}
               value={telefon}
               onChangeText={setTelefon}
               keyboardType="phone-pad"
-              accessibilityLabel="Telefon"
+              accessibilityLabel={t("yeniTalep_telefonPlaceholder")}
             />
           </Card>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Talep Detayları</Text>
+          <Text style={styles.sectionLabel}>
+            {t("yeniTalep_talepDetaylari")}
+          </Text>
           <TextInput
             style={styles.textArea}
-            placeholder="Talebinizi buraya yazınız..."
+            placeholder={t("yeniTalep_detayPlaceholder")}
             placeholderTextColor={colors.outline}
             multiline
             maxLength={MAX_LENGTH}
@@ -130,7 +138,7 @@ export default function YeniTalepOlusturScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Ek Dosyalar</Text>
+          <Text style={styles.sectionLabel}>{t("yeniTalep_ekDosyalar")}</Text>
           <View style={styles.attachmentsRow}>
             {ekDosyaSecenekleri.map((secenek) => (
               <Pressable
@@ -146,20 +154,19 @@ export default function YeniTalepOlusturScreen() {
                   />
                 </View>
                 <Text style={styles.attachmentLabel} numberOfLines={1}>
-                  {secenek.label}
+                  {t(secenek.labelKey)}
                 </Text>
               </Pressable>
             ))}
           </View>
         </View>
 
-        <Text style={styles.infoNote}>
-          Talebiniz belediyemiz tarafından incelendikten sonra SMS ile
-          bilgilendirme yapılacaktır.
-        </Text>
+        <Text style={styles.infoNote}>{t("yeniTalep_infoNote")}</Text>
 
         <PrimaryButton
-          label={isSubmitting ? "Gönderiliyor..." : "Talebi Gönder"}
+          label={
+            isSubmitting ? t("yeniTalep_submitting") : t("yeniTalep_submit")
+          }
           onPress={handleGonder}
           disabled={isSubmitting || !formGecerli}
         />
@@ -168,87 +175,88 @@ export default function YeniTalepOlusturScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.stackGap,
-    paddingHorizontal: spacing.containerMargin,
-    paddingVertical: spacing.stackGap,
-    backgroundColor: colors.primaryContainer,
-  },
-  headerTitle: {
-    ...typography.titleLg,
-    color: colors.onPrimary,
-  },
-  content: {
-    flex: 1,
-    padding: spacing.containerMargin,
-    gap: spacing.stackGap,
-  },
-  section: {
-    gap: spacing.stackGap / 2,
-  },
-  sectionLabel: {
-    ...typography.labelSm,
-    color: colors.outline,
-  },
-  contactCard: {
-    padding: spacing.stackGap,
-    gap: spacing.stackGap / 2,
-  },
-  input: {
-    ...typography.bodyLg,
-    color: colors.onBackground,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    borderRadius: shape.rounded,
-    paddingHorizontal: spacing.stackGap,
-    minHeight: spacing.touchTargetMin,
-  },
-  textArea: {
-    ...typography.bodyMd,
-    height: 80,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    borderRadius: shape.rounded,
-    padding: spacing.stackGap,
-    color: colors.onBackground,
-    textAlignVertical: "top",
-  },
-  counter: {
-    ...typography.labelSm,
-    color: colors.outline,
-    alignSelf: "flex-end",
-  },
-  attachmentsRow: {
-    flexDirection: "row",
-    gap: spacing.stackGap,
-  },
-  attachmentItem: {
-    flex: 1,
-    alignItems: "center",
-    gap: 4,
-  },
-  attachmentIcon: {
-    width: spacing.touchTargetMin,
-    height: spacing.touchTargetMin,
-    borderRadius: shape.rounded,
-    backgroundColor: colors.secondaryContainer,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  attachmentLabel: {
-    ...typography.labelSm,
-    color: colors.onBackground,
-    textAlign: "center",
-  },
-  infoNote: {
-    ...typography.bodyMd,
-    color: colors.outline,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.stackGap,
+      paddingHorizontal: spacing.containerMargin,
+      paddingVertical: spacing.stackGap,
+      backgroundColor: colors.primaryContainer,
+    },
+    headerTitle: {
+      ...typography.titleLg,
+      color: colors.onPrimary,
+    },
+    content: {
+      flex: 1,
+      padding: spacing.containerMargin,
+      gap: spacing.stackGap,
+    },
+    section: {
+      gap: spacing.stackGap / 2,
+    },
+    sectionLabel: {
+      ...typography.labelSm,
+      color: colors.outline,
+    },
+    contactCard: {
+      padding: spacing.stackGap,
+      gap: spacing.stackGap / 2,
+    },
+    input: {
+      ...typography.bodyLg,
+      color: colors.onBackground,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      borderRadius: shape.rounded,
+      paddingHorizontal: spacing.stackGap,
+      minHeight: spacing.touchTargetMin,
+    },
+    textArea: {
+      ...typography.bodyMd,
+      height: 80,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      borderRadius: shape.rounded,
+      padding: spacing.stackGap,
+      color: colors.onBackground,
+      textAlignVertical: "top",
+    },
+    counter: {
+      ...typography.labelSm,
+      color: colors.outline,
+      alignSelf: "flex-end",
+    },
+    attachmentsRow: {
+      flexDirection: "row",
+      gap: spacing.stackGap,
+    },
+    attachmentItem: {
+      flex: 1,
+      alignItems: "center",
+      gap: 4,
+    },
+    attachmentIcon: {
+      width: spacing.touchTargetMin,
+      height: spacing.touchTargetMin,
+      borderRadius: shape.rounded,
+      backgroundColor: colors.secondaryContainer,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    attachmentLabel: {
+      ...typography.labelSm,
+      color: colors.onBackground,
+      textAlign: "center",
+    },
+    infoNote: {
+      ...typography.bodyMd,
+      color: colors.outline,
+    },
+  });

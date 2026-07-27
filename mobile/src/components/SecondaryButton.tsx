@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   Pressable,
   StyleSheet,
@@ -6,7 +7,7 @@ import {
   ViewStyle,
 } from "react-native";
 
-import { colors, shape, spacing, typography } from "../theme";
+import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
 
 type SecondaryButtonProps = {
   label: string;
@@ -21,6 +22,9 @@ export default function SecondaryButton({
   disabled,
   style,
 }: SecondaryButtonProps) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <Pressable
       onPress={onPress}
@@ -38,25 +42,26 @@ export default function SecondaryButton({
   );
 }
 
-const styles = StyleSheet.create({
-  button: {
-    minHeight: spacing.touchTargetMin,
-    borderRadius: shape.roundedLg,
-    borderWidth: 1,
-    borderColor: colors.primaryContainer,
-    backgroundColor: colors.surfaceContainerLowest,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: spacing.containerMargin,
-  },
-  pressed: {
-    opacity: 0.7,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  label: {
-    ...typography.labelLg,
-    color: colors.primaryContainer,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    button: {
+      minHeight: spacing.touchTargetMin,
+      borderRadius: shape.roundedLg,
+      borderWidth: 1,
+      borderColor: colors.primaryContainer,
+      backgroundColor: colors.surfaceContainerLowest,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: spacing.containerMargin,
+    },
+    pressed: {
+      opacity: 0.7,
+    },
+    disabled: {
+      opacity: 0.5,
+    },
+    label: {
+      ...typography.labelLg,
+      color: colors.primaryContainer,
+    },
+  });

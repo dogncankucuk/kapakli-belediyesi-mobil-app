@@ -1,4 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import { useRoute } from "@react-navigation/native";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -15,11 +16,34 @@ import { getOnemliKurumlar } from "../api/onemliKurumlar";
 import { getPharmacies } from "../api/pharmacies";
 import { getWifiNoktalari } from "../api/wifiNoktalari";
 import { Card, TopBar } from "../components";
+import { useTranslation } from "../i18n/LocaleContext";
+import { TranslationKey } from "../i18n/tr";
 import { useAppShell } from "../navigation/AppShellContext";
-import { colors, shape, spacing, typography } from "../theme";
+import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
 
 type LayerKey =
   "parklar" | "tarihiYerler" | "eczaneler" | "wifi" | "camiler" | "kurumlar";
+
+type TabKey = LayerKey | "kentRehberi";
+
+const KENT_REHBERI_URL =
+  "https://cbs.kapakli.bel.tr/GiSoftGis/#/cityguidepublic";
+
+// GiSoftGis kendi ust arac cubugunu (.cityguide-header) haritanin (#map)
+// UZERINE position:absolute ile bindiriyor - gizlemek haritanin boyutunu
+// etkilemiyor. Katman secimi (Numarataj/Parsel/Onemli Yerler/Wifi Noktalari
+// vb.) icin native bir kopru denendi ama guvenilir dogrulanamadigi icin
+// vazgecildi - kullanicilar katman secimini sitenin kendi calisan katman
+// panelinden (sag-ust "layer-panel-button") yapabiliyor, o buton bilerek
+// gizlenmedi.
+const HIDE_KENT_REHBERI_CHROME_JS = `
+(function () {
+  var style = document.createElement('style');
+  style.innerHTML = '.cityguide-header { display: none !important; }';
+  document.documentElement.appendChild(style);
+})();
+true;
+`;
 
 type Poi = {
   id: string;
@@ -31,13 +55,13 @@ type Poi = {
   lng: number;
 };
 
-const LAYER_OPTIONS: { label: string; value: LayerKey }[] = [
-  { label: "Parklar", value: "parklar" },
-  { label: "Tarihi Yerler", value: "tarihiYerler" },
-  { label: "Eczaneler", value: "eczaneler" },
-  { label: "Wi-Fi", value: "wifi" },
-  { label: "Camiler", value: "camiler" },
-  { label: "Kurumlar", value: "kurumlar" },
+const LAYER_OPTIONS: { labelKey: TranslationKey; value: LayerKey }[] = [
+  { labelKey: "map_parklar", value: "parklar" },
+  { labelKey: "map_tarihiYerler", value: "tarihiYerler" },
+  { labelKey: "map_eczaneler", value: "eczaneler" },
+  { labelKey: "map_wifi", value: "wifi" },
+  { labelKey: "map_camiler", value: "camiler" },
+  { labelKey: "map_kurumlar", value: "kurumlar" },
 ];
 
 const LAYER_COLORS: Record<LayerKey, string> = {
@@ -170,8 +194,14 @@ function buildLeafletHtml(pois: Poi[]): string {
 
 export default function MapScreen() {
   const { openMenu } = useAppShell();
+  const { t } = useTranslation();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const route = useRoute();
+  const initialTab = (route.params as { initialTab?: TabKey } | undefined)
+    ?.initialTab;
   const webViewRef = useRef<WebView>(null);
-  const [layer, setLayer] = useState<LayerKey>("parklar");
+  const [activeTab, setActiveTab] = useState<TabKey>(initialTab ?? "parklar");
   const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null);
   const [apiPois, setApiPois] = useState<Poi[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -257,10 +287,12 @@ export default function MapScreen() {
   const allPois = useMemo(() => [...MOCK_POIS, ...apiPois], [apiPois]);
   const html = useMemo(() => buildLeafletHtml(allPois), [allPois]);
 
-  const handleLayerChange = (value: LayerKey) => {
-    setLayer(value);
+  const handleTabChange = (value: TabKey) => {
+    setActiveTab(value);
     setSelectedPoi(null);
-    webViewRef.current?.injectJavaScript(`setLayer('${value}'); true;`);
+    if (value !== "kentRehberi") {
+      webViewRef.current?.injectJavaScript(`setLayer('${value}'); true;`);
+    }
   };
 
   const handleMessage = (event: WebViewMessageEvent) => {
@@ -274,16 +306,17 @@ export default function MapScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <TopBar title="Harita" onMenuPress={openMenu} />
+      <TopBar title={t("tabs_map")} onMenuPress={openMenu} />
       <View style={styles.tabWrapper}>
         {LAYER_OPTIONS.map((option) => {
-          const isActive = option.value === layer;
+          const isActive = option.value === activeTab;
+          const label = t(option.labelKey);
           return (
             <Pressable
               key={option.value}
-              onPress={() => handleLayerChange(option.value)}
+              onPress={() => handleTabChange(option.value)}
               accessibilityRole="button"
-              accessibilityLabel={option.label}
+              accessibilityLabel={label}
               accessibilityState={{ selected: isActive }}
               style={[styles.tab, isActive && styles.tabActive]}
             >
@@ -296,20 +329,54 @@ export default function MapScreen() {
                 style={[styles.tabLabel, isActive && styles.tabLabelActive]}
                 numberOfLines={1}
               >
-                {option.label}
+                {label}
               </Text>
             </Pressable>
           );
         })}
+        <Pressable
+          onPress={() => handleTabChange("kentRehberi")}
+          accessibilityRole="button"
+          accessibilityLabel={t("map_kentRehberi")}
+          accessibilityState={{ selected: activeTab === "kentRehberi" }}
+          style={[styles.tab, activeTab === "kentRehberi" && styles.tabActive]}
+        >
+          <MaterialIcons
+            name="public"
+            size={20}
+            color={
+              activeTab === "kentRehberi"
+                ? colors.onPrimary
+                : colors.onBackground
+            }
+          />
+          <Text
+            style={[
+              styles.tabLabel,
+              activeTab === "kentRehberi" && styles.tabLabelActive,
+            ]}
+            numberOfLines={1}
+          >
+            {t("map_kentRehberi")}
+          </Text>
+        </Pressable>
       </View>
       <View style={styles.mapWrapper}>
-        <WebView
-          ref={webViewRef}
-          source={{ html }}
-          style={styles.map}
-          onMessage={handleMessage}
-        />
-        {isLoading ? (
+        {activeTab === "kentRehberi" ? (
+          <WebView
+            source={{ uri: KENT_REHBERI_URL }}
+            style={styles.map}
+            injectedJavaScriptBeforeContentLoaded={HIDE_KENT_REHBERI_CHROME_JS}
+          />
+        ) : (
+          <WebView
+            ref={webViewRef}
+            source={{ html }}
+            style={styles.map}
+            onMessage={handleMessage}
+          />
+        )}
+        {isLoading && activeTab !== "kentRehberi" ? (
           <View style={styles.loadingOverlay}>
             <ActivityIndicator color={colors.primaryContainer} />
           </View>
@@ -342,7 +409,7 @@ export default function MapScreen() {
                 onPress={() => setSelectedPoi(null)}
                 hitSlop={8}
                 accessibilityRole="button"
-                accessibilityLabel="Kapat"
+                accessibilityLabel={t("map_close")}
                 style={styles.closeButton}
               >
                 <MaterialIcons name="close" size={20} color={colors.outline} />
@@ -355,90 +422,91 @@ export default function MapScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  tabWrapper: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    paddingHorizontal: spacing.containerMargin,
-    paddingVertical: spacing.stackGap,
-  },
-  tab: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    minHeight: spacing.touchTargetMin - 8,
-    borderRadius: shape.roundedLg,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    paddingHorizontal: spacing.stackGap,
-    backgroundColor: colors.surfaceContainerLowest,
-  },
-  tabActive: {
-    backgroundColor: colors.primaryContainer,
-    borderColor: colors.primaryContainer,
-  },
-  tabLabel: {
-    ...typography.labelSm,
-    color: colors.onBackground,
-  },
-  tabLabelActive: {
-    color: colors.onPrimary,
-  },
-  mapWrapper: {
-    flex: 1,
-  },
-  map: {
-    flex: 1,
-  },
-  loadingOverlay: {
-    position: "absolute",
-    top: spacing.containerMargin,
-    right: spacing.containerMargin,
-  },
-  detailCard: {
-    position: "absolute",
-    left: spacing.containerMargin,
-    right: spacing.containerMargin,
-    bottom: spacing.containerMargin,
-    padding: spacing.stackGap,
-  },
-  detailRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.stackGap,
-  },
-  detailIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: shape.rounded,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  detailText: {
-    flex: 1,
-    gap: 2,
-  },
-  detailName: {
-    ...typography.labelLg,
-    color: colors.onBackground,
-  },
-  detailAddress: {
-    ...typography.bodyMd,
-    color: colors.outline,
-  },
-  detailHours: {
-    ...typography.labelSm,
-    color: colors.secondary,
-  },
-  closeButton: {
-    width: spacing.touchTargetMin - 12,
-    height: spacing.touchTargetMin - 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    tabWrapper: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      paddingHorizontal: spacing.containerMargin,
+      paddingVertical: spacing.stackGap,
+    },
+    tab: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      minHeight: spacing.touchTargetMin - 8,
+      borderRadius: shape.roundedLg,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      paddingHorizontal: spacing.stackGap,
+      backgroundColor: colors.surfaceContainerLowest,
+    },
+    tabActive: {
+      backgroundColor: colors.primaryContainer,
+      borderColor: colors.primaryContainer,
+    },
+    tabLabel: {
+      ...typography.labelSm,
+      color: colors.onBackground,
+    },
+    tabLabelActive: {
+      color: colors.onPrimary,
+    },
+    mapWrapper: {
+      flex: 1,
+    },
+    map: {
+      flex: 1,
+    },
+    loadingOverlay: {
+      position: "absolute",
+      top: spacing.containerMargin,
+      right: spacing.containerMargin,
+    },
+    detailCard: {
+      position: "absolute",
+      left: spacing.containerMargin,
+      right: spacing.containerMargin,
+      bottom: spacing.containerMargin,
+      padding: spacing.stackGap,
+    },
+    detailRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.stackGap,
+    },
+    detailIcon: {
+      width: 36,
+      height: 36,
+      borderRadius: shape.rounded,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    detailText: {
+      flex: 1,
+      gap: 2,
+    },
+    detailName: {
+      ...typography.labelLg,
+      color: colors.onBackground,
+    },
+    detailAddress: {
+      ...typography.bodyMd,
+      color: colors.outline,
+    },
+    detailHours: {
+      ...typography.labelSm,
+      color: colors.secondary,
+    },
+    closeButton: {
+      width: spacing.touchTargetMin - 12,
+      height: spacing.touchTargetMin - 12,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+  });

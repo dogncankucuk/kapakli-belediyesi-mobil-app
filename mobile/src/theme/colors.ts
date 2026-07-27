@@ -1,5 +1,5 @@
 // Civic Horizon Design System — design.md §8
-export const colors = {
+export const lightColors = {
   primary: "#000A18",
   onPrimary: "#FFFFFF",
   primaryContainer: "#0D2236",
@@ -21,4 +21,27 @@ export const colors = {
   outlineVariant: "#C4C6CD",
 } as const;
 
-export type Colors = typeof colors;
+export const darkColors = {
+  primary: "#A9C7FF",
+  onPrimary: "#00315C",
+  primaryContainer: "#194975",
+  onPrimaryContainer: "#D3E4FF",
+  secondary: "#8ECDFF",
+  onSecondary: "#00344E",
+  secondaryContainer: "#004C6F",
+  tertiary: "#FFB4A9",
+  onTertiary: "#680003",
+  tertiaryContainer: "#930006",
+  onTertiaryContainer: "#FFDAD4",
+  error: "#FFB4AB",
+  errorContainer: "#93000A",
+  background: "#141414",
+  onBackground: "#E5E2E1",
+  surface: "#141414",
+  surfaceContainerLowest: "#242424",
+  outline: "#8E9099",
+  outlineVariant: "#44474A",
+} as const;
+
+export type Colors = Record<keyof typeof lightColors, string>;
+export type ThemeMode = "light" | "dark";
