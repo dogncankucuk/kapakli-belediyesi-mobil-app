@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import AyarlarScreen from "../screens/AyarlarScreen";
+import BaskanScreen from "../screens/BaskanScreen";
 import BizeUlasinScreen from "../screens/BizeUlasinScreen";
 import HakkimizdaScreen from "../screens/HakkimizdaScreen";
 import HesapBilgilerimScreen from "../screens/HesapBilgilerimScreen";
@@ -17,6 +18,7 @@ const ProfileStack = createNativeStackNavigator({
     Ayarlar: AyarlarScreen,
     HesapBilgilerim: HesapBilgilerimScreen,
     Hakkimizda: HakkimizdaScreen,
+    Baskan: BaskanScreen,
     BizeUlasin: BizeUlasinScreen,
     VefatEdenler: VefatEdenlerScreen,
     YardimMerkezi: YardimMerkeziScreen,

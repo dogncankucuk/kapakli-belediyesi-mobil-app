@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import HomeScreen from "../screens/HomeScreen";
+import ProjelerimizScreen from "../screens/ProjelerimizScreen";
 
 const HomeStack = createNativeStackNavigator({
   screenOptions: {
@@ -8,6 +9,7 @@ const HomeStack = createNativeStackNavigator({
   },
   screens: {
     HomeMain: HomeScreen,
+    Projelerimiz: ProjelerimizScreen,
   },
 });
 

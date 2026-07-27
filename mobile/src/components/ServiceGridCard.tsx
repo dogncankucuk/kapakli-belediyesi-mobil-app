@@ -1,9 +1,9 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { ComponentProps } from "react";
+import { ComponentProps, useMemo } from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
 
 import Card from "./Card";
-import { colors, spacing, typography } from "../theme";
+import { Colors, spacing, typography, useThemeColors } from "../theme";
 
 type ServiceGridCardProps = {
   icon: ComponentProps<typeof MaterialIcons>["name"];
@@ -16,6 +16,9 @@ export default function ServiceGridCard({
   label,
   onPress,
 }: ServiceGridCardProps) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <Pressable onPress={onPress} accessibilityRole="button">
       {({ pressed }) => (
@@ -34,21 +37,22 @@ export default function ServiceGridCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    aspectRatio: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.stackGap / 2,
-    padding: spacing.stackGap,
-  },
-  cardPressed: {
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  label: {
-    ...typography.labelLg,
-    color: colors.onBackground,
-    textAlign: "center",
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    card: {
+      aspectRatio: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: spacing.stackGap / 2,
+      padding: spacing.stackGap,
+    },
+    cardPressed: {
+      shadowOpacity: 0,
+      elevation: 0,
+    },
+    label: {
+      ...typography.labelLg,
+      color: colors.onBackground,
+      textAlign: "center",
+    },
+  });

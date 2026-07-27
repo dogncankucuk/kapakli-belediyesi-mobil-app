@@ -1,5 +1,6 @@
 export { default as AnnouncementCard } from "./AnnouncementCard";
 export { default as Card } from "./Card";
+export { default as HizliIslemlerModal } from "./HizliIslemlerModal";
 export { default as PaginationDots } from "./PaginationDots";
 export { default as PrimaryButton } from "./PrimaryButton";
 export { default as SecondaryButton } from "./SecondaryButton";

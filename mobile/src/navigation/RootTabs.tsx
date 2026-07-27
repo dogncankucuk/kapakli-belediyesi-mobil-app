@@ -1,24 +1,38 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Text } from "react-native";
 
 import AnnouncementsStack from "./AnnouncementsStack";
 import HomeStack from "./HomeStack";
 import MapStack from "./MapStack";
 import ProfileStack from "./ProfileStack";
 import ServicesStack from "./ServicesStack";
-import { colors } from "../theme";
+import { useTranslation } from "../i18n/LocaleContext";
+import { TranslationKey } from "../i18n/tr";
+
+function TabLabel({ tKey, color }: { tKey: TranslationKey; color: string }) {
+  const { t } = useTranslation();
+  return (
+    <Text
+      style={{ color, fontSize: 11, fontWeight: "500", textAlign: "center" }}
+      numberOfLines={1}
+      adjustsFontSizeToFit
+      minimumFontScale={0.75}
+    >
+      {t(tKey)}
+    </Text>
+  );
+}
 
 const RootTabs = createBottomTabNavigator({
   screenOptions: {
     headerShown: false,
-    tabBarActiveTintColor: colors.primaryContainer,
-    tabBarInactiveTintColor: colors.outline,
   },
   screens: {
     Home: {
       screen: HomeStack,
       options: {
-        title: "Ana Sayfa",
+        tabBarLabel: ({ color }) => <TabLabel tKey="tabs_home" color={color} />,
         tabBarIcon: ({ color, size }) => (
           <MaterialIcons name="home" color={color} size={size} />
         ),
@@ -27,7 +41,9 @@ const RootTabs = createBottomTabNavigator({
     Services: {
       screen: ServicesStack,
       options: {
-        title: "Hizmetler",
+        tabBarLabel: ({ color }) => (
+          <TabLabel tKey="tabs_services" color={color} />
+        ),
         tabBarIcon: ({ color, size }) => (
           <MaterialIcons name="apps" color={color} size={size} />
         ),
@@ -36,7 +52,7 @@ const RootTabs = createBottomTabNavigator({
     Map: {
       screen: MapStack,
       options: {
-        title: "Harita",
+        tabBarLabel: ({ color }) => <TabLabel tKey="tabs_map" color={color} />,
         tabBarIcon: ({ color, size }) => (
           <MaterialIcons name="map" color={color} size={size} />
         ),
@@ -45,7 +61,9 @@ const RootTabs = createBottomTabNavigator({
     Announcements: {
       screen: AnnouncementsStack,
       options: {
-        title: "Duyurular",
+        tabBarLabel: ({ color }) => (
+          <TabLabel tKey="tabs_announcements" color={color} />
+        ),
         tabBarIcon: ({ color, size }) => (
           <MaterialIcons name="campaign" color={color} size={size} />
         ),
@@ -54,11 +72,18 @@ const RootTabs = createBottomTabNavigator({
     Profile: {
       screen: ProfileStack,
       options: {
-        title: "Profil",
+        tabBarLabel: ({ color }) => (
+          <TabLabel tKey="tabs_profile" color={color} />
+        ),
         tabBarIcon: ({ color, size }) => (
           <MaterialIcons name="person" color={color} size={size} />
         ),
       },
+      listeners: ({ navigation }) => ({
+        tabPress: () => {
+          navigation.navigate("Profile", { screen: "ProfileMain" } as never);
+        },
+      }),
     },
   },
 });

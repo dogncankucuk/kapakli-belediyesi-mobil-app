@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { ComponentProps, useState } from "react";
+import { ComponentProps, useMemo, useState } from "react";
 import {
   Alert,
   Pressable,
@@ -13,37 +13,42 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { createAppointment } from "../api/appointments";
 import { Card, PrimaryButton, SecondaryButton } from "../components";
-import { colors, shape, spacing, typography } from "../theme";
+import { useTranslation } from "../i18n/LocaleContext";
+import { TranslationKey } from "../i18n/tr";
+import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
 
 type IconName = ComponentProps<typeof MaterialIcons>["name"];
 
 type RandevuKategori = {
   id: string;
   icon: IconName;
-  badge: string;
-  title: string;
-  description: string;
+  badgeKey: TranslationKey;
+  titleKey: TranslationKey;
+  descriptionKey: TranslationKey;
 };
 
 const kategoriler: RandevuKategori[] = [
   {
     id: "nikah-dairesi",
     icon: "favorite",
-    badge: "Evlilik İşlemleri",
-    title: "Nikah Dairesi",
-    description: "Evlilik başvurusu, gün alma ve nikah akdi randevuları için.",
+    badgeKey: "randevuAl_nikahBadge",
+    titleKey: "randevuAl_nikahTitle",
+    descriptionKey: "randevuAl_nikahDesc",
   },
   {
     id: "spor-salonlari",
     icon: "fitness-center",
-    badge: "Sağlıklı Yaşam",
-    title: "Spor Salonları",
-    description: "Belediye tesisleri için bireysel veya grup randevuları için.",
+    badgeKey: "randevuAl_sporBadge",
+    titleKey: "randevuAl_sporTitle",
+    descriptionKey: "randevuAl_sporDesc",
   },
 ];
 
 export default function RandevuAlScreen() {
   const navigation = useNavigation();
+  const { t } = useTranslation();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [selectedKategori, setSelectedKategori] =
     useState<RandevuKategori | null>(null);
   const [tarih, setTarih] = useState("");
@@ -63,14 +68,14 @@ export default function RandevuAlScreen() {
     setIsSubmitting(true);
     try {
       await createAppointment({
-        hizmetTuru: selectedKategori.title,
+        hizmetTuru: t(selectedKategori.titleKey),
         tarih,
         saat,
       });
-      Alert.alert("Başarılı", "Randevunuz oluşturuldu.");
+      Alert.alert(t("randevuAl_successTitle"), t("randevuAl_successMessage"));
       handleVazgec();
     } catch {
-      Alert.alert("Hata", "Bir hata oluştu.");
+      Alert.alert(t("randevuAl_errorTitle"), t("randevuAl_errorMessage"));
     } finally {
       setIsSubmitting(false);
     }
@@ -83,15 +88,15 @@ export default function RandevuAlScreen() {
           onPress={() => navigation.goBack()}
           hitSlop={8}
           accessibilityRole="button"
-          accessibilityLabel="Geri"
+          accessibilityLabel={t("common_back")}
         >
           <MaterialIcons name="arrow-back" size={24} color={colors.onPrimary} />
         </Pressable>
-        <Text style={styles.headerTitle}>Randevu Al</Text>
+        <Text style={styles.headerTitle}>{t("randevuAl_title")}</Text>
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.subtitle}>Kapaklı Dijital Belediye</Text>
+        <Text style={styles.subtitle}>{t("randevuAl_subtitle")}</Text>
 
         {!selectedKategori &&
           kategoriler.map((kategori) => (
@@ -104,15 +109,15 @@ export default function RandevuAlScreen() {
                 />
               </View>
               <View style={styles.badge}>
-                <Text style={styles.badgeText}>{kategori.badge}</Text>
+                <Text style={styles.badgeText}>{t(kategori.badgeKey)}</Text>
               </View>
-              <Text style={styles.title}>{kategori.title}</Text>
+              <Text style={styles.title}>{t(kategori.titleKey)}</Text>
               <View style={styles.footer}>
                 <Text style={styles.description} numberOfLines={1}>
-                  {kategori.description}
+                  {t(kategori.descriptionKey)}
                 </Text>
                 <PrimaryButton
-                  label="Randevu Seç"
+                  label={t("randevuAl_selectButton")}
                   onPress={() => setSelectedKategori(kategori)}
                   style={styles.selectButton}
                 />
@@ -122,9 +127,9 @@ export default function RandevuAlScreen() {
 
         {selectedKategori && (
           <Card style={styles.card}>
-            <Text style={styles.title}>{selectedKategori.title}</Text>
+            <Text style={styles.title}>{t(selectedKategori.titleKey)}</Text>
             <View style={styles.field}>
-              <Text style={styles.fieldLabel}>Tarih (YYYY-MM-DD)</Text>
+              <Text style={styles.fieldLabel}>{t("randevuAl_dateLabel")}</Text>
               <TextInput
                 style={styles.input}
                 value={tarih}
@@ -134,7 +139,7 @@ export default function RandevuAlScreen() {
               />
             </View>
             <View style={styles.field}>
-              <Text style={styles.fieldLabel}>Saat (HH:mm)</Text>
+              <Text style={styles.fieldLabel}>{t("randevuAl_timeLabel")}</Text>
               <TextInput
                 style={styles.input}
                 value={saat}
@@ -145,13 +150,13 @@ export default function RandevuAlScreen() {
             </View>
             <View style={styles.formActions}>
               <SecondaryButton
-                label="Vazgeç"
+                label={t("randevuAl_cancelButton")}
                 onPress={handleVazgec}
                 disabled={isSubmitting}
                 style={styles.formButton}
               />
               <PrimaryButton
-                label="Onayla"
+                label={t("randevuAl_confirmButton")}
                 onPress={handleOnayla}
                 disabled={isSubmitting || !tarih || !saat}
                 style={styles.formButton}
@@ -164,93 +169,94 @@ export default function RandevuAlScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.stackGap,
-    paddingHorizontal: spacing.containerMargin,
-    paddingVertical: spacing.stackGap,
-    backgroundColor: colors.primaryContainer,
-  },
-  headerTitle: {
-    ...typography.titleLg,
-    color: colors.onPrimary,
-  },
-  content: {
-    flex: 1,
-    padding: spacing.containerMargin,
-    gap: spacing.stackGap,
-  },
-  subtitle: {
-    ...typography.bodyMd,
-    color: colors.outline,
-  },
-  card: {
-    padding: spacing.stackGap,
-    gap: spacing.stackGap / 2,
-  },
-  imagePlaceholder: {
-    height: 72,
-    borderRadius: shape.rounded,
-    backgroundColor: colors.primaryContainer,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  badge: {
-    alignSelf: "flex-start",
-    paddingHorizontal: spacing.stackGap / 2,
-    paddingVertical: 4,
-    borderRadius: shape.rounded,
-    backgroundColor: colors.secondaryContainer,
-  },
-  badgeText: {
-    ...typography.labelSm,
-    color: colors.primaryContainer,
-  },
-  title: {
-    ...typography.titleMd,
-    color: colors.onBackground,
-  },
-  footer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.stackGap,
-  },
-  description: {
-    ...typography.bodyMd,
-    color: colors.outline,
-    flex: 1,
-  },
-  selectButton: {
-    minHeight: spacing.touchTargetMin - 8,
-    paddingHorizontal: spacing.stackGap,
-  },
-  field: {
-    gap: 4,
-  },
-  fieldLabel: {
-    ...typography.labelSm,
-    color: colors.outline,
-  },
-  input: {
-    ...typography.bodyLg,
-    color: colors.onBackground,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    borderRadius: shape.rounded,
-    paddingHorizontal: spacing.stackGap,
-    minHeight: spacing.touchTargetMin,
-  },
-  formActions: {
-    flexDirection: "row",
-    gap: spacing.stackGap,
-  },
-  formButton: {
-    flex: 1,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.stackGap,
+      paddingHorizontal: spacing.containerMargin,
+      paddingVertical: spacing.stackGap,
+      backgroundColor: colors.primaryContainer,
+    },
+    headerTitle: {
+      ...typography.titleLg,
+      color: colors.onPrimary,
+    },
+    content: {
+      flex: 1,
+      padding: spacing.containerMargin,
+      gap: spacing.stackGap,
+    },
+    subtitle: {
+      ...typography.bodyMd,
+      color: colors.outline,
+    },
+    card: {
+      padding: spacing.stackGap,
+      gap: spacing.stackGap / 2,
+    },
+    imagePlaceholder: {
+      height: 72,
+      borderRadius: shape.rounded,
+      backgroundColor: colors.primaryContainer,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    badge: {
+      alignSelf: "flex-start",
+      paddingHorizontal: spacing.stackGap / 2,
+      paddingVertical: 4,
+      borderRadius: shape.rounded,
+      backgroundColor: colors.secondaryContainer,
+    },
+    badgeText: {
+      ...typography.labelSm,
+      color: colors.primaryContainer,
+    },
+    title: {
+      ...typography.titleMd,
+      color: colors.onBackground,
+    },
+    footer: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.stackGap,
+    },
+    description: {
+      ...typography.bodyMd,
+      color: colors.outline,
+      flex: 1,
+    },
+    selectButton: {
+      minHeight: spacing.touchTargetMin - 8,
+      paddingHorizontal: spacing.stackGap,
+    },
+    field: {
+      gap: 4,
+    },
+    fieldLabel: {
+      ...typography.labelSm,
+      color: colors.outline,
+    },
+    input: {
+      ...typography.bodyLg,
+      color: colors.onBackground,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      borderRadius: shape.rounded,
+      paddingHorizontal: spacing.stackGap,
+      minHeight: spacing.touchTargetMin,
+    },
+    formActions: {
+      flexDirection: "row",
+      gap: spacing.stackGap,
+    },
+    formButton: {
+      flex: 1,
+    },
+  });

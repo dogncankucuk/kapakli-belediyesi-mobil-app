@@ -1,7 +1,14 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { getAnnouncements } from "../api/announcements";
@@ -9,13 +16,25 @@ import { getHavaDurumu } from "../api/havaDurumu";
 import { Announcement, HavaDurumu } from "../api/types";
 import {
   AnnouncementCard,
+  Card,
+  HizliIslemlerModal,
   PrimaryButton,
   ServiceGridCard,
   TopBar,
 } from "../components";
 import { havaDurumuIkonu } from "../constants/havaDurumu";
+import {
+  navigateToServiceTarget,
+  SERVICE_CATALOG,
+  ServiceId,
+} from "../constants/serviceCatalog";
+import { useTranslation } from "../i18n/LocaleContext";
 import { useAppShell } from "../navigation/AppShellContext";
-import { colors, spacing, typography } from "../theme";
+import {
+  getSeciliHizliIslemler,
+  seciliHizliIslemleriKaydet,
+} from "../storage/quickActionsStorage";
+import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
 
 function formatAnnouncementDate(item: Announcement): string {
   const date = new Date(item.yayinTarihi).toLocaleDateString("tr-TR", {
@@ -29,10 +48,16 @@ function formatAnnouncementDate(item: Announcement): string {
 export default function HomeScreen() {
   const navigation = useNavigation();
   const { openMenu } = useAppShell();
+  const { t } = useTranslation();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [havaDurumu, setHavaDurumu] = useState<HavaDurumu | null>(null);
+  const [hizliIslemIdleri, setHizliIslemIdleri] = useState<ServiceId[]>([]);
+  const [isHizliIslemlerModalVisible, setIsHizliIslemlerModalVisible] =
+    useState(false);
 
   useEffect(() => {
     getAnnouncements()
@@ -45,12 +70,29 @@ export default function HomeScreen() {
         // Ana sayfa widget'i icin sessiz basarisizlik kabul edilebilir -
         // detay ekrani (HavaDurumuDetayScreen) kendi hata durumunu gosterir.
       });
+    getSeciliHizliIslemler().then(setHizliIslemIdleri);
   }, []);
+
+  const secilenHizliIslemler = useMemo(
+    () =>
+      hizliIslemIdleri
+        .map((id) => SERVICE_CATALOG.find((service) => service.id === id))
+        .filter((service): service is (typeof SERVICE_CATALOG)[number] =>
+          Boolean(service),
+        ),
+    [hizliIslemIdleri],
+  );
+
+  const handleHizliIslemlerKaydet = (ids: ServiceId[]) => {
+    setHizliIslemIdleri(ids);
+    setIsHizliIslemlerModalVisible(false);
+    seciliHizliIslemleriKaydet(ids);
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <TopBar
-        title="Kapaklı Belediyesi"
+        title={t("common_appName")}
         onMenuPress={openMenu}
         rightSlot={
           havaDurumu && (
@@ -70,44 +112,57 @@ export default function HomeScreen() {
           )
         }
       />
-      <View style={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <View>
-          <Text style={styles.welcomeTitle}>Hoş Geldiniz</Text>
+          <Text style={styles.welcomeTitle}>{t("home_welcome")}</Text>
           <Text style={styles.welcomeSubtitle}>
-            Size nasıl yardımcı olabiliriz?
+            {t("home_welcomeSubtitle")}
           </Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Hızlı İşlemler</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>{t("home_quickActions")}</Text>
+            <Pressable
+              onPress={() => setIsHizliIslemlerModalVisible(true)}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t("home_quickActionsEdit")}
+            >
+              <MaterialIcons
+                name="add-circle-outline"
+                size={24}
+                color={colors.primaryContainer}
+              />
+            </Pressable>
+          </View>
           <View style={styles.quickActionsRow}>
-            <View style={styles.quickActionItem}>
-              <ServiceGridCard
-                icon="article"
-                label="Haberler"
-                onPress={() =>
-                  navigation.navigate("Announcements", {
-                    screen: "HaberlerVeEtkinlikler",
-                  } as never)
-                }
-              />
-            </View>
-            <View style={styles.quickActionItem}>
-              <ServiceGridCard
-                icon="local-pharmacy"
-                label="Eczaneler"
-                onPress={() =>
-                  navigation.navigate("Map", {
-                    screen: "NobetciEczaneler",
-                  } as never)
-                }
-              />
-            </View>
+            {secilenHizliIslemler.map((service) => (
+              <View key={service.id} style={styles.quickActionItem}>
+                <ServiceGridCard
+                  icon={service.icon}
+                  label={t(service.labelKey)}
+                  onPress={() =>
+                    navigateToServiceTarget(navigation, service.target)
+                  }
+                />
+              </View>
+            ))}
           </View>
         </View>
 
+        <HizliIslemlerModal
+          visible={isHizliIslemlerModalVisible}
+          selectedIds={hizliIslemIdleri}
+          onClose={() => setIsHizliIslemlerModalVisible(false)}
+          onSave={handleHizliIslemlerKaydet}
+        />
+
         <PrimaryButton
-          label="Taleplerim"
+          label={t("home_myRequests")}
           onPress={() =>
             navigation.navigate("Services", {
               screen: "Taleplerim",
@@ -115,10 +170,29 @@ export default function HomeScreen() {
           }
         />
 
+        <Pressable
+          onPress={() => navigation.navigate("Projelerimiz" as never)}
+          accessibilityRole="button"
+        >
+          <Card style={styles.projelerButton}>
+            <MaterialIcons
+              name="architecture"
+              size={28}
+              color={colors.onPrimary}
+            />
+            <Text style={styles.projelerButtonLabel}>{t("home_projects")}</Text>
+            <MaterialIcons
+              name="chevron-right"
+              size={26}
+              color={colors.onPrimary}
+            />
+          </Card>
+        </Pressable>
+
         <View style={styles.announcements}>
           {isLoading && <ActivityIndicator color={colors.primaryContainer} />}
           {!isLoading && error && (
-            <Text style={styles.errorText}>Duyurular yüklenemedi.</Text>
+            <Text style={styles.errorText}>{t("announcements_error")}</Text>
           )}
           {!isLoading &&
             !error &&
@@ -130,65 +204,85 @@ export default function HomeScreen() {
               />
             ))}
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    flex: 1,
-    padding: spacing.containerMargin,
-    gap: spacing.stackGap,
-  },
-  weather: {
-    alignItems: "flex-end",
-    gap: 2,
-  },
-  weatherRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  weatherTemp: {
-    ...typography.labelLg,
-    color: colors.onPrimary,
-  },
-  weatherCondition: {
-    ...typography.labelSm,
-    color: colors.onPrimaryContainer,
-  },
-  welcomeTitle: {
-    ...typography.headlineMdMobile,
-    color: colors.onBackground,
-  },
-  welcomeSubtitle: {
-    ...typography.bodyMd,
-    color: colors.outline,
-  },
-  section: {
-    gap: spacing.stackGap,
-  },
-  sectionTitle: {
-    ...typography.titleMd,
-    color: colors.onBackground,
-  },
-  quickActionsRow: {
-    flexDirection: "row",
-    gap: spacing.gridGutter,
-  },
-  quickActionItem: {
-    flex: 1,
-  },
-  announcements: {
-    gap: spacing.stackGap,
-  },
-  errorText: {
-    ...typography.bodyMd,
-    color: colors.error,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      padding: spacing.containerMargin,
+      gap: spacing.stackGap,
+    },
+    weather: {
+      alignItems: "flex-end",
+      gap: 2,
+    },
+    weatherRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+    },
+    weatherTemp: {
+      ...typography.labelLg,
+      color: colors.onPrimary,
+    },
+    weatherCondition: {
+      ...typography.labelSm,
+      color: colors.onPrimaryContainer,
+    },
+    welcomeTitle: {
+      ...typography.headlineMdMobile,
+      color: colors.onBackground,
+    },
+    welcomeSubtitle: {
+      ...typography.bodyMd,
+      color: colors.outline,
+    },
+    section: {
+      gap: spacing.stackGap,
+    },
+    sectionHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    sectionTitle: {
+      ...typography.titleMd,
+      color: colors.onBackground,
+    },
+    quickActionsRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing.gridGutter,
+    },
+    quickActionItem: {
+      width: "31%",
+    },
+    projelerButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.stackGap,
+      minHeight: 72,
+      padding: spacing.containerMargin,
+      borderRadius: shape.roundedLg,
+      backgroundColor: colors.primaryContainer,
+    },
+    projelerButtonLabel: {
+      ...typography.titleMd,
+      color: colors.onPrimary,
+      flex: 1,
+    },
+    announcements: {
+      gap: spacing.stackGap,
+    },
+    errorText: {
+      ...typography.bodyMd,
+      color: colors.error,
+    },
+  });

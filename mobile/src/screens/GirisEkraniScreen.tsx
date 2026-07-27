@@ -1,28 +1,79 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { login, register } from "../api/auth";
 import { Card, PrimaryButton, SecondaryButton } from "../components";
+import { useTranslation } from "../i18n/LocaleContext";
 import { useAppShell } from "../navigation/AppShellContext";
-import { navigationRef } from "../navigation/navigationRef";
-import { colors, shape, spacing, typography } from "../theme";
+import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { BizeUlasinContent } from "./BizeUlasinScreen";
+import { YardimMerkeziContent } from "./YardimMerkeziScreen";
+
+type InfoModal = "BizeUlasin" | "YardimMerkezi" | null;
+
+type Mode = "giris" | "kayit";
 
 export default function GirisEkraniScreen() {
-  const { enterApp } = useAppShell();
+  const { enterApp, previewApp } = useAppShell();
+  const { t } = useTranslation();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const [mode, setMode] = useState<Mode>("giris");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [infoModal, setInfoModal] = useState<InfoModal>(null);
 
-  // GirisEkraniScreen navigasyon agacinin DISINDA render edilir (henuz
-  // enterApp() cagrilmadan), bu yuzden once uygulamaya girip sonra
-  // navigationRef hazir olana kadar bekleyip ilgili ekrana yonlendiriyoruz.
-  const enterAppAndGoTo = (screen: "BizeUlasin" | "YardimMerkezi") => {
-    enterApp();
-    const tryNavigate = () => {
-      if (navigationRef.isReady()) {
-        navigationRef.navigate("Profile", { screen } as never);
-      } else {
-        setTimeout(tryNavigate, 50);
-      }
-    };
-    setTimeout(tryNavigate, 0);
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [ad, setAd] = useState("");
+  const [soyad, setSoyad] = useState("");
+  const [tcKimlikNo, setTcKimlikNo] = useState("");
+  const [telefon, setTelefon] = useState("");
+
+  const handleGiris = async () => {
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      const { user } = await login(identifier.trim(), password);
+      enterApp(user);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : t("girisEkrani_loginError"),
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleKayit = async () => {
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      const { user } = await register({
+        ad: ad.trim(),
+        soyad: soyad.trim(),
+        tcKimlikNo: tcKimlikNo.trim(),
+        telefon: telefon.trim(),
+        password,
+      });
+      enterApp(user);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : t("girisEkrani_registerError"),
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -36,141 +87,269 @@ export default function GirisEkraniScreen() {
               color={colors.onPrimary}
             />
           </View>
-          <Text style={styles.title}>
-            Kapaklı Belediyesi&apos;ne Hoş Geldiniz
-          </Text>
-          <Text style={styles.subtitle}>Dijital belediyecilik kapınız.</Text>
+          <Text style={styles.title}>{t("girisEkrani_welcomeTitle")}</Text>
+          <Text style={styles.subtitle}>{t("girisEkrani_subtitle")}</Text>
         </View>
 
         <Card style={styles.form}>
-          <View style={styles.field}>
-            <Text style={styles.label}>T.C. Kimlik No / Telefon / E-posta</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="11 haneli T.C. numaranız"
-              placeholderTextColor={colors.outline}
-              autoCapitalize="none"
+          {mode === "giris" ? (
+            <>
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("girisEkrani_identifierLabel")}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder={t("girisEkrani_identifierPlaceholder")}
+                  placeholderTextColor={colors.outline}
+                  autoCapitalize="none"
+                  value={identifier}
+                  onChangeText={setIdentifier}
+                />
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("girisEkrani_passwordLabel")}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="••••••••"
+                  placeholderTextColor={colors.outline}
+                  secureTextEntry
+                  value={password}
+                  onChangeText={setPassword}
+                />
+              </View>
+            </>
+          ) : (
+            <>
+              <View style={styles.field}>
+                <Text style={styles.label}>{t("girisEkrani_adLabel")}</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholderTextColor={colors.outline}
+                  value={ad}
+                  onChangeText={setAd}
+                />
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.label}>{t("girisEkrani_soyadLabel")}</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholderTextColor={colors.outline}
+                  value={soyad}
+                  onChangeText={setSoyad}
+                />
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("girisEkrani_tcKimlikLabel")}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder={t("girisEkrani_identifierPlaceholder")}
+                  placeholderTextColor={colors.outline}
+                  keyboardType="number-pad"
+                  maxLength={11}
+                  value={tcKimlikNo}
+                  onChangeText={setTcKimlikNo}
+                />
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("girisEkrani_telefonLabel")}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder={t("girisEkrani_telefonPlaceholder")}
+                  placeholderTextColor={colors.outline}
+                  keyboardType="phone-pad"
+                  value={telefon}
+                  onChangeText={setTelefon}
+                />
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("girisEkrani_passwordLabel")}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder={t("girisEkrani_passwordPlaceholderRegister")}
+                  placeholderTextColor={colors.outline}
+                  secureTextEntry
+                  value={password}
+                  onChangeText={setPassword}
+                />
+              </View>
+            </>
+          )}
+
+          {error && <Text style={styles.errorText}>{error}</Text>}
+
+          {isSubmitting ? (
+            <ActivityIndicator color={colors.primaryContainer} />
+          ) : (
+            <PrimaryButton
+              label={
+                mode === "giris"
+                  ? t("girisEkrani_loginButton")
+                  : t("girisEkrani_registerButton")
+              }
+              onPress={mode === "giris" ? handleGiris : handleKayit}
             />
-          </View>
-          <View style={styles.field}>
-            <Text style={styles.label}>Şifre</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="••••••••"
-              placeholderTextColor={colors.outline}
-              secureTextEntry
-            />
-          </View>
-          <PrimaryButton label="Giriş Yap" onPress={enterApp} />
+          )}
         </Card>
 
-        <Text style={styles.registerText}>
-          Henüz hesabınız yok mu?{" "}
-          <Text style={styles.registerLink}>Kayıt Ol</Text>
-        </Text>
+        <Pressable
+          onPress={() => {
+            setError(null);
+            setMode(mode === "giris" ? "kayit" : "giris");
+          }}
+          hitSlop={8}
+          accessibilityRole="button"
+        >
+          <Text style={styles.registerText}>
+            {mode === "giris" ? (
+              <>
+                {t("girisEkrani_noAccountQuestion")}{" "}
+                <Text style={styles.registerLink}>
+                  {t("girisEkrani_registerButton")}
+                </Text>
+              </>
+            ) : (
+              <>
+                {t("girisEkrani_hasAccountQuestion")}{" "}
+                <Text style={styles.registerLink}>
+                  {t("girisEkrani_loginButton")}
+                </Text>
+              </>
+            )}
+          </Text>
+        </Pressable>
 
-        <SecondaryButton label="Giriş Yapmadan Devam Et" onPress={enterApp} />
+        <SecondaryButton
+          label={t("girisEkrani_continueAsGuest")}
+          onPress={previewApp}
+        />
 
         <View style={styles.footerLinks}>
           <Pressable
-            onPress={() => enterAppAndGoTo("BizeUlasin")}
+            onPress={() => setInfoModal("BizeUlasin")}
             hitSlop={8}
             accessibilityRole="button"
           >
-            <Text style={styles.footerLink}>Bize Ulaşın</Text>
+            <Text style={styles.footerLink}>{t("girisEkrani_contactUs")}</Text>
           </Pressable>
           <View style={styles.footerDivider} />
           <Pressable
-            onPress={() => enterAppAndGoTo("YardimMerkezi")}
+            onPress={() => setInfoModal("YardimMerkezi")}
             hitSlop={8}
             accessibilityRole="button"
           >
-            <Text style={styles.footerLink}>Yardım Merkezi</Text>
+            <Text style={styles.footerLink}>{t("girisEkrani_helpCenter")}</Text>
           </Pressable>
         </View>
       </View>
+
+      <Modal
+        visible={infoModal !== null}
+        animationType="slide"
+        onRequestClose={() => setInfoModal(null)}
+      >
+        {infoModal === "BizeUlasin" && (
+          <BizeUlasinContent onBack={() => setInfoModal(null)} />
+        )}
+        {infoModal === "YardimMerkezi" && (
+          <YardimMerkeziContent onBack={() => setInfoModal(null)} />
+        )}
+      </Modal>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    flex: 1,
-    padding: spacing.containerMargin,
-    justifyContent: "center",
-    gap: spacing.containerMargin,
-  },
-  header: {
-    alignItems: "center",
-    gap: spacing.stackGap / 2,
-  },
-  logoCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: colors.primaryContainer,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: spacing.stackGap / 2,
-  },
-  title: {
-    ...typography.titleLg,
-    color: colors.onBackground,
-    textAlign: "center",
-  },
-  subtitle: {
-    ...typography.bodyMd,
-    color: colors.outline,
-    textAlign: "center",
-  },
-  form: {
-    padding: spacing.containerMargin,
-    gap: spacing.stackGap,
-  },
-  field: {
-    gap: spacing.stackGap / 2,
-  },
-  label: {
-    ...typography.labelLg,
-    color: colors.onBackground,
-  },
-  input: {
-    ...typography.bodyLg,
-    minHeight: spacing.touchTargetMin,
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    borderRadius: shape.rounded,
-    paddingHorizontal: spacing.stackGap,
-    color: colors.onBackground,
-  },
-  registerText: {
-    ...typography.bodyMd,
-    color: colors.onBackground,
-    textAlign: "center",
-  },
-  registerLink: {
-    color: colors.onTertiaryContainer,
-    fontWeight: "600",
-  },
-  footerLinks: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.stackGap,
-  },
-  footerLink: {
-    ...typography.labelLg,
-    color: colors.secondary,
-    minHeight: spacing.touchTargetMin,
-    textAlignVertical: "center",
-  },
-  footerDivider: {
-    width: 1,
-    height: 14,
-    backgroundColor: colors.outlineVariant,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      flex: 1,
+      padding: spacing.containerMargin,
+      justifyContent: "center",
+      gap: spacing.containerMargin,
+    },
+    header: {
+      alignItems: "center",
+      gap: spacing.stackGap / 2,
+    },
+    logoCircle: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      backgroundColor: colors.primaryContainer,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: spacing.stackGap / 2,
+    },
+    title: {
+      ...typography.titleLg,
+      color: colors.onBackground,
+      textAlign: "center",
+    },
+    subtitle: {
+      ...typography.bodyMd,
+      color: colors.outline,
+      textAlign: "center",
+    },
+    form: {
+      padding: spacing.containerMargin,
+      gap: spacing.stackGap,
+    },
+    field: {
+      gap: spacing.stackGap / 2,
+    },
+    label: {
+      ...typography.labelLg,
+      color: colors.onBackground,
+    },
+    input: {
+      ...typography.bodyLg,
+      minHeight: spacing.touchTargetMin,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      borderRadius: shape.rounded,
+      paddingHorizontal: spacing.stackGap,
+      color: colors.onBackground,
+    },
+    errorText: {
+      ...typography.bodyMd,
+      color: colors.error,
+    },
+    registerText: {
+      ...typography.bodyMd,
+      color: colors.onBackground,
+      textAlign: "center",
+    },
+    registerLink: {
+      color: colors.onTertiaryContainer,
+      fontWeight: "600",
+    },
+    footerLinks: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: spacing.stackGap,
+    },
+    footerLink: {
+      ...typography.labelLg,
+      color: colors.secondary,
+      minHeight: spacing.touchTargetMin,
+      textAlignVertical: "center",
+    },
+    footerDivider: {
+      width: 1,
+      height: 14,
+      backgroundColor: colors.outlineVariant,
+    },
+  });
