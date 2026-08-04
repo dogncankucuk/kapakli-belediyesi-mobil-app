@@ -229,7 +229,7 @@ export default function GirisEkraniScreen() {
 
         <SecondaryButton
           label={t("girisEkrani_continueAsGuest")}
-          onPress={previewApp}
+          onPress={() => previewApp()}
         />
 
         <View style={styles.footerLinks}>
@@ -257,7 +257,13 @@ export default function GirisEkraniScreen() {
         onRequestClose={() => setInfoModal(null)}
       >
         {infoModal === "BizeUlasin" && (
-          <BizeUlasinContent onBack={() => setInfoModal(null)} />
+          <BizeUlasinContent
+            onBack={() => setInfoModal(null)}
+            onNavigateToMap={() => {
+              setInfoModal(null);
+              previewApp({ tab: "Map", screen: "MapMain" });
+            }}
+          />
         )}
         {infoModal === "YardimMerkezi" && (
           <YardimMerkeziContent onBack={() => setInfoModal(null)} />

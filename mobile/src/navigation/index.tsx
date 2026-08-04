@@ -5,19 +5,19 @@ import {
   ParamListBase,
   StaticParamList,
 } from "@react-navigation/native";
-import { Ref, useMemo } from "react";
+import { Ref, useCallback, useMemo } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import { AppShellProvider, useAppShell } from "./AppShellContext";
 import { navigationRef } from "./navigationRef";
-import RootTabs from "./RootTabs";
+import RootStack from "./RootStack";
 import { YanMenuPanel } from "../components";
 import GirisEkraniScreen from "../screens/GirisEkraniScreen";
 import { useTheme } from "../theme/ThemeContext";
 
-const Navigation = createStaticNavigation(RootTabs);
+const Navigation = createStaticNavigation(RootStack);
 
-type RootStackParamList = StaticParamList<typeof RootTabs>;
+type RootStackParamList = StaticParamList<typeof RootStack>;
 declare global {
   namespace ReactNavigation {
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -26,7 +26,8 @@ declare global {
 }
 
 function AppShellGate() {
-  const { hasEnteredApp, isCheckingSession } = useAppShell();
+  const { hasEnteredApp, isCheckingSession, pendingRoute, clearPendingRoute } =
+    useAppShell();
   const { colors, mode } = useTheme();
 
   const navTheme = useMemo(
@@ -44,6 +45,16 @@ function AppShellGate() {
     }),
     [colors, mode],
   );
+
+  const handleNavigationReady = useCallback(() => {
+    if (pendingRoute && navigationRef.isReady()) {
+      navigationRef.navigate("Tabs", {
+        screen: pendingRoute.tab,
+        params: { screen: pendingRoute.screen },
+      } as never);
+      clearPendingRoute();
+    }
+  }, [pendingRoute, clearPendingRoute]);
 
   if (isCheckingSession) {
     return (
@@ -73,6 +84,7 @@ function AppShellGate() {
           navigationRef as unknown as Ref<NavigationContainerRef<ParamListBase>>
         }
         theme={navTheme}
+        onReady={handleNavigationReady}
       />
       <YanMenuPanel />
     </View>

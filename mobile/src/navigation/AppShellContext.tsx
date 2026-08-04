@@ -9,6 +9,9 @@ import {
 } from "react";
 
 import { CurrentUser, getSessionUser, logout } from "../api/auth";
+import { ServiceTarget } from "../constants/serviceCatalog";
+
+export type PendingRoute = ServiceTarget;
 
 type AppShellContextValue = {
   hasEnteredApp: boolean;
@@ -17,7 +20,11 @@ type AppShellContextValue = {
   enterApp: (user: CurrentUser) => void;
   // Girişe gerek duymayan iki bilgi ekranı (Bize Ulaşın/Yardım Merkezi) icin
   // - kullanici olmadan sadece navigasyon agacini gosterir.
-  previewApp: () => void;
+  // target verilirse (ör. login öncesi haritaya git), Navigation mount olup
+  // hazır hale gelir gelmez o rotaya gidilir - bkz. navigation/index.tsx onReady.
+  previewApp: (target?: PendingRoute) => void;
+  pendingRoute: PendingRoute | null;
+  clearPendingRoute: () => void;
   exitApp: () => void;
   isMenuOpen: boolean;
   openMenu: () => void;
@@ -33,6 +40,7 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [pendingRoute, setPendingRoute] = useState<PendingRoute | null>(null);
 
   useEffect(() => {
     getSessionUser()
@@ -49,7 +57,13 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
     setUser(sessionUser);
     setHasEnteredApp(true);
   }, []);
-  const previewApp = useCallback(() => setHasEnteredApp(true), []);
+  const previewApp = useCallback((target?: PendingRoute) => {
+    if (target) {
+      setPendingRoute(target);
+    }
+    setHasEnteredApp(true);
+  }, []);
+  const clearPendingRoute = useCallback(() => setPendingRoute(null), []);
   const exitApp = useCallback(() => {
     setUser(null);
     setHasEnteredApp(false);
@@ -65,6 +79,8 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
       user,
       enterApp,
       previewApp,
+      pendingRoute,
+      clearPendingRoute,
       exitApp,
       isMenuOpen,
       openMenu,
@@ -76,6 +92,8 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
       user,
       enterApp,
       previewApp,
+      pendingRoute,
+      clearPendingRoute,
       exitApp,
       isMenuOpen,
       openMenu,

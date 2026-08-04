@@ -6,12 +6,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { useAppShell } from "../navigation/AppShellContext";
 import { Colors, shape, spacing, typography, useTheme } from "../theme";
 
 export default function AyarlarScreen() {
   const navigation = useNavigation();
-  const { exitApp } = useAppShell();
   const { locale, setLocale, t } = useTranslation();
   const { mode, setMode, colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -212,15 +210,6 @@ export default function AyarlarScreen() {
             </Card>
           </Pressable>
         </View>
-
-        <Pressable
-          accessibilityRole="button"
-          style={styles.logoutButton}
-          onPress={exitApp}
-        >
-          <MaterialIcons name="logout" size={18} color={colors.error} />
-          <Text style={styles.logoutLabel}>{t("ayarlar_logout")}</Text>
-        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -321,18 +310,5 @@ const createStyles = (colors: Colors) =>
       gap: spacing.stackGap / 2,
       padding: spacing.stackGap / 2,
       marginBottom: 6,
-    },
-    logoutButton: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: spacing.stackGap / 2,
-      minHeight: spacing.touchTargetMin,
-      borderRadius: shape.rounded,
-      backgroundColor: colors.errorContainer,
-    },
-    logoutLabel: {
-      ...typography.labelLg,
-      color: colors.error,
     },
   });

@@ -73,7 +73,6 @@ export const en: Record<TranslationKey, string> = {
   ayarlar_supportSection: "Support & Info",
   ayarlar_privacyPolicy: "Privacy Policy",
   ayarlar_helpCenter: "Help Center",
-  ayarlar_logout: "Log Out",
 
   yardimMerkezi_title: "Help Center",
   yardimMerkezi_popularQuestions: "Popular Questions",
@@ -114,8 +113,23 @@ export const en: Record<TranslationKey, string> = {
   engelliYasli_infoNote:
     "You can call the Call Center (444 80 59) to apply, or use the municipality's online application system.",
   engelliYasli_evdeBakimTitle: "Home Care Service",
-  engelliYasli_evdeBakimDesc:
-    "Health and personal care, psychological support, and home cleaning for Kapaklı residents over 65 who need care, are disabled, or live alone or with a spouse (weekdays 08:30-16:30).",
+  engelliYasli_evdeBakimSummary:
+    "Support for elderly, ill, care-dependent residents over 65, or those who cannot manage daily needs due to a disability.",
+  engelliYasli_servicesTitle: "Services Provided",
+  engelliYasli_service1: "Health and personal hygiene care",
+  engelliYasli_service2: "Psychological support",
+  engelliYasli_service3: "Housekeeping (sweeping, wiping, dusting)",
+  engelliYasli_hours: "Service hours: Weekdays 08:30 - 16:30",
+  engelliYasli_conditionsTitle: "Application Requirements",
+  engelliYasli_condition1: "Reside within Kapaklı district borders",
+  engelliYasli_condition2: "Live alone or with a spouse",
+  engelliYasli_condition3: "Be 65 years of age or older",
+  engelliYasli_condition4:
+    "Applicants under 65 must be disabled and have no close relative living with them",
+  engelliYasli_responsibleUnit:
+    "Responsible unit: Kapaklı Municipality Social Support Services Directorate",
+  engelliYasli_legalBasis:
+    "Provided under Article 60(İ) of Municipal Law No. 5393.",
   engelliYasli_sosyalHizmetlerTitle: "Directorate of Social Services",
   engelliYasli_sosyalHizmetlerDesc:
     "Application channel for social assistance, Sevgi Eli Aid Stores, and psychological counseling services.",
@@ -184,8 +198,8 @@ export const en: Record<TranslationKey, string> = {
   kentLokantasi_empty: "No menu has been entered for today.",
   kentLokantasi_todayBadge: "TODAY",
   kentLokantasi_todayMenu: "Today's Menu",
-  kentLokantasi_address: "Cumhuriyet Mah. Vatan Cad. No:12",
-  kentLokantasi_hours: "12:00 - 15:30",
+  kentLokantasi_address: "Vatan Caddesi No: 11/A Kapaklı / Tekirdağ",
+  kentLokantasi_hours: "11:00 - 15:00",
   kentLokantasi_openNow: "Open now",
 
   map_parklar: "Parks",
@@ -221,25 +235,25 @@ export const en: Record<TranslationKey, string> = {
 
   otobusTakip_title: "Bus Tracking",
 
-  randevuAl_title: "Book Appointment",
+  randevuAl_title: "Applications",
   randevuAl_subtitle: "Kapaklı Digital Municipality",
-  randevuAl_selectButton: "Select Appointment",
-  randevuAl_dateLabel: "Date (YYYY-MM-DD)",
-  randevuAl_timeLabel: "Time (HH:mm)",
-  randevuAl_cancelButton: "Cancel",
-  randevuAl_confirmButton: "Confirm",
-  randevuAl_successTitle: "Success",
-  randevuAl_successMessage: "Your appointment has been created.",
-  randevuAl_errorTitle: "Error",
-  randevuAl_errorMessage: "Something went wrong.",
+  randevuAl_selectButton: "Apply",
+  randevuAl_veterinerBadge: "Animal Health",
+  randevuAl_veterinerTitle: "Veterinary Services",
+  randevuAl_veterinerDesc:
+    "Consultation and support from the Directorate of Veterinary Affairs (444 80 59).",
   randevuAl_nikahBadge: "Marriage Transactions",
-  randevuAl_nikahTitle: "Marriage Office",
+  randevuAl_nikahTitle: "Marriage Services",
   randevuAl_nikahDesc:
-    "For marriage applications, date reservations, and marriage ceremony appointments.",
-  randevuAl_sporBadge: "Healthy Living",
-  randevuAl_sporTitle: "Sports Facilities",
-  randevuAl_sporDesc:
-    "For individual or group appointments at municipal facilities.",
+    "Marriage applications, required documents, and ceremony appointments at Atatürk Cultural Center.",
+  randevuAl_psikolojikBadge: "Psychological Support",
+  randevuAl_psikolojikTitle: "Psychological Counseling",
+  randevuAl_psikolojikDesc:
+    "Free psychological counseling - Mondays 08:00-17:00, by appointment.",
+  randevuAl_sevgiEliBadge: "Social Aid",
+  randevuAl_sevgiEliTitle: "Sevgi Eli Aid Store",
+  randevuAl_sevgiEliDesc:
+    "Appointment for clothing donation drop-off or applying as a person in need.",
 
   sehirKameralari_title: "City Cameras",
   sehirKameralari_error: "City cameras could not be loaded.",
@@ -251,7 +265,7 @@ export const en: Record<TranslationKey, string> = {
   services_subtitle: "How can we help you?",
   services_faturaOdeme: "Bill Payment and Card Top-Up",
   services_suHizmetleri: "Water Services",
-  services_randevuAl: "Book Appointment",
+  services_randevuAl: "Applications",
   services_yeniTalep: "Create New Request",
   services_taleplerim: "My Requests",
   services_formlar: "Forms and Petitions",

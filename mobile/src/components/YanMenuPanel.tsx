@@ -16,9 +16,7 @@ type MenuItem = {
   labelKey: TranslationKey;
   icon: ComponentProps<typeof MaterialIcons>["name"];
   target?: {
-    tab: "Map" | "Profile";
     screen: string;
-    params?: Record<string, unknown>;
   };
 };
 
@@ -26,27 +24,27 @@ const MENU_ITEMS: MenuItem[] = [
   {
     labelKey: "baskan_title",
     icon: "groups",
-    target: { tab: "Profile", screen: "Baskan" },
+    target: { screen: "Baskan" },
   },
   {
     labelKey: "profile_about",
     icon: "info",
-    target: { tab: "Profile", screen: "Hakkimizda" },
+    target: { screen: "Hakkimizda" },
   },
   {
     labelKey: "profile_helpCenter",
     icon: "help",
-    target: { tab: "Profile", screen: "YardimMerkezi" },
+    target: { screen: "YardimMerkezi" },
   },
   {
     labelKey: "profile_contactUs",
     icon: "call",
-    target: { tab: "Profile", screen: "BizeUlasin" },
+    target: { screen: "BizeUlasin" },
   },
   {
     labelKey: "yanMenu_settings",
     icon: "settings",
-    target: { tab: "Profile", screen: "Ayarlar" },
+    target: { screen: "Ayarlar" },
   },
 ];
 
@@ -68,10 +66,7 @@ export default function YanMenuPanel() {
   const goTo = (target: MenuItem["target"]) => {
     closeMenu();
     if (target && navigationRef.isReady()) {
-      navigationRef.navigate(target.tab, {
-        screen: target.screen,
-        params: target.params,
-      } as never);
+      navigationRef.navigate(target.screen as never);
     }
   };
 

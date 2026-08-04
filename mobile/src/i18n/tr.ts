@@ -72,7 +72,6 @@ export const tr = {
   ayarlar_supportSection: "Destek ve Bilgi",
   ayarlar_privacyPolicy: "Gizlilik Politikası",
   ayarlar_helpCenter: "Yardım Merkezi",
-  ayarlar_logout: "Oturumu Kapat",
 
   yardimMerkezi_title: "Yardım Merkezi",
   yardimMerkezi_popularQuestions: "Popüler Sorular",
@@ -113,8 +112,23 @@ export const tr = {
   engelliYasli_infoNote:
     "Başvuru için Çağrı Merkezi'ni (444 80 59) arayabilir veya belediyenin online başvuru sistemini kullanabilirsiniz.",
   engelliYasli_evdeBakimTitle: "Evde Bakım Hizmeti",
-  engelliYasli_evdeBakimDesc:
-    "65 yaş üstü ve bakıma muhtaç/engelli, yalnız veya eşiyle yaşayan Kapaklı sakinlerine sağlık-kişisel bakım, psikolojik destek ve ev temizliği (hafta içi 08:30-16:30).",
+  engelliYasli_evdeBakimSummary:
+    "65 yaş üstü yaşlı, hasta, bakıma muhtaç veya engelleri nedeniyle gündelik ihtiyaçlarını yerine getiremeyen vatandaşlarımıza destek sunulur.",
+  engelliYasli_servicesTitle: "Sağlanan Hizmetler",
+  engelliYasli_service1: "Sağlık ve kişisel temizlik bakımı",
+  engelliYasli_service2: "Psikolojik destek",
+  engelliYasli_service3: "Ev temizliği (süpürme, silme, toz alma)",
+  engelliYasli_hours: "Hizmet saatleri: Hafta içi 08:30 - 16:30",
+  engelliYasli_conditionsTitle: "Başvuru Şartları",
+  engelliYasli_condition1: "Kapaklı ilçe sınırları içinde ikamet etme",
+  engelliYasli_condition2: "Yalnız yaşama veya eşiyle yaşama",
+  engelliYasli_condition3: "65 yaş ve üstü olma",
+  engelliYasli_condition4:
+    "65 yaş altındaki başvurucular için engelli olma ve yakın akrabası olmama şartı aranır",
+  engelliYasli_responsibleUnit:
+    "Sorumlu birim: Kapaklı Belediyesi Sosyal Destek Hizmetler Müdürlüğü",
+  engelliYasli_legalBasis:
+    "5393 sayılı Belediye Kanunu'nun 60. maddesinin (İ) fıkrası kapsamında sunulmaktadır.",
   engelliYasli_sosyalHizmetlerTitle: "Sosyal Hizmetler Müdürlüğü",
   engelliYasli_sosyalHizmetlerDesc:
     "Sosyal yardım, Sevgi Eli Yardım Mağazaları ve psikolojik danışmanlık hizmetleri için başvuru kanalı.",
@@ -183,8 +197,8 @@ export const tr = {
   kentLokantasi_empty: "Bugün için menü girilmemiş.",
   kentLokantasi_todayBadge: "BUGÜN",
   kentLokantasi_todayMenu: "Günün Menüsü",
-  kentLokantasi_address: "Cumhuriyet Mah. Vatan Cad. No:12",
-  kentLokantasi_hours: "12:00 - 15:30",
+  kentLokantasi_address: "Vatan Caddesi No: 11/A Kapaklı / Tekirdağ",
+  kentLokantasi_hours: "11:00 - 15:00",
   kentLokantasi_openNow: "Şu an açık",
 
   map_parklar: "Parklar",
@@ -220,25 +234,25 @@ export const tr = {
 
   otobusTakip_title: "Otobüs Takip",
 
-  randevuAl_title: "Randevu Al",
+  randevuAl_title: "Başvurular",
   randevuAl_subtitle: "Kapaklı Dijital Belediye",
-  randevuAl_selectButton: "Randevu Seç",
-  randevuAl_dateLabel: "Tarih (YYYY-MM-DD)",
-  randevuAl_timeLabel: "Saat (HH:mm)",
-  randevuAl_cancelButton: "Vazgeç",
-  randevuAl_confirmButton: "Onayla",
-  randevuAl_successTitle: "Başarılı",
-  randevuAl_successMessage: "Randevunuz oluşturuldu.",
-  randevuAl_errorTitle: "Hata",
-  randevuAl_errorMessage: "Bir hata oluştu.",
+  randevuAl_selectButton: "Başvur",
+  randevuAl_veterinerBadge: "Hayvan Sağlığı",
+  randevuAl_veterinerTitle: "Veteriner Hizmetleri",
+  randevuAl_veterinerDesc:
+    "Veteriner İşleri Müdürlüğü hekimlerinden danışmanlık ve destek (444 80 59).",
   randevuAl_nikahBadge: "Evlilik İşlemleri",
-  randevuAl_nikahTitle: "Nikah Dairesi",
+  randevuAl_nikahTitle: "Nikah Hizmetleri",
   randevuAl_nikahDesc:
-    "Evlilik başvurusu, gün alma ve nikah akdi randevuları için.",
-  randevuAl_sporBadge: "Sağlıklı Yaşam",
-  randevuAl_sporTitle: "Spor Salonları",
-  randevuAl_sporDesc:
-    "Belediye tesisleri için bireysel veya grup randevuları için.",
+    "Evlilik başvurusu, gerekli belgeler ve Atatürk Kültür Merkezi'nde nikah günü randevusu.",
+  randevuAl_psikolojikBadge: "Psikolojik Destek",
+  randevuAl_psikolojikTitle: "Psikolojik Danışmanlık",
+  randevuAl_psikolojikDesc:
+    "Ücretsiz psikolojik danışmanlık - Pazartesi 08:00-17:00, randevu ile.",
+  randevuAl_sevgiEliBadge: "Sosyal Yardım",
+  randevuAl_sevgiEliTitle: "Sevgi Eli Yardım Mağazası",
+  randevuAl_sevgiEliDesc:
+    "Giysi bağışı teslimi veya ihtiyaç sahibi olarak başvuru için randevu.",
 
   sehirKameralari_title: "Şehir Kameraları",
   sehirKameralari_error: "Şehir kameraları yüklenemedi.",
@@ -250,7 +264,7 @@ export const tr = {
   services_subtitle: "Size nasıl yardımcı olabiliriz?",
   services_faturaOdeme: "Fatura Ödeme ve Kart Dolumu",
   services_suHizmetleri: "Su Hizmetleri",
-  services_randevuAl: "Randevu Al",
+  services_randevuAl: "Başvurular",
   services_yeniTalep: "Yeni Talep Oluştur",
   services_taleplerim: "Taleplerim",
   services_formlar: "Formlar ve Dilekçeler",

@@ -163,11 +163,7 @@ export default function HomeScreen() {
 
         <PrimaryButton
           label={t("home_myRequests")}
-          onPress={() =>
-            navigation.navigate("Services", {
-              screen: "Taleplerim",
-            } as never)
-          }
+          onPress={() => navigation.navigate("Taleplerim" as never)}
         />
 
         <Pressable

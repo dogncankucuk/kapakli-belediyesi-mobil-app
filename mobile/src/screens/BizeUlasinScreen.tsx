@@ -3,10 +3,55 @@ import { useNavigation } from "@react-navigation/native";
 import { useMemo } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import WebView from "react-native-webview";
 
-import { Card, PrimaryButton } from "../components";
+import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+
+// Belediye Binasi konumu (Inonu Mah. Eski Cami Cad. No: 4-6, Kapakli/Tekirdag).
+const BELEDIYE_LOCATION = { lat: 41.3276, lng: 27.9726 };
+
+// MapScreen.tsx'teki Leaflet WebView deseniyle ayni ancak sabit/etkilesimsiz:
+// zoom/surukleme kapali, tek marker - "konum sabit gozuksun" istegi icin.
+const BELEDIYE_MAP_HTML = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    html, body, #map { height: 100%; margin: 0; padding: 0; }
+    .leaflet-control-attribution { font-size: 8px; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    var map = L.map('map', {
+      zoomControl: false,
+      dragging: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      touchZoom: false,
+      boxZoom: false,
+      keyboard: false,
+    }).setView([${BELEDIYE_LOCATION.lat}, ${BELEDIYE_LOCATION.lng}], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap',
+      maxZoom: 19,
+    }).addTo(map);
+    L.circleMarker([${BELEDIYE_LOCATION.lat}, ${BELEDIYE_LOCATION.lng}], {
+      radius: 10,
+      color: '#FFFFFF',
+      weight: 2,
+      fillColor: '#EF353A',
+      fillOpacity: 1,
+    }).addTo(map);
+  </script>
+</body>
+</html>`;
 
 type Props = {
   onBack: () => void;
@@ -91,18 +136,28 @@ export function BizeUlasinContent({ onBack, onNavigateToMap }: Props) {
             <Text style={styles.addressTitle}>{t("bizeUlasin_townHall")}</Text>
           </View>
           <Text style={styles.addressText}>{t("bizeUlasin_address")}</Text>
-          <View style={styles.imagePlaceholder}>
-            <MaterialIcons
-              name="account-balance"
-              size={28}
-              color={colors.onPrimary}
-            />
-          </View>
-          {onNavigateToMap && (
-            <PrimaryButton
-              label={t("bizeUlasin_viewOnMap")}
+          {onNavigateToMap ? (
+            <Pressable
+              style={styles.imagePlaceholder}
               onPress={onNavigateToMap}
-            />
+              accessibilityRole="button"
+              accessibilityLabel={t("bizeUlasin_viewOnMap")}
+            >
+              <WebView
+                source={{ html: BELEDIYE_MAP_HTML }}
+                style={styles.map}
+                scrollEnabled={false}
+                pointerEvents="none"
+              />
+            </Pressable>
+          ) : (
+            <View style={styles.imagePlaceholder} pointerEvents="none">
+              <WebView
+                source={{ html: BELEDIYE_MAP_HTML }}
+                style={styles.map}
+                scrollEnabled={false}
+              />
+            </View>
           )}
         </Card>
       </View>
@@ -117,7 +172,7 @@ export default function BizeUlasinScreen() {
     <BizeUlasinContent
       onBack={() => navigation.goBack()}
       onNavigateToMap={() =>
-        navigation.navigate("Map", { screen: "MapMain" } as never)
+        navigation.navigate("Tabs", { screen: "Map" } as never)
       }
     />
   );
@@ -207,10 +262,12 @@ const createStyles = (colors: Colors) =>
     },
     imagePlaceholder: {
       flex: 1,
-      minHeight: 60,
+      minHeight: 120,
       borderRadius: shape.rounded,
       backgroundColor: colors.primaryContainer,
-      alignItems: "center",
-      justifyContent: "center",
+      overflow: "hidden",
+    },
+    map: {
+      flex: 1,
     },
   });

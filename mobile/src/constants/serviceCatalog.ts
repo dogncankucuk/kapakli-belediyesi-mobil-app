@@ -161,5 +161,5 @@ export function navigateToServiceTarget(
   navigation: NavigateFn,
   target: ServiceTarget,
 ): void {
-  navigation.navigate(target.tab, { screen: target.screen });
+  navigation.navigate(target.screen);
 }

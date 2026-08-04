@@ -8,10 +8,21 @@ import { ServiceGridCard, TopBar } from "../components";
 import {
   navigateToServiceTarget,
   SERVICE_CATALOG,
+  ServiceId,
 } from "../constants/serviceCatalog";
 import { useTranslation } from "../i18n/LocaleContext";
 import { useAppShell } from "../navigation/AppShellContext";
 import { Colors, spacing, typography, useThemeColors } from "../theme";
+
+// Bu ekrandan kaldirilmasi istenen kisayollar - hala SERVICE_CATALOG'da
+// (Hizli Islemler duzenleyicisinde secilebilir olarak) kaliyorlar.
+const HIDDEN_ON_SERVICES_SCREEN: ServiceId[] = [
+  "yeni-talep",
+  "taleplerim",
+  "etkinlik-tarihleri",
+  "hakkimizda",
+  "meclis-kararlari",
+];
 
 export default function ServicesScreen() {
   const navigation = useNavigation();
@@ -19,6 +30,13 @@ export default function ServicesScreen() {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const visibleServices = useMemo(
+    () =>
+      SERVICE_CATALOG.filter(
+        (service) => !HIDDEN_ON_SERVICES_SCREEN.includes(service.id),
+      ),
+    [],
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -39,7 +57,7 @@ export default function ServicesScreen() {
         </View>
 
         <View style={styles.grid}>
-          {SERVICE_CATALOG.map((service) => (
+          {visibleServices.map((service) => (
             <View key={service.id} style={styles.gridItem}>
               <ServiceGridCard
                 icon={service.icon}

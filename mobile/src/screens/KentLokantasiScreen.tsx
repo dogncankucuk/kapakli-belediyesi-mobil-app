@@ -101,7 +101,9 @@ export default function KentLokantasiScreen() {
             </Text>
             <SecondaryButton
               label={t("bizeUlasin_viewOnMap")}
-              onPress={() => navigation.navigate("Map" as never)}
+              onPress={() =>
+                navigation.navigate("Tabs", { screen: "Map" } as never)
+              }
             />
           </Card>
           <Card style={styles.infoCard}>

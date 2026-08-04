@@ -1,27 +1,19 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import AyarlarScreen from "../screens/AyarlarScreen";
-import BaskanScreen from "../screens/BaskanScreen";
-import BizeUlasinScreen from "../screens/BizeUlasinScreen";
-import HakkimizdaScreen from "../screens/HakkimizdaScreen";
 import HesapBilgilerimScreen from "../screens/HesapBilgilerimScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import VefatEdenlerScreen from "../screens/VefatEdenlerScreen";
-import YardimMerkeziScreen from "../screens/YardimMerkeziScreen";
 
+// Ayarlar, Hakkimizda, Baskan, BizeUlasin, YardimMerkezi artik RootStack'te
+// (birden fazla sekmeden erisilebildikleri icin) - bkz. navigation/RootStack.tsx.
 const ProfileStack = createNativeStackNavigator({
   screenOptions: {
     headerShown: false,
   },
   screens: {
     ProfileMain: ProfileScreen,
-    Ayarlar: AyarlarScreen,
     HesapBilgilerim: HesapBilgilerimScreen,
-    Hakkimizda: HakkimizdaScreen,
-    Baskan: BaskanScreen,
-    BizeUlasin: BizeUlasinScreen,
     VefatEdenler: VefatEdenlerScreen,
-    YardimMerkezi: YardimMerkeziScreen,
   },
 });
 
