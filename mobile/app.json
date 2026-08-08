@@ -3,6 +3,8 @@
     "name": "mobile",
     "slug": "mobile",
     "version": "1.0.0",
+    "scheme": "kapaklibelediyesi",
+    "newArchEnabled": false,
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -17,13 +19,15 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.mobile"
+      "package": "com.kapaklibelediyesi.mobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-web-browser",
+      "@react-native-google-signin/google-signin"
     ]
   }
 }

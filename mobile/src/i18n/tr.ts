@@ -27,7 +27,8 @@ export const tr = {
   girisEkrani_tcKimlikLabel: "T.C. Kimlik No",
   girisEkrani_telefonLabel: "Telefon",
   girisEkrani_telefonPlaceholder: "05XX XXX XX XX",
-  girisEkrani_passwordPlaceholderRegister: "En az 6 karakter",
+  girisEkrani_passwordPlaceholderRegister:
+    "En az 8 karakter, harf ve rakam içermeli",
   girisEkrani_noAccountQuestion: "Henüz hesabınız yok mu?",
   girisEkrani_hasAccountQuestion: "Zaten hesabınız var mı?",
   girisEkrani_continueAsGuest: "Giriş Yapmadan Devam Et",
@@ -35,6 +36,25 @@ export const tr = {
   girisEkrani_helpCenter: "Yardım Merkezi",
   girisEkrani_loginError: "Giriş yapılamadı",
   girisEkrani_registerError: "Kayıt oluşturulamadı",
+  girisEkrani_googleButton: "Google ile Devam Et",
+  girisEkrani_googleError: "Google ile giriş yapılamadı",
+  girisEkrani_or: "veya",
+  girisEkrani_forgotPassword: "Şifremi Unuttum?",
+
+  forgotPassword_title: "Şifremi Unuttum",
+  forgotPassword_step1Info:
+    "Hesabınıza kayıtlı T.C. kimlik no, telefon veya e-postanızı girin, telefonunuza bir doğrulama kodu gönderelim.",
+  forgotPassword_sendCodeButton: "Kod Gönder",
+  forgotPassword_codeLabel: "Doğrulama Kodu",
+  forgotPassword_codePlaceholder: "6 haneli kod",
+  forgotPassword_newPasswordLabel: "Yeni Şifre",
+  forgotPassword_resetButton: "Şifreyi Güncelle",
+  forgotPassword_backToLogin: "Girişe Dön",
+  forgotPassword_step2Info:
+    "Telefonunuza gönderilen kodu ve yeni şifrenizi girin.",
+  forgotPassword_successMessage:
+    "Şifreniz güncellendi. Yeni şifrenizle giriş yapabilirsiniz.",
+  forgotPassword_genericError: "Bir hata oluştu, lütfen tekrar deneyin",
 
   profile_notLoggedIn: "Giriş yapılmadı",
   profile_accountInfo: "Hesap Bilgilerim",

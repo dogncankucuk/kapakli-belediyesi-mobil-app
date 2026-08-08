@@ -21,7 +21,8 @@ const MENU_ITEMS: MenuItem[] = [
   { key: "Ayarlar", icon: "settings", labelKey: "profile_settings" },
 ];
 
-function maskTcKimlikNo(tcKimlikNo: string): string {
+function maskTcKimlikNo(tcKimlikNo: string | null): string | null {
+  if (!tcKimlikNo) return null;
   if (tcKimlikNo.length !== 11) return tcKimlikNo;
   return `${tcKimlikNo.slice(0, 3)}*****${tcKimlikNo.slice(8)}`;
 }
@@ -64,7 +65,7 @@ export default function ProfileScreen() {
                 {user.ad} {user.soyad}
               </Text>
               <Text style={styles.maskedInfo}>
-                {maskTcKimlikNo(user.tcKimlikNo)}
+                {maskTcKimlikNo(user.tcKimlikNo) ?? user.eposta}
               </Text>
             </>
           ) : (

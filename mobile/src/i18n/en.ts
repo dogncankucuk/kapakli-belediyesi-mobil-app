@@ -29,7 +29,8 @@ export const en: Record<TranslationKey, string> = {
   girisEkrani_tcKimlikLabel: "National ID",
   girisEkrani_telefonLabel: "Phone",
   girisEkrani_telefonPlaceholder: "05XX XXX XX XX",
-  girisEkrani_passwordPlaceholderRegister: "At least 6 characters",
+  girisEkrani_passwordPlaceholderRegister:
+    "At least 8 characters, with a letter and a number",
   girisEkrani_noAccountQuestion: "Don't have an account yet?",
   girisEkrani_hasAccountQuestion: "Already have an account?",
   girisEkrani_continueAsGuest: "Continue Without Logging In",
@@ -37,6 +38,25 @@ export const en: Record<TranslationKey, string> = {
   girisEkrani_helpCenter: "Help Center",
   girisEkrani_loginError: "Login failed",
   girisEkrani_registerError: "Could not create account",
+  girisEkrani_googleButton: "Continue with Google",
+  girisEkrani_googleError: "Could not sign in with Google",
+  girisEkrani_or: "or",
+  girisEkrani_forgotPassword: "Forgot Password?",
+
+  forgotPassword_title: "Forgot Password",
+  forgotPassword_step1Info:
+    "Enter the national ID, phone, or email registered on your account and we'll send a verification code to your phone.",
+  forgotPassword_sendCodeButton: "Send Code",
+  forgotPassword_codeLabel: "Verification Code",
+  forgotPassword_codePlaceholder: "6-digit code",
+  forgotPassword_newPasswordLabel: "New Password",
+  forgotPassword_resetButton: "Update Password",
+  forgotPassword_backToLogin: "Back to Login",
+  forgotPassword_step2Info:
+    "Enter the code sent to your phone and your new password.",
+  forgotPassword_successMessage:
+    "Your password has been updated. You can now log in with your new password.",
+  forgotPassword_genericError: "Something went wrong, please try again",
 
   profile_notLoggedIn: "Not logged in",
   profile_accountInfo: "My Account",

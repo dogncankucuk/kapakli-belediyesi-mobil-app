@@ -11,6 +11,9 @@ export const KURUM_TURLERI = [
   'Belediye',
   'Kaymakamlık',
   'Emniyet',
+  'Karakol',
+  'İtfaiye',
+  'Sağlık',
   'PTT',
   'Diğer',
 ] as const;

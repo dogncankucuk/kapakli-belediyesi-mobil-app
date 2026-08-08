@@ -1,8 +1,17 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { useMemo, useState } from "react";
+import {
+  GoogleSignin,
+  isErrorWithCode,
+  isSuccessResponse,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
+import * as Google from "expo-auth-session/providers/google";
+import * as WebBrowser from "expo-web-browser";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -11,13 +20,35 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { login, register } from "../api/auth";
+import {
+  forgotPassword,
+  login,
+  loginWithGoogle,
+  register,
+  resetPassword,
+} from "../api/auth";
+import { GOOGLE_WEB_CLIENT_ID } from "../api/googleAuthConfig";
 import { Card, PrimaryButton, SecondaryButton } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { useAppShell } from "../navigation/AppShellContext";
 import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
 import { BizeUlasinContent } from "./BizeUlasinScreen";
 import { YardimMerkeziContent } from "./YardimMerkeziScreen";
+
+// Redirect'ten donuldugunde bekleyen AuthSession promise'ini tamamlar - Expo'nun
+// kendi dokumantasyonunda onerilen, modul seviyesinde bir kere cagrilmasi gereken kurulum.
+WebBrowser.maybeCompleteAuthSession();
+
+// Native (Android/iOS) tarafta @react-native-google-signin/google-signin
+// kullanilir - webClientId burada da GOOGLE_WEB_CLIENT_ID olmali ki donen
+// idToken'in "aud" alani backend'in dogruladigi Client ID ile eslessin
+// (Android/iOS Client ID'leri Google Play Services tarafindan paket adi +
+// imzalama sertifikasi uzerinden otomatik eslestirilir, kodda gecmez).
+// Web'de bu paketin kendi implementasyonu yok ("sponsor-only" stub), o yuzden
+// web'de asagida hala expo-auth-session'in tarayici tabanli akisi kullanilir.
+if (Platform.OS !== "web" && GOOGLE_WEB_CLIENT_ID) {
+  GoogleSignin.configure({ webClientId: GOOGLE_WEB_CLIENT_ID });
+}
 
 type InfoModal = "BizeUlasin" | "YardimMerkezi" | null;
 
@@ -40,6 +71,71 @@ export default function GirisEkraniScreen() {
   const [tcKimlikNo, setTcKimlikNo] = useState("");
   const [telefon, setTelefon] = useState("");
 
+  const [forgotPasswordVisible, setForgotPasswordVisible] = useState(false);
+  const [fpStep, setFpStep] = useState<"request" | "reset">("request");
+  const [fpIdentifier, setFpIdentifier] = useState("");
+  const [fpCode, setFpCode] = useState("");
+  const [fpNewPassword, setFpNewPassword] = useState("");
+  const [fpError, setFpError] = useState<string | null>(null);
+  const [fpSuccess, setFpSuccess] = useState<string | null>(null);
+  const [fpSubmitting, setFpSubmitting] = useState(false);
+
+  const [googleRequest, googleResponse, promptGoogleAsync] =
+    Google.useIdTokenAuthRequest({ clientId: GOOGLE_WEB_CLIENT_ID });
+
+  const handleGoogleIdToken = async (idToken: string) => {
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      const { user } = await loginWithGoogle(idToken);
+      enterApp(user);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : t("girisEkrani_googleError"),
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    if (googleResponse?.type !== "success") return;
+    const idToken =
+      googleResponse.params?.id_token ?? googleResponse.authentication?.idToken;
+    if (!idToken) return;
+    // Promise.resolve().then(...) ile setState'leri effect'in senkron govdesinden
+    // bir sonraki microtask'a itiyoruz (react-hooks/set-state-in-effect kurali,
+    // effect govdesinde DOGRUDAN setState cagrisina izin vermiyor).
+    void Promise.resolve().then(() => handleGoogleIdToken(idToken));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [googleResponse]);
+
+  const handleGoogle = async () => {
+    if (!GOOGLE_WEB_CLIENT_ID) {
+      setError(t("girisEkrani_googleError"));
+      return;
+    }
+    setError(null);
+
+    if (Platform.OS === "web") {
+      promptGoogleAsync();
+      return;
+    }
+
+    try {
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+      if (isSuccessResponse(response) && response.data.idToken) {
+        await handleGoogleIdToken(response.data.idToken);
+      }
+    } catch (err) {
+      if (isErrorWithCode(err) && err.code === statusCodes.SIGN_IN_CANCELLED) {
+        return;
+      }
+      setError(t("girisEkrani_googleError"));
+    }
+  };
+
   const handleGiris = async () => {
     setError(null);
     setIsSubmitting(true);
@@ -52,6 +148,46 @@ export default function GirisEkraniScreen() {
       );
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const openForgotPassword = () => {
+    setFpStep("request");
+    setFpIdentifier(identifier);
+    setFpCode("");
+    setFpNewPassword("");
+    setFpError(null);
+    setFpSuccess(null);
+    setForgotPasswordVisible(true);
+  };
+
+  const handleForgotPasswordRequest = async () => {
+    setFpError(null);
+    setFpSubmitting(true);
+    try {
+      await forgotPassword(fpIdentifier.trim());
+      setFpStep("reset");
+    } catch (err) {
+      setFpError(
+        err instanceof Error ? err.message : t("forgotPassword_genericError"),
+      );
+    } finally {
+      setFpSubmitting(false);
+    }
+  };
+
+  const handleForgotPasswordReset = async () => {
+    setFpError(null);
+    setFpSubmitting(true);
+    try {
+      await resetPassword(fpIdentifier.trim(), fpCode.trim(), fpNewPassword);
+      setFpSuccess(t("forgotPassword_successMessage"));
+    } catch (err) {
+      setFpError(
+        err instanceof Error ? err.message : t("forgotPassword_genericError"),
+      );
+    } finally {
+      setFpSubmitting(false);
     }
   };
 
@@ -120,6 +256,16 @@ export default function GirisEkraniScreen() {
                   onChangeText={setPassword}
                 />
               </View>
+              <Pressable
+                onPress={openForgotPassword}
+                hitSlop={8}
+                accessibilityRole="button"
+                style={styles.forgotPasswordLink}
+              >
+                <Text style={styles.footerLink}>
+                  {t("girisEkrani_forgotPassword")}
+                </Text>
+              </Pressable>
             </>
           ) : (
             <>
@@ -181,6 +327,16 @@ export default function GirisEkraniScreen() {
                   onChangeText={setPassword}
                 />
               </View>
+              <View style={styles.dividerRow}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>{t("girisEkrani_or")}</Text>
+                <View style={styles.dividerLine} />
+              </View>
+              <SecondaryButton
+                label={t("girisEkrani_googleButton")}
+                onPress={handleGoogle}
+                disabled={!googleRequest || isSubmitting}
+              />
             </>
           )}
 
@@ -269,6 +425,100 @@ export default function GirisEkraniScreen() {
           <YardimMerkeziContent onBack={() => setInfoModal(null)} />
         )}
       </Modal>
+
+      <Modal
+        visible={forgotPasswordVisible}
+        animationType="slide"
+        onRequestClose={() => setForgotPasswordVisible(false)}
+      >
+        <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+          <View style={styles.content}>
+            <View style={styles.header}>
+              <Text style={styles.title}>{t("forgotPassword_title")}</Text>
+              <Text style={styles.subtitle}>
+                {fpStep === "request"
+                  ? t("forgotPassword_step1Info")
+                  : t("forgotPassword_step2Info")}
+              </Text>
+            </View>
+
+            <Card style={styles.form}>
+              {fpSuccess ? (
+                <Text style={styles.label}>{fpSuccess}</Text>
+              ) : fpStep === "request" ? (
+                <View style={styles.field}>
+                  <Text style={styles.label}>
+                    {t("girisEkrani_identifierLabel")}
+                  </Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={t("girisEkrani_identifierPlaceholder")}
+                    placeholderTextColor={colors.outline}
+                    autoCapitalize="none"
+                    value={fpIdentifier}
+                    onChangeText={setFpIdentifier}
+                  />
+                </View>
+              ) : (
+                <>
+                  <View style={styles.field}>
+                    <Text style={styles.label}>
+                      {t("forgotPassword_codeLabel")}
+                    </Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder={t("forgotPassword_codePlaceholder")}
+                      placeholderTextColor={colors.outline}
+                      keyboardType="number-pad"
+                      maxLength={6}
+                      value={fpCode}
+                      onChangeText={setFpCode}
+                    />
+                  </View>
+                  <View style={styles.field}>
+                    <Text style={styles.label}>
+                      {t("forgotPassword_newPasswordLabel")}
+                    </Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder={t("girisEkrani_passwordPlaceholderRegister")}
+                      placeholderTextColor={colors.outline}
+                      secureTextEntry
+                      value={fpNewPassword}
+                      onChangeText={setFpNewPassword}
+                    />
+                  </View>
+                </>
+              )}
+
+              {fpError && <Text style={styles.errorText}>{fpError}</Text>}
+
+              {!fpSuccess &&
+                (fpSubmitting ? (
+                  <ActivityIndicator color={colors.primaryContainer} />
+                ) : (
+                  <PrimaryButton
+                    label={
+                      fpStep === "request"
+                        ? t("forgotPassword_sendCodeButton")
+                        : t("forgotPassword_resetButton")
+                    }
+                    onPress={
+                      fpStep === "request"
+                        ? handleForgotPasswordRequest
+                        : handleForgotPasswordReset
+                    }
+                  />
+                ))}
+            </Card>
+
+            <SecondaryButton
+              label={t("forgotPassword_backToLogin")}
+              onPress={() => setForgotPasswordVisible(false)}
+            />
+          </View>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -331,6 +581,25 @@ const createStyles = (colors: Colors) =>
     errorText: {
       ...typography.bodyMd,
       color: colors.error,
+    },
+    forgotPasswordLink: {
+      alignSelf: "flex-end",
+      minHeight: spacing.touchTargetMin,
+      justifyContent: "center",
+    },
+    dividerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.stackGap / 2,
+    },
+    dividerLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: colors.outlineVariant,
+    },
+    dividerText: {
+      ...typography.labelSm,
+      color: colors.outline,
     },
     registerText: {
       ...typography.bodyMd,

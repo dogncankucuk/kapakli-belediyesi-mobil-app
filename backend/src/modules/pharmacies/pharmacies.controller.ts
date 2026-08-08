@@ -7,7 +7,7 @@ export class PharmaciesController {
   constructor(private readonly pharmaciesService: PharmaciesService) {}
 
   @Get()
-  findToday(): Promise<PublicPharmacy[]> {
-    return this.pharmaciesService.findToday();
+  findAll(): Promise<PublicPharmacy[]> {
+    return this.pharmaciesService.findAll();
   }
 }

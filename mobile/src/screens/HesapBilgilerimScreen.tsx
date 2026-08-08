@@ -9,7 +9,8 @@ import { useTranslation } from "../i18n/LocaleContext";
 import { useAppShell } from "../navigation/AppShellContext";
 import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
 
-function maskTcKimlikNo(tcKimlikNo: string): string {
+function maskTcKimlikNo(tcKimlikNo: string | null): string | null {
+  if (!tcKimlikNo) return null;
   if (tcKimlikNo.length !== 11) return tcKimlikNo;
   return `${tcKimlikNo.slice(0, 3)}*****${tcKimlikNo.slice(8)}`;
 }
@@ -78,7 +79,9 @@ export default function HesapBilgilerimScreen() {
               {user.ad} {user.soyad}
             </Text>
             <Text style={styles.subtitle}>
-              {t("hesapBilgilerim_tcNo")} {maskTcKimlikNo(user.tcKimlikNo)}
+              {maskTcKimlikNo(user.tcKimlikNo)
+                ? `${t("hesapBilgilerim_tcNo")} ${maskTcKimlikNo(user.tcKimlikNo)}`
+                : (user.eposta ?? "")}
             </Text>
           </View>
         </View>
@@ -122,7 +125,7 @@ export default function HesapBilgilerimScreen() {
               <Text style={styles.label}>{t("hesapBilgilerim_telefon")}</Text>
               <TextInput
                 style={styles.input}
-                value={user.telefon}
+                value={user.telefon ?? "-"}
                 editable={false}
               />
             </View>

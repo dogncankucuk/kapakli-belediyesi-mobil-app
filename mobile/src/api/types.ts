@@ -102,12 +102,42 @@ export type Cami = {
 };
 
 export type KurumTuru =
-  "Belediye" | "Kaymakamlık" | "Emniyet" | "PTT" | "Diğer";
+  | "Belediye"
+  | "Kaymakamlık"
+  | "Emniyet"
+  | "Karakol"
+  | "İtfaiye"
+  | "Sağlık"
+  | "PTT"
+  | "Diğer";
 
 export type OnemliKurum = {
   id: string;
   ad: string;
   tur: KurumTuru;
+  adres: string | null;
+  lat: number;
+  lng: number;
+};
+
+export type ParkTuru = "Park" | "Bahçe";
+
+export type Park = {
+  id: string;
+  ad: string;
+  tur: ParkTuru;
+  adres: string | null;
+  lat: number;
+  lng: number;
+};
+
+export type TarihiYerTuru =
+  "Anıt" | "Höyük / Tümülüs" | "Tarihi Taş" | "Tarihi Yer";
+
+export type TarihiYer = {
+  id: string;
+  ad: string;
+  tur: TarihiYerTuru;
   adres: string | null;
   lat: number;
   lng: number;

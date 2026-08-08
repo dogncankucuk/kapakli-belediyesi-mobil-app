@@ -21,21 +21,13 @@ export class PharmaciesService {
     private readonly pharmacyModel: Model<PharmacyDocument>,
   ) {}
 
-  // Bugun nobetci olan eczaneleri dondurur (gun sinirlari yerel saat degil,
-  // basitlik icin UTC gun sinirlari kullanilir - architecture.md'de netlesmemis
-  // bir detay, ihtiyac halinde revize edilebilir).
-  async findToday(): Promise<PublicPharmacy[]> {
-    const now = new Date();
-    const startOfDay = new Date(
-      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-    );
-    const endOfDay = new Date(startOfDay);
-    endOfDay.setUTCDate(endOfDay.getUTCDate() + 1);
-
-    const pharmacies = await this.pharmacyModel
-      .find({ nobetTarihi: { $gte: startOfDay, $lt: endOfDay } })
-      .sort({ ad: 1 })
-      .exec();
+  // Gercek nobetci eczane bilgisi NobetciEczanelerScreen'de belediyenin kendi
+  // canli sayfasi (kapakli.bel.tr/kapakli-nobetci-eczaneler) WebView ile
+  // gosteriliyor - bu koleksiyon/servis onu tekrar etmiyor, sadece haritadaki
+  // Eczaneler katmani icin TUM eczane konumlarini dondurur (nobetTarihi alani
+  // hala schema'da duruyor ama burada filtre olarak kullanilmiyor).
+  async findAll(): Promise<PublicPharmacy[]> {
+    const pharmacies = await this.pharmacyModel.find().sort({ ad: 1 }).exec();
 
     return pharmacies.map((doc) => ({
       id: doc._id.toString(),

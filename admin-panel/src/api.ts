@@ -4,14 +4,17 @@ import type {
   Appointment,
   Baraj,
   Cami,
+  CitizenUser,
   GununMenusu,
   MeclisKarari,
   OnemliKurum,
+  Park,
   PlanliKesinti,
   Pharmacy,
   SehirKamerasi,
   TalepDurumu,
   TalepRequest,
+  TarihiYer,
   UlasimHatti,
   VefatIlani,
   WifiNoktasi,
@@ -397,4 +400,71 @@ export function updateOnemliKurum(id: string, data: Partial<OnemliKurumInput>) {
 
 export function deleteOnemliKurum(id: string) {
   return request<{ success: boolean }>(`/onemli-kurumlar/${id}`, { method: 'DELETE' });
+}
+
+export type ParkInput = {
+  ad: string;
+  tur: string;
+  adres?: string;
+  lat: number;
+  lng: number;
+};
+
+export function getParklar() {
+  return request<Park[]>('/parklar');
+}
+
+export function createPark(data: ParkInput) {
+  return request<Park>('/parklar', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export function updatePark(id: string, data: Partial<ParkInput>) {
+  return request<Park>(`/parklar/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+export function deletePark(id: string) {
+  return request<{ success: boolean }>(`/parklar/${id}`, { method: 'DELETE' });
+}
+
+export type TarihiYerInput = {
+  ad: string;
+  tur: string;
+  adres?: string;
+  lat: number;
+  lng: number;
+};
+
+export function getTarihiYerler() {
+  return request<TarihiYer[]>('/tarihi-yerler');
+}
+
+export function createTarihiYer(data: TarihiYerInput) {
+  return request<TarihiYer>('/tarihi-yerler', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export function updateTarihiYer(id: string, data: Partial<TarihiYerInput>) {
+  return request<TarihiYer>(`/tarihi-yerler/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteTarihiYer(id: string) {
+  return request<{ success: boolean }>(`/tarihi-yerler/${id}`, { method: 'DELETE' });
+}
+
+export function getUsers(search?: string) {
+  const query = search?.trim() ? `?search=${encodeURIComponent(search.trim())}` : '';
+  return request<CitizenUser[]>(`/users${query}`);
+}
+
+export function setUserDisabled(id: string, disabled: boolean) {
+  return request<CitizenUser>(`/users/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ disabled }),
+  });
+}
+
+export function deleteUser(id: string) {
+  return request<void>(`/users/${id}`, { method: 'DELETE' });
 }

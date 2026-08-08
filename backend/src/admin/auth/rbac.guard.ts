@@ -28,6 +28,8 @@ const CONTENT_MANAGER_RESOURCES: AdminResource[] = [
   'kentLokantasi',
   'camiler',
   'onemliKurumlar',
+  'parklar',
+  'tarihiYerler',
 ];
 
 // architecture.md §9: "Randevu/Talep Operatörü: appointments, requests
@@ -43,6 +45,14 @@ function isActionAllowed(
   role: AdminRole,
 ): boolean {
   if (role === AdminRole.SUPER_ADMIN) return true;
+
+  // Vatandas hesaplari (T.C. kimlik no, telefon gibi KVKK kapsaminda hassas
+  // kisisel veri icerir) - listeleme dahil sadece Super Admin erisebilir,
+  // digerlerinde asagidaki genel list/show serbestligi gecerli degil.
+  if (permission.resource === 'users') {
+    return false;
+  }
+
   if (permission.action === 'list' || permission.action === 'show') {
     return true;
   }

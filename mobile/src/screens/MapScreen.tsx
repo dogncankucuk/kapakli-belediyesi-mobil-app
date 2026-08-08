@@ -13,7 +13,9 @@ import WebView, { WebViewMessageEvent } from "react-native-webview";
 
 import { getCamiler } from "../api/camiler";
 import { getOnemliKurumlar } from "../api/onemliKurumlar";
+import { getParklar } from "../api/parklar";
 import { getPharmacies } from "../api/pharmacies";
+import { getTarihiYerler } from "../api/tarihiYerler";
 import { getWifiNoktalari } from "../api/wifiNoktalari";
 import { Card, TopBar } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
@@ -81,48 +83,6 @@ const LAYER_ICONS: Record<LayerKey, keyof typeof MaterialIcons.glyphMap> = {
   camiler: "mosque",
   kurumlar: "domain",
 };
-
-// Sabit deneme verisi: gercek Kapakli koordinatlarina (~41.32-41.34 / 27.96-27.99)
-// gore konumlandirildi. Eczaneler/Wi-Fi/Camiler/Kurumlar katmanlari backend'den
-// canli cekilir, bu ikisi henuz backend'e tasinmadigi icin mock kaldi.
-const MOCK_POIS: Poi[] = [
-  {
-    id: "park-1",
-    layer: "parklar",
-    name: "Atatürk Kültür Parkı",
-    address: "Cumhuriyet Mah. Canbazlar Cad.",
-    subtitle: "24 saat açık",
-    lat: 41.3338,
-    lng: 27.968,
-  },
-  {
-    id: "park-2",
-    layer: "parklar",
-    name: "Kapaklı Millet Bahçesi",
-    address: "İsmet Paşa Mah. 1. Cadde",
-    subtitle: "06:00 - 23:00",
-    lat: 41.327,
-    lng: 27.973,
-  },
-  {
-    id: "tarihi-1",
-    layer: "tarihiYerler",
-    name: "Eski Kapaklı Han",
-    address: "Karaağaç Mah. Hürriyet Cad.",
-    subtitle: "09:00 - 18:00",
-    lat: 41.3355,
-    lng: 27.9645,
-  },
-  {
-    id: "tarihi-2",
-    layer: "tarihiYerler",
-    name: "Kapaklı Tarihi Çeşmesi",
-    address: "İnönü Mah. Eski Cami Cad.",
-    subtitle: "24 saat açık",
-    lat: 41.3302,
-    lng: 27.9705,
-  },
-];
 
 function buildLeafletHtml(pois: Poi[]): string {
   const markers = pois.map((poi) => ({
@@ -214,77 +174,116 @@ export default function MapScreen() {
       getWifiNoktalari(),
       getCamiler(),
       getOnemliKurumlar(),
-    ]).then(([pharmacies, wifiNoktalari, camiler, onemliKurumlar]) => {
-      if (cancelled) return;
+      getParklar(),
+      getTarihiYerler(),
+    ]).then(
+      ([
+        pharmacies,
+        wifiNoktalari,
+        camiler,
+        onemliKurumlar,
+        parklar,
+        tarihiYerler,
+      ]) => {
+        if (cancelled) return;
 
-      const pois: Poi[] = [];
+        const pois: Poi[] = [];
 
-      if (pharmacies.status === "fulfilled") {
-        pois.push(
-          ...pharmacies.value.map((item) => ({
-            id: `eczane-${item.id}`,
-            layer: "eczaneler" as const,
-            name: item.ad,
-            address: item.adres,
-            subtitle: `Nöbetçi - ${item.telefon}`,
-            lat: item.lat,
-            lng: item.lng,
-          })),
-        );
-      }
+        if (pharmacies.status === "fulfilled") {
+          pois.push(
+            ...pharmacies.value.map((item) => ({
+              id: `eczane-${item.id}`,
+              layer: "eczaneler" as const,
+              name: item.ad,
+              address: item.adres,
+              subtitle: item.telefon,
+              lat: item.lat,
+              lng: item.lng,
+            })),
+          );
+        }
 
-      if (wifiNoktalari.status === "fulfilled") {
-        pois.push(
-          ...wifiNoktalari.value.map((item) => ({
-            id: `wifi-${item.id}`,
-            layer: "wifi" as const,
-            name: item.ad,
-            address: item.adres,
-            subtitle: `Ücretsiz Wi-Fi - ${item.kategori}`,
-            lat: item.lat,
-            lng: item.lng,
-          })),
-        );
-      }
+        if (wifiNoktalari.status === "fulfilled") {
+          pois.push(
+            ...wifiNoktalari.value.map((item) => ({
+              id: `wifi-${item.id}`,
+              layer: "wifi" as const,
+              name: item.ad,
+              address: item.adres,
+              subtitle: `Ücretsiz Wi-Fi - ${item.kategori}`,
+              lat: item.lat,
+              lng: item.lng,
+            })),
+          );
+        }
 
-      if (camiler.status === "fulfilled") {
-        pois.push(
-          ...camiler.value.map((item) => ({
-            id: `cami-${item.id}`,
-            layer: "camiler" as const,
-            name: item.ad,
-            address: item.adres ?? "",
-            subtitle: "Namaz vakitlerinde açık",
-            lat: item.lat,
-            lng: item.lng,
-          })),
-        );
-      }
+        if (camiler.status === "fulfilled") {
+          pois.push(
+            ...camiler.value.map((item) => ({
+              id: `cami-${item.id}`,
+              layer: "camiler" as const,
+              name: item.ad,
+              address: item.adres ?? "",
+              subtitle: "Namaz vakitlerinde açık",
+              lat: item.lat,
+              lng: item.lng,
+            })),
+          );
+        }
 
-      if (onemliKurumlar.status === "fulfilled") {
-        pois.push(
-          ...onemliKurumlar.value.map((item) => ({
-            id: `kurum-${item.id}`,
-            layer: "kurumlar" as const,
-            name: item.ad,
-            address: item.adres ?? "",
-            subtitle: item.tur,
-            lat: item.lat,
-            lng: item.lng,
-          })),
-        );
-      }
+        if (onemliKurumlar.status === "fulfilled") {
+          pois.push(
+            ...onemliKurumlar.value.map((item) => ({
+              id: `kurum-${item.id}`,
+              layer: "kurumlar" as const,
+              name: item.ad,
+              address: item.adres ?? "",
+              subtitle: item.tur,
+              lat: item.lat,
+              lng: item.lng,
+            })),
+          );
+        }
 
-      setApiPois(pois);
-      setIsLoading(false);
-    });
+        if (parklar.status === "fulfilled") {
+          pois.push(
+            ...parklar.value.map((item) => ({
+              id: `park-${item.id}`,
+              layer: "parklar" as const,
+              name: item.ad,
+              address: item.adres ?? "",
+              subtitle: item.tur,
+              lat: item.lat,
+              lng: item.lng,
+            })),
+          );
+        }
+
+        if (tarihiYerler.status === "fulfilled") {
+          pois.push(
+            ...tarihiYerler.value.map((item) => ({
+              id: `tarihi-${item.id}`,
+              layer: "tarihiYerler" as const,
+              name: item.ad,
+              address: item.adres ?? "",
+              subtitle: item.tur,
+              lat: item.lat,
+              lng: item.lng,
+            })),
+          );
+        }
+
+        setApiPois(pois);
+        setIsLoading(false);
+      },
+    );
 
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const allPois = useMemo(() => [...MOCK_POIS, ...apiPois], [apiPois]);
+  const allPois = useMemo(() => apiPois, [apiPois]);
   const html = useMemo(() => buildLeafletHtml(allPois), [allPois]);
 
   const handleTabChange = (value: TabKey) => {

@@ -13,7 +13,10 @@ export type AdminResource =
   | 'suHizmetleri'
   | 'kentLokantasi'
   | 'camiler'
-  | 'onemliKurumlar';
+  | 'onemliKurumlar'
+  | 'parklar'
+  | 'tarihiYerler'
+  | 'users';
 export type AdminAction = 'list' | 'show' | 'create' | 'edit' | 'delete';
 
 export interface RequiredPermission {

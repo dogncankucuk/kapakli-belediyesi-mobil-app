@@ -1,9 +1,11 @@
 import { join } from 'path';
 
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -23,6 +25,8 @@ import { HavaDurumuModule } from './modules/hava-durumu/hava-durumu.module';
 import { AdminUsersModule } from './modules/admin-users/admin-users.module';
 import { CamilerModule } from './modules/camiler/camiler.module';
 import { OnemliKurumlarModule } from './modules/onemli-kurumlar/onemli-kurumlar.module';
+import { ParklarModule } from './modules/parklar/parklar.module';
+import { TarihiYerlerModule } from './modules/tarihi-yerler/tarihi-yerler.module';
 import { UsersModule } from './modules/users/users.module';
 import { AdminModule } from './admin/admin.module';
 
@@ -41,6 +45,10 @@ import { AdminModule } from './admin/admin.module';
       serveRoot: '/admin',
       exclude: ['/admin-api*'],
     }),
+    // Genel varsayilan: IP basina dakikada 100 istek. Brute-force/spam riski
+    // yuksek olan public endpoint'ler (auth, requests, appointments) kendi
+    // route'larinda @Throttle ile daha siki limit tanimliyor.
+    ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 100 }]),
     AnnouncementsModule,
     AppointmentsModule,
     RequestsModule,
@@ -57,10 +65,12 @@ import { AdminModule } from './admin/admin.module';
     AdminUsersModule,
     CamilerModule,
     OnemliKurumlarModule,
+    ParklarModule,
+    TarihiYerlerModule,
     UsersModule,
     AdminModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

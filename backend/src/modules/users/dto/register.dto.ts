@@ -3,9 +3,11 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  Length,
+  Matches,
   MinLength,
 } from 'class-validator';
+
+import { IsValidTcKimlikNo } from '../validators/tc-kimlik-no.validator';
 
 export class RegisterDto {
   @IsString()
@@ -17,7 +19,7 @@ export class RegisterDto {
   soyad: string;
 
   @IsString()
-  @Length(11, 11)
+  @IsValidTcKimlikNo()
   tcKimlikNo: string;
 
   @IsString()
@@ -29,6 +31,9 @@ export class RegisterDto {
   eposta?: string;
 
   @IsString()
-  @MinLength(6)
+  @MinLength(8, { message: 'Şifre en az 8 karakter olmalı' })
+  @Matches(/(?=.*[A-Za-zÇĞİÖŞÜçğıöşü])(?=.*\d)/, {
+    message: 'Şifre en az bir harf ve bir rakam içermeli',
+  })
   password: string;
 }

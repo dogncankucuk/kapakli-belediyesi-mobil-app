@@ -122,17 +122,68 @@ export interface Cami {
   updatedAt: string;
 }
 
-export type KurumTuru = 'Belediye' | 'Kaymakamlık' | 'Emniyet' | 'PTT' | 'Diğer';
+export type KurumTuru =
+  | 'Belediye'
+  | 'Kaymakamlık'
+  | 'Emniyet'
+  | 'Karakol'
+  | 'İtfaiye'
+  | 'Sağlık'
+  | 'PTT'
+  | 'Diğer';
 
 export const kurumTuruLabels: Record<KurumTuru, string> = {
   Belediye: 'Belediye',
   Kaymakamlık: 'Kaymakamlık',
   Emniyet: 'Emniyet',
+  Karakol: 'Karakol',
+  İtfaiye: 'İtfaiye',
+  Sağlık: 'Sağlık',
   PTT: 'PTT',
   Diğer: 'Diğer',
 };
 
 export interface OnemliKurum {
+  id: string;
+  ad: string;
+  tur: string;
+  adres: string | null;
+  lat: number;
+  lng: number;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ParkTuru = 'Park' | 'Bahçe';
+
+export const parkTuruLabels: Record<ParkTuru, string> = {
+  Park: 'Park',
+  Bahçe: 'Bahçe',
+};
+
+export interface Park {
+  id: string;
+  ad: string;
+  tur: string;
+  adres: string | null;
+  lat: number;
+  lng: number;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type TarihiYerTuru = 'Anıt' | 'Höyük / Tümülüs' | 'Tarihi Taş' | 'Tarihi Yer';
+
+export const tarihiYerTuruLabels: Record<TarihiYerTuru, string> = {
+  'Anıt': 'Anıt',
+  'Höyük / Tümülüs': 'Höyük / Tümülüs',
+  'Tarihi Taş': 'Tarihi Taş',
+  'Tarihi Yer': 'Tarihi Yer',
+};
+
+export interface TarihiYer {
   id: string;
   ad: string;
   tur: string;
@@ -194,6 +245,19 @@ export interface GununMenusu {
   kalemler: MenuKalemi[];
   fiyat: number;
   updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CitizenUser {
+  id: string;
+  ad: string;
+  soyad: string;
+  tcKimlikNo: string | null;
+  telefon: string | null;
+  eposta: string | null;
+  googleHesabi: boolean;
+  disabled: boolean;
   createdAt: string;
   updatedAt: string;
 }

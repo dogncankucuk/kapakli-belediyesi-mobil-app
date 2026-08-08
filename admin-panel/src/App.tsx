@@ -16,6 +16,9 @@ import SuHizmetleriPage from './SuHizmetleriPage';
 import KentLokantasiPage from './KentLokantasiPage';
 import CamilerPage from './CamilerPage';
 import OnemliKurumlarPage from './OnemliKurumlarPage';
+import ParklarPage from './ParklarPage';
+import TarihiYerlerPage from './TarihiYerlerPage';
+import UsersPage from './UsersPage';
 import './App.css';
 
 type Page =
@@ -31,7 +34,10 @@ type Page =
   | 'suHizmetleri'
   | 'kentLokantasi'
   | 'camiler'
-  | 'onemliKurumlar';
+  | 'onemliKurumlar'
+  | 'parklar'
+  | 'tarihiYerler'
+  | 'users';
 
 const NAV_ITEMS: { page: Page; label: string }[] = [
   { page: 'announcements', label: 'Duyurular' },
@@ -47,6 +53,8 @@ const NAV_ITEMS: { page: Page; label: string }[] = [
   { page: 'kentLokantasi', label: 'Kent Lokantası' },
   { page: 'camiler', label: 'Camiler' },
   { page: 'onemliKurumlar', label: 'Önemli Kurumlar' },
+  { page: 'parklar', label: 'Parklar' },
+  { page: 'tarihiYerler', label: 'Tarihi Yerler' },
 ];
 
 function App() {
@@ -79,12 +87,20 @@ function App() {
 
   const canManageContent = user.role === 'contentManager' || user.role === 'superAdmin';
   const canManageOperations = user.role === 'appointmentOperator' || user.role === 'superAdmin';
+  const isSuperAdmin = user.role === 'superAdmin';
+
+  // "users" (vatandas hesaplari) sekmesi kisisel veri icerdigi icin sadece
+  // Super Admin'e gosterilir - backend de ayni kisitlamayi RbacGuard'da
+  // uyguluyor (bkz. admin/auth/rbac.guard.ts).
+  const navItems = isSuperAdmin
+    ? [...NAV_ITEMS, { page: 'users' as const, label: 'Kullanıcılar' }]
+    : NAV_ITEMS;
 
   return (
     <div className="app">
       <header className="topbar">
         <nav>
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <button
               key={item.page}
               className={page === item.page ? 'active' : ''}
@@ -115,6 +131,9 @@ function App() {
         {page === 'kentLokantasi' && <KentLokantasiPage canManage={canManageContent} />}
         {page === 'camiler' && <CamilerPage canManage={canManageContent} />}
         {page === 'onemliKurumlar' && <OnemliKurumlarPage canManage={canManageContent} />}
+        {page === 'parklar' && <ParklarPage canManage={canManageContent} />}
+        {page === 'tarihiYerler' && <TarihiYerlerPage canManage={canManageContent} />}
+        {page === 'users' && isSuperAdmin && <UsersPage />}
       </main>
     </div>
   );
