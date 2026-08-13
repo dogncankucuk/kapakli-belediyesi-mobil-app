@@ -31,7 +31,7 @@ Kod yazılmadan önce projenin dört temel dokümanı hazırlandı; her biri far
 
 **Kapsanan hizmet alanları (5 sekmelik tab bar):**
 - **Ana Sayfa** — duyuru özeti, gerçek zamanlı hava durumu widget'ı, hızlı erişim
-- **Hizmetler** — su hizmetleri, randevu sistemi, talep/dilekçe oluşturma, engelli ve yaşlı hizmetleri, nöbetçi eczaneler, kent lokantası, ulaşım hatları (fatura ödeme hâlâ mock — bkz. Açık Noktalar)
+- **Hizmetler** — su hizmetleri, randevu sistemi, talep/dilekçe oluşturma, engelli ve yaşlı hizmetleri, nöbetçi eczaneler, Aşevi, ulaşım hatları (fatura ödeme hâlâ mock — bkz. Açık Noktalar)
 - **Harita** — 6 gerçek veri katmanı: Parklar, Tarihi Yerler, Nöbetçi Eczaneler, Wi-Fi Noktaları, Camiler, Önemli Kurumlar (belediye, kaymakamlık, emniyet, itfaiye, PTT vb.), her biri kendi ikonuyla filtrelenebilir
 - **Duyurular** — haberler, etkinlikler, meclis kararları
 - **Profil** — T.C. kimlik/telefon/e-posta + şifre veya Google ile giriş (misafir kullanım da destekleniyor), şifremi unuttum akışı, hesap bilgileri, ayarlar, kurumsal bilgiler
@@ -97,6 +97,9 @@ Detaylı gerekçeler için [`architecture.md`](./architecture.md) ve [`tech.md`]
 
 **Native build**
 - Windows'ta `npx expo run:android`'i engelleyen NDK/CMake/260-karakter-path sorunu çözüldü, native Google Sign-In artık gerçekten çalışıyor
+
+**"Kent Lokantası" → "Aşevi" düzeltmesi**
+- "Kent Lokantası" özelliğinin Kapaklı'da gerçek bir karşılığı olmadığı tespit edildi (kapakli.bel.tr araştırıldı, böyle bir hizmet yok). Bunun yerine belediyenin gerçekten sunduğu **Aşevi** hizmetine (yaşlı/engelli/hasta vatandaşlara ücretsiz sıcak yemek dağıtımı, `/hizmetlerimiz/asevi`) göre yeniden kurgulandı: gerçek açıklama/adres/başvuru bilgisi, ücret alanı kaldırıldı (hizmet ücretsiz), harita üzerinde gerçek konumuyla (Cumhuriyet Mahallesi, Mevlana Camii yanı) Önemli Kurumlar katmanına eklendi. Admin panelinden günün menüsü girilmeye devam ediyor (bilgilendirme amaçlı, halka açık bir lokanta menüsü değil).
 
 ### v2 ve öncesi
 
