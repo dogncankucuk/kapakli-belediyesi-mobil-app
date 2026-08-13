@@ -2,20 +2,20 @@ import type {
   AdminUser,
   Announcement,
   Appointment,
+  AtikNoktasi,
   Baraj,
   Cami,
   CitizenUser,
-  GununMenusu,
+  AseviBasvuru,
+  AseviBasvuruDurumu,
   MeclisKarari,
   OnemliKurum,
   Park,
   PlanliKesinti,
   Pharmacy,
-  SehirKamerasi,
   TalepDurumu,
   TalepRequest,
   TarihiYer,
-  UlasimHatti,
   VefatIlani,
   WifiNoktasi,
 } from './types';
@@ -46,10 +46,13 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json();
 }
 
-export function login(email: string, password: string, totpToken: string) {
+// NOT: TOTP alanı geçici olarak devre dışı (ADMIN_REQUIRE_TOTP=false, bkz.
+// backend/.env) - geri açıldığında bu fonksiyona ve LoginPage'e totpToken
+// parametresi/alanı tekrar eklenmeli.
+export function login(email: string, password: string) {
   return request<AdminUser>('/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ email, password, totpToken }),
+    body: JSON.stringify({ email, password }),
   });
 }
 
@@ -229,59 +232,6 @@ export function deleteWifiNoktasi(id: string) {
   return request<{ success: boolean }>(`/wifi-noktalari/${id}`, { method: 'DELETE' });
 }
 
-export type SehirKamerasiInput = {
-  ad: string;
-  online: boolean;
-};
-
-export function getSehirKameralari() {
-  return request<SehirKamerasi[]>('/sehir-kameralari');
-}
-
-export function createSehirKamerasi(data: SehirKamerasiInput) {
-  return request<SehirKamerasi>('/sehir-kameralari', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-}
-
-export function updateSehirKamerasi(id: string, data: Partial<SehirKamerasiInput>) {
-  return request<SehirKamerasi>(`/sehir-kameralari/${id}`, {
-    method: 'PATCH',
-    body: JSON.stringify(data),
-  });
-}
-
-export function deleteSehirKamerasi(id: string) {
-  return request<{ success: boolean }>(`/sehir-kameralari/${id}`, { method: 'DELETE' });
-}
-
-export type UlasimHattiInput = {
-  hatAdi: string;
-  guzergah: string;
-  durum: string;
-  canli: boolean;
-};
-
-export function getUlasimHatlari() {
-  return request<UlasimHatti[]>('/ulasim-hatlari');
-}
-
-export function createUlasimHatti(data: UlasimHattiInput) {
-  return request<UlasimHatti>('/ulasim-hatlari', { method: 'POST', body: JSON.stringify(data) });
-}
-
-export function updateUlasimHatti(id: string, data: Partial<UlasimHattiInput>) {
-  return request<UlasimHatti>(`/ulasim-hatlari/${id}`, {
-    method: 'PATCH',
-    body: JSON.stringify(data),
-  });
-}
-
-export function deleteUlasimHatti(id: string) {
-  return request<{ success: boolean }>(`/ulasim-hatlari/${id}`, { method: 'DELETE' });
-}
-
 export type BarajInput = {
   ad: string;
   doluluk: number;
@@ -331,22 +281,19 @@ export function deletePlanliKesinti(id: string) {
   return request<{ success: boolean }>(`/planli-kesintiler/${id}`, { method: 'DELETE' });
 }
 
-export type GununMenusuInput = {
-  tarih: string;
-  kalemler: { ad: string; aciklama: string }[];
-  fiyat: number;
-};
-
-export function getGununMenuleri() {
-  return request<GununMenusu[]>('/kent-lokantasi');
+export function getAseviBasvurulari() {
+  return request<AseviBasvuru[]>('/asevi');
 }
 
-export function createGununMenusu(data: GununMenusuInput) {
-  return request<GununMenusu>('/kent-lokantasi', { method: 'POST', body: JSON.stringify(data) });
+export function updateAseviBasvuruDurum(id: string, durum: AseviBasvuruDurumu) {
+  return request<AseviBasvuru>(`/asevi/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ durum }),
+  });
 }
 
-export function deleteGununMenusu(id: string) {
-  return request<{ success: boolean }>(`/kent-lokantasi/${id}`, { method: 'DELETE' });
+export function deleteAseviBasvuru(id: string) {
+  return request<{ success: boolean }>(`/asevi/${id}`, { method: 'DELETE' });
 }
 
 export type CamiInput = {
@@ -400,6 +347,36 @@ export function updateOnemliKurum(id: string, data: Partial<OnemliKurumInput>) {
 
 export function deleteOnemliKurum(id: string) {
   return request<{ success: boolean }>(`/onemli-kurumlar/${id}`, { method: 'DELETE' });
+}
+
+export type AtikNoktasiInput = {
+  ad: string;
+  tur: string;
+  adres?: string;
+  lat: number;
+  lng: number;
+};
+
+export function getAtikNoktalari() {
+  return request<AtikNoktasi[]>('/atik-noktalari');
+}
+
+export function createAtikNoktasi(data: AtikNoktasiInput) {
+  return request<AtikNoktasi>('/atik-noktalari', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateAtikNoktasi(id: string, data: Partial<AtikNoktasiInput>) {
+  return request<AtikNoktasi>(`/atik-noktalari/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteAtikNoktasi(id: string) {
+  return request<{ success: boolean }>(`/atik-noktalari/${id}`, { method: 'DELETE' });
 }
 
 export type ParkInput = {

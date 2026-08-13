@@ -130,6 +130,7 @@ export type KurumTuru =
   | 'İtfaiye'
   | 'Sağlık'
   | 'PTT'
+  | 'Aşevi'
   | 'Diğer';
 
 export const kurumTuruLabels: Record<KurumTuru, string> = {
@@ -140,10 +141,46 @@ export const kurumTuruLabels: Record<KurumTuru, string> = {
   İtfaiye: 'İtfaiye',
   Sağlık: 'Sağlık',
   PTT: 'PTT',
+  Aşevi: 'Aşevi',
   Diğer: 'Diğer',
 };
 
 export interface OnemliKurum {
+  id: string;
+  ad: string;
+  tur: string;
+  adres: string | null;
+  lat: number;
+  lng: number;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type AtikTuru =
+  | 'Kağıt/Karton/Plastik/Metal'
+  | 'Elektronik (AEEE)'
+  | 'Tekstil'
+  | 'Cam'
+  | 'Pil'
+  | 'Atık Getirme Merkezi'
+  | 'İlaç'
+  | 'Bitkisel Yağ'
+  | 'Zirai İlaç Kutusu';
+
+export const atikTuruLabels: Record<AtikTuru, string> = {
+  'Kağıt/Karton/Plastik/Metal': 'Kağıt/Karton/Plastik/Metal',
+  'Elektronik (AEEE)': 'Elektronik (AEEE)',
+  Tekstil: 'Tekstil',
+  Cam: 'Cam',
+  Pil: 'Pil',
+  'Atık Getirme Merkezi': 'Atık Getirme Merkezi',
+  İlaç: 'İlaç',
+  'Bitkisel Yağ': 'Bitkisel Yağ',
+  'Zirai İlaç Kutusu': 'Zirai İlaç Kutusu',
+};
+
+export interface AtikNoktasi {
   id: string;
   ad: string;
   tur: string;
@@ -195,26 +232,6 @@ export interface TarihiYer {
   updatedAt: string;
 }
 
-export interface SehirKamerasi {
-  id: string;
-  ad: string;
-  online: boolean;
-  updatedBy: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface UlasimHatti {
-  id: string;
-  hatAdi: string;
-  guzergah: string;
-  durum: string;
-  canli: boolean;
-  updatedBy: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface Baraj {
   id: string;
   ad: string;
@@ -234,16 +251,20 @@ export interface PlanliKesinti {
   updatedAt: string;
 }
 
-export interface MenuKalemi {
-  ad: string;
-  aciklama: string;
-}
+export type AseviBasvuruDurumu = 'beklemede' | 'onaylandi' | 'tamamlandi';
 
-export interface GununMenusu {
+export const aseviBasvuruDurumLabels: Record<AseviBasvuruDurumu, string> = {
+  beklemede: 'Beklemede',
+  onaylandi: 'Onaylandı',
+  tamamlandi: 'Tamamlandı',
+};
+
+export interface AseviBasvuru {
   id: string;
-  tarih: string;
-  kalemler: MenuKalemi[];
-  fiyat: number;
+  adSoyad: string;
+  telefon: string;
+  adres: string;
+  durum: AseviBasvuruDurumu;
   updatedBy: string | null;
   createdAt: string;
   updatedAt: string;

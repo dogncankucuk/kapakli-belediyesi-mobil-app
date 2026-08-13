@@ -10,7 +10,6 @@ interface Props {
 function LoginPage({ onLogin }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [totpToken, setTotpToken] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -19,7 +18,7 @@ function LoginPage({ onLogin }: Props) {
     setError(null);
     setLoading(true);
     try {
-      const user = await login(email, password, totpToken);
+      const user = await login(email, password);
       onLogin(user);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Giriş başarısız');
@@ -47,15 +46,6 @@ function LoginPage({ onLogin }: Props) {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </label>
-        <label>
-          Doğrulama Kodu
-          <input
-            type="text"
-            value={totpToken}
-            onChange={(e) => setTotpToken(e.target.value)}
             required
           />
         </label>

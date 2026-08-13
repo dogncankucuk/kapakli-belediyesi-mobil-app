@@ -4,16 +4,15 @@ import { roleLabels } from './types';
 import type { AdminUser } from './types';
 import LoginPage from './LoginPage';
 import AnnouncementsPage from './AnnouncementsPage';
+import AtikNoktalariPage from './AtikNoktalariPage';
 import AppointmentsPage from './AppointmentsPage';
 import RequestsPage from './RequestsPage';
 import PharmaciesPage from './PharmaciesPage';
 import MeclisKararlariPage from './MeclisKararlariPage';
 import VefatEdenlerPage from './VefatEdenlerPage';
 import WifiNoktalariPage from './WifiNoktalariPage';
-import SehirKameralariPage from './SehirKameralariPage';
-import UlasimHatlariPage from './UlasimHatlariPage';
 import SuHizmetleriPage from './SuHizmetleriPage';
-import KentLokantasiPage from './KentLokantasiPage';
+import AseviPage from './AseviPage';
 import CamilerPage from './CamilerPage';
 import OnemliKurumlarPage from './OnemliKurumlarPage';
 import ParklarPage from './ParklarPage';
@@ -23,16 +22,15 @@ import './App.css';
 
 type Page =
   | 'announcements'
+  | 'atikNoktalari'
   | 'appointments'
   | 'requests'
   | 'pharmacies'
   | 'meclisKararlari'
   | 'vefatEdenler'
   | 'wifiNoktalari'
-  | 'sehirKameralari'
-  | 'ulasimHatlari'
   | 'suHizmetleri'
-  | 'kentLokantasi'
+  | 'asevi'
   | 'camiler'
   | 'onemliKurumlar'
   | 'parklar'
@@ -41,16 +39,15 @@ type Page =
 
 const NAV_ITEMS: { page: Page; label: string }[] = [
   { page: 'announcements', label: 'Duyurular' },
+  { page: 'atikNoktalari', label: 'Atık Noktaları' },
   { page: 'appointments', label: 'Randevular' },
   { page: 'requests', label: 'Talepler' },
   { page: 'pharmacies', label: 'Nöbetçi Eczaneler' },
   { page: 'meclisKararlari', label: 'Meclis Kararları' },
   { page: 'vefatEdenler', label: 'Vefat Edenler' },
   { page: 'wifiNoktalari', label: 'Wi-Fi Noktaları' },
-  { page: 'sehirKameralari', label: 'Şehir Kameraları' },
-  { page: 'ulasimHatlari', label: 'Ulaşım Hatları' },
   { page: 'suHizmetleri', label: 'Su Hizmetleri' },
-  { page: 'kentLokantasi', label: 'Kent Lokantası' },
+  { page: 'asevi', label: 'Aşevi' },
   { page: 'camiler', label: 'Camiler' },
   { page: 'onemliKurumlar', label: 'Önemli Kurumlar' },
   { page: 'parklar', label: 'Parklar' },
@@ -119,16 +116,15 @@ function App() {
       </header>
       <main>
         {page === 'announcements' && <AnnouncementsPage canManage={canManageContent} />}
+        {page === 'atikNoktalari' && <AtikNoktalariPage canManage={canManageContent} />}
         {page === 'appointments' && <AppointmentsPage canManage={canManageOperations} />}
         {page === 'requests' && <RequestsPage canManage={canManageOperations} />}
         {page === 'pharmacies' && <PharmaciesPage canManage={canManageContent} />}
         {page === 'meclisKararlari' && <MeclisKararlariPage canManage={canManageContent} />}
         {page === 'vefatEdenler' && <VefatEdenlerPage canManage={canManageContent} />}
         {page === 'wifiNoktalari' && <WifiNoktalariPage canManage={canManageContent} />}
-        {page === 'sehirKameralari' && <SehirKameralariPage canManage={canManageContent} />}
-        {page === 'ulasimHatlari' && <UlasimHatlariPage canManage={canManageContent} />}
         {page === 'suHizmetleri' && <SuHizmetleriPage canManage={canManageContent} />}
-        {page === 'kentLokantasi' && <KentLokantasiPage canManage={canManageContent} />}
+        {page === 'asevi' && <AseviPage canManage={canManageContent} />}
         {page === 'camiler' && <CamilerPage canManage={canManageContent} />}
         {page === 'onemliKurumlar' && <OnemliKurumlarPage canManage={canManageContent} />}
         {page === 'parklar' && <ParklarPage canManage={canManageContent} />}
