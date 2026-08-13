@@ -9,13 +9,18 @@ import {
 } from "react";
 
 import { CurrentUser, getSessionUser, logout } from "../api/auth";
-import { ServiceTarget } from "../constants/serviceCatalog";
+import {
+  getOnboardingGorulduMu,
+  onboardingGorulduIsaretle,
+} from "../storage/onboardingStorage";
 
-export type PendingRoute = ServiceTarget;
+export type PendingRoute = { screen: string; params?: object };
 
 type AppShellContextValue = {
   hasEnteredApp: boolean;
   isCheckingSession: boolean;
+  onboardingGorulduMu: boolean;
+  onboardingiTamamla: () => void;
   user: CurrentUser | null;
   enterApp: (user: CurrentUser) => void;
   // Girişe gerek duymayan iki bilgi ekranı (Bize Ulaşın/Yardım Merkezi) icin
@@ -29,6 +34,9 @@ type AppShellContextValue = {
   isMenuOpen: boolean;
   openMenu: () => void;
   closeMenu: () => void;
+  isCreateSheetOpen: boolean;
+  openCreateSheet: () => void;
+  closeCreateSheet: () => void;
 };
 
 const AppShellContext = createContext<AppShellContextValue | undefined>(
@@ -40,17 +48,25 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
   const [pendingRoute, setPendingRoute] = useState<PendingRoute | null>(null);
+  const [onboardingGorulduMu, setOnboardingGorulduMu] = useState(false);
 
   useEffect(() => {
-    getSessionUser()
-      .then((sessionUser) => {
+    Promise.all([
+      getSessionUser().then((sessionUser) => {
         if (sessionUser) {
           setUser(sessionUser);
           setHasEnteredApp(true);
         }
-      })
-      .finally(() => setIsCheckingSession(false));
+      }),
+      getOnboardingGorulduMu().then(setOnboardingGorulduMu),
+    ]).finally(() => setIsCheckingSession(false));
+  }, []);
+
+  const onboardingiTamamla = useCallback(() => {
+    setOnboardingGorulduMu(true);
+    void onboardingGorulduIsaretle();
   }, []);
 
   const enterApp = useCallback((sessionUser: CurrentUser) => {
@@ -71,11 +87,15 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
   }, []);
   const openMenu = useCallback(() => setIsMenuOpen(true), []);
   const closeMenu = useCallback(() => setIsMenuOpen(false), []);
+  const openCreateSheet = useCallback(() => setIsCreateSheetOpen(true), []);
+  const closeCreateSheet = useCallback(() => setIsCreateSheetOpen(false), []);
 
   const value = useMemo(
     () => ({
       hasEnteredApp,
       isCheckingSession,
+      onboardingGorulduMu,
+      onboardingiTamamla,
       user,
       enterApp,
       previewApp,
@@ -85,10 +105,15 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
       isMenuOpen,
       openMenu,
       closeMenu,
+      isCreateSheetOpen,
+      openCreateSheet,
+      closeCreateSheet,
     }),
     [
       hasEnteredApp,
       isCheckingSession,
+      onboardingGorulduMu,
+      onboardingiTamamla,
       user,
       enterApp,
       previewApp,
@@ -98,6 +123,9 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
       isMenuOpen,
       openMenu,
       closeMenu,
+      isCreateSheetOpen,
+      openCreateSheet,
+      closeCreateSheet,
     ],
   );
 

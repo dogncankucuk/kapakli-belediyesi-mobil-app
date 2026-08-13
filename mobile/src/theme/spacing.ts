@@ -7,8 +7,9 @@ export const spacing = {
 } as const;
 
 export const shape = {
-  rounded: 8,
-  roundedLg: 16,
+  rounded: 12,
+  roundedLg: 20,
+  roundedXl: 26,
 } as const;
 
 export type Spacing = typeof spacing;

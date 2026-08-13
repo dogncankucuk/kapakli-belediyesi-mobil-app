@@ -11,7 +11,13 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { AppShellProvider, useAppShell } from "./AppShellContext";
 import { navigationRef } from "./navigationRef";
 import RootStack from "./RootStack";
-import { YanMenuPanel } from "../components";
+import {
+  CreateActionSheet,
+  OnboardingCarousel,
+  OnboardingSlide,
+  YanMenuPanel,
+} from "../components";
+import { useTranslation } from "../i18n/LocaleContext";
 import GirisEkraniScreen from "../screens/GirisEkraniScreen";
 import { useTheme } from "../theme/ThemeContext";
 
@@ -26,9 +32,36 @@ declare global {
 }
 
 function AppShellGate() {
-  const { hasEnteredApp, isCheckingSession, pendingRoute, clearPendingRoute } =
-    useAppShell();
+  const {
+    hasEnteredApp,
+    isCheckingSession,
+    onboardingGorulduMu,
+    onboardingiTamamla,
+    pendingRoute,
+    clearPendingRoute,
+  } = useAppShell();
   const { colors, mode } = useTheme();
+  const { t } = useTranslation();
+
+  const onboardingSlides: OnboardingSlide[] = useMemo(
+    () => [
+      {
+        key: "belediye",
+        icon: "account-balance",
+        illustrationBg: colors.secondaryContainer,
+        title: t("onboarding_slide1Title"),
+        description: t("onboarding_slide1Description"),
+      },
+      {
+        key: "atik",
+        icon: "recycling",
+        illustrationBg: colors.secondaryContainer,
+        title: t("onboarding_slide2Title"),
+        description: t("onboarding_slide2Description"),
+      },
+    ],
+    [colors, t],
+  );
 
   const navTheme = useMemo(
     () => ({
@@ -48,10 +81,14 @@ function AppShellGate() {
 
   const handleNavigationReady = useCallback(() => {
     if (pendingRoute && navigationRef.isReady()) {
-      navigationRef.navigate("Tabs", {
-        screen: pendingRoute.tab,
-        params: { screen: pendingRoute.screen },
-      } as never);
+      // pendingRoute.screen is a dynamic runtime string, not a literal from
+      // the generated route union, so the static-navigation overload
+      // resolution can't type this call - same reasoning as the `as never`
+      // casts used at every other dynamic navigate() call site in this app.
+      (navigationRef.navigate as (screen: string, params?: object) => void)(
+        pendingRoute.screen,
+        pendingRoute.params,
+      );
       clearPendingRoute();
     }
   }, [pendingRoute, clearPendingRoute]);
@@ -67,6 +104,15 @@ function AppShellGate() {
       >
         <ActivityIndicator size="large" color={colors.primaryContainer} />
       </View>
+    );
+  }
+
+  if (!onboardingGorulduMu) {
+    return (
+      <OnboardingCarousel
+        slides={onboardingSlides}
+        onDone={onboardingiTamamla}
+      />
     );
   }
 
@@ -87,6 +133,7 @@ function AppShellGate() {
         onReady={handleNavigationReady}
       />
       <YanMenuPanel />
+      <CreateActionSheet />
     </View>
   );
 }

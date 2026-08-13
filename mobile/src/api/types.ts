@@ -28,7 +28,16 @@ export type CreateAppointmentBody = {
 };
 
 export type TalepKategorisi =
-  "ariza-bakim" | "sikayet" | "gorus-oneri" | "diger";
+  | "cevre"
+  | "hava"
+  | "gurultu"
+  | "atik"
+  | "altyapi"
+  | "diger"
+  // eski kategoriler (geriye dönük uyumluluk için, yeni taleplerde kullanılmaz)
+  | "ariza-bakim"
+  | "sikayet"
+  | "gorus-oneri";
 
 export type TalepDurumu = "beklemede" | "islemde" | "tamamlandi";
 
@@ -40,6 +49,10 @@ export type TalepRequest = {
   telefon: string;
   durum: TalepDurumu;
   ekDosyaUrl: string | null;
+  lat: number | null;
+  lng: number | null;
+  fotograflar: string[];
+  yogunluk: number | null;
   userId: string | null;
   createdAt: string;
   updatedAt: string;
@@ -51,6 +64,10 @@ export type CreateRequestBody = {
   adSoyad: string;
   telefon: string;
   ekDosyaUrl?: string;
+  lat?: number;
+  lng?: number;
+  fotograflar?: string[];
+  yogunluk?: number;
   userId?: string | null;
 };
 
@@ -109,6 +126,7 @@ export type KurumTuru =
   | "İtfaiye"
   | "Sağlık"
   | "PTT"
+  | "Aşevi"
   | "Diğer";
 
 export type OnemliKurum = {
@@ -118,6 +136,40 @@ export type OnemliKurum = {
   adres: string | null;
   lat: number;
   lng: number;
+};
+
+export type AtikTuru =
+  | "Kağıt/Karton/Plastik/Metal"
+  | "Elektronik (AEEE)"
+  | "Tekstil"
+  | "Cam"
+  | "Pil"
+  | "Atık Getirme Merkezi"
+  | "İlaç"
+  | "Bitkisel Yağ"
+  | "Zirai İlaç Kutusu";
+
+export type AtikNoktasi = {
+  id: string;
+  ad: string;
+  tur: AtikTuru;
+  adres: string | null;
+  lat: number;
+  lng: number;
+};
+
+export type AtikKategori = "Plastik" | "Kağıt" | "Cam" | "Belirsiz";
+
+export type AtikSiniflandirmaSonucu = {
+  kategori: AtikKategori;
+  guven: "Yüksek" | "Orta" | "Düşük";
+  aciklama: string;
+  ilgiliAtikTuru: AtikTuru | null;
+};
+
+export type AtikTaramaIstatistigi = {
+  taramaSayisi: number;
+  tahminiKg: number;
 };
 
 export type ParkTuru = "Park" | "Bahçe";
@@ -143,20 +195,6 @@ export type TarihiYer = {
   lng: number;
 };
 
-export type SehirKamerasi = {
-  id: string;
-  ad: string;
-  online: boolean;
-};
-
-export type UlasimHatti = {
-  id: string;
-  hatAdi: string;
-  guzergah: string;
-  durum: string;
-  canli: boolean;
-};
-
 export type Baraj = {
   id: string;
   ad: string;
@@ -170,16 +208,10 @@ export type PlanliKesinti = {
   aciklama: string;
 };
 
-export type MenuKalemi = {
-  ad: string;
-  aciklama: string;
-};
-
-export type GununMenusu = {
-  id: string;
-  tarih: string;
-  kalemler: MenuKalemi[];
-  fiyat: number;
+export type AseviBasvuruBody = {
+  adSoyad: string;
+  telefon: string;
+  adres: string;
 };
 
 export type HavaKalitesiDurum = {

@@ -1,14 +1,16 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Text } from "react-native";
+import { useMemo } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import AnnouncementsStack from "./AnnouncementsStack";
+import HavaStack from "./HavaStack";
 import HomeStack from "./HomeStack";
-import MapStack from "./MapStack";
 import ProfileStack from "./ProfileStack";
 import ServicesStack from "./ServicesStack";
+import { useAppShell } from "./AppShellContext";
 import { useTranslation } from "../i18n/LocaleContext";
 import { TranslationKey } from "../i18n/tr";
+import { Colors, useThemeColors } from "../theme";
 
 function TabLabel({ tKey, color }: { tKey: TranslationKey; color: string }) {
   const { t } = useTranslation();
@@ -24,6 +26,54 @@ function TabLabel({ tKey, color }: { tKey: TranslationKey; color: string }) {
   );
 }
 
+// Bos, hicbir zaman render edilmeyen bir "sekme" - orta FAB butonu
+// gercek bir ekrana degil, CreateActionSheet'i acan bir tabPress
+// listener'ina bagli (bkz. asagidaki listeners + AppShellContext).
+function EmptyFabScreen() {
+  return null;
+}
+
+function FabTabButton() {
+  const { openCreateSheet } = useAppShell();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createFabStyles(colors), [colors]);
+  return (
+    <View style={styles.wrapper}>
+      <Pressable
+        onPress={openCreateSheet}
+        accessibilityRole="button"
+        accessibilityLabel="Oluştur"
+        style={styles.fab}
+      >
+        <MaterialIcons name="add" size={28} color={colors.onPrimary} />
+      </Pressable>
+    </View>
+  );
+}
+
+const createFabStyles = (colors: Colors) =>
+  StyleSheet.create({
+    wrapper: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    fab: {
+      width: 52,
+      height: 52,
+      borderRadius: 26,
+      marginTop: -20,
+      backgroundColor: colors.primaryContainer,
+      alignItems: "center",
+      justifyContent: "center",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 4,
+    },
+  });
+
 const RootTabs = createBottomTabNavigator({
   screenOptions: {
     headerShown: false,
@@ -38,6 +88,27 @@ const RootTabs = createBottomTabNavigator({
         ),
       },
     },
+    Hava: {
+      screen: HavaStack,
+      options: {
+        tabBarLabel: ({ color }) => <TabLabel tKey="tabs_hava" color={color} />,
+        tabBarIcon: ({ color, size }) => (
+          <MaterialIcons name="air" color={color} size={size} />
+        ),
+      },
+    },
+    Olustur: {
+      screen: EmptyFabScreen,
+      options: {
+        tabBarLabel: () => null,
+        tabBarButton: () => <FabTabButton />,
+      },
+      listeners: {
+        tabPress: (event) => {
+          event.preventDefault();
+        },
+      },
+    },
     Services: {
       screen: ServicesStack,
       options: {
@@ -46,26 +117,6 @@ const RootTabs = createBottomTabNavigator({
         ),
         tabBarIcon: ({ color, size }) => (
           <MaterialIcons name="apps" color={color} size={size} />
-        ),
-      },
-    },
-    Map: {
-      screen: MapStack,
-      options: {
-        tabBarLabel: ({ color }) => <TabLabel tKey="tabs_map" color={color} />,
-        tabBarIcon: ({ color, size }) => (
-          <MaterialIcons name="map" color={color} size={size} />
-        ),
-      },
-    },
-    Announcements: {
-      screen: AnnouncementsStack,
-      options: {
-        tabBarLabel: ({ color }) => (
-          <TabLabel tKey="tabs_announcements" color={color} />
-        ),
-        tabBarIcon: ({ color, size }) => (
-          <MaterialIcons name="campaign" color={color} size={size} />
         ),
       },
     },

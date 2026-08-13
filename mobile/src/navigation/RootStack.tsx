@@ -1,26 +1,31 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import RootTabs from "./RootTabs";
+import AnnouncementsScreen from "../screens/AnnouncementsScreen";
+import AseviScreen from "../screens/AseviScreen";
+import AtikNoktalariScreen from "../screens/AtikNoktalariScreen";
+import AtikRehberiScreen from "../screens/AtikRehberiScreen";
+import AtikSiniflandirmaScreen from "../screens/AtikSiniflandirmaScreen";
 import AyarlarScreen from "../screens/AyarlarScreen";
 import BaskanScreen from "../screens/BaskanScreen";
 import BizeUlasinScreen from "../screens/BizeUlasinScreen";
 import EngelliYasliHizmetleriScreen from "../screens/EngelliYasliHizmetleriScreen";
 import FaturaOdemeScreen from "../screens/FaturaOdemeScreen";
 import FormlarVeDilekcelerScreen from "../screens/FormlarVeDilekcelerScreen";
+import GuncelIcerikScreen from "../screens/GuncelIcerikScreen";
 import HaberlerVeEtkinliklerScreen from "../screens/HaberlerVeEtkinliklerScreen";
 import HakkimizdaScreen from "../screens/HakkimizdaScreen";
 import HavaDurumuDetayScreen from "../screens/HavaDurumuDetayScreen";
 import HavaKalitesiDetayScreen from "../screens/HavaKalitesiDetayScreen";
-import KentLokantasiScreen from "../screens/KentLokantasiScreen";
+import MapScreen from "../screens/MapScreen";
+import MeclisGundemleriScreen from "../screens/MeclisGundemleriScreen";
 import MeclisKararlariScreen from "../screens/MeclisKararlariScreen";
 import NobetciEczanelerScreen from "../screens/NobetciEczanelerScreen";
 import OtobusTakipScreen from "../screens/OtobusTakipScreen";
 import RandevuAlScreen from "../screens/RandevuAlScreen";
-import SehirKameralariScreen from "../screens/SehirKameralariScreen";
 import SuHizmetleriScreen from "../screens/SuHizmetleriScreen";
 import TaleplerimScreen from "../screens/TaleplerimScreen";
 import UlasimHizmetleriScreen from "../screens/UlasimHizmetleriScreen";
-import WifiNoktalariScreen from "../screens/WifiNoktalariScreen";
 import YardimMerkeziScreen from "../screens/YardimMerkeziScreen";
 import YeniTalepOlusturScreen from "../screens/YeniTalepOlusturScreen";
 
@@ -35,6 +40,10 @@ const RootStack = createNativeStackNavigator({
   },
   screens: {
     Tabs: RootTabs,
+    Map: MapScreen,
+    Announcements: AnnouncementsScreen,
+    GuncelIcerik: GuncelIcerikScreen,
+    MeclisGundemleri: MeclisGundemleriScreen,
     Baskan: BaskanScreen,
     Hakkimizda: HakkimizdaScreen,
     YardimMerkezi: YardimMerkeziScreen,
@@ -50,9 +59,10 @@ const RootStack = createNativeStackNavigator({
     UlasimHizmetleri: UlasimHizmetleriScreen,
     OtobusTakip: OtobusTakipScreen,
     NobetciEczaneler: NobetciEczanelerScreen,
-    WifiNoktalari: WifiNoktalariScreen,
-    SehirKameralari: SehirKameralariScreen,
-    KentLokantasi: KentLokantasiScreen,
+    AtikRehberi: AtikRehberiScreen,
+    AtikNoktalari: AtikNoktalariScreen,
+    AtikSiniflandirma: AtikSiniflandirmaScreen,
+    Asevi: AseviScreen,
     HavaDurumuDetay: HavaDurumuDetayScreen,
     HavaKalitesiDetay: HavaKalitesiDetayScreen,
     HaberlerVeEtkinlikler: HaberlerVeEtkinliklerScreen,

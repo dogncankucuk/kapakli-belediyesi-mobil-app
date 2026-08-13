@@ -59,10 +59,37 @@ export default function BaskanScreen() {
         )}
         {!isLoading && bilgi && (
           <>
-            {bilgi.photoUrl && (
-              <Image source={{ uri: bilgi.photoUrl }} style={styles.photo} />
-            )}
-            <Text style={styles.name}>{bilgi.name}</Text>
+            <View style={styles.heroCard}>
+              {bilgi.photoUrl && (
+                <View style={styles.photoFrameOuter}>
+                  <View style={styles.photoFrameInner}>
+                    <Image
+                      source={{ uri: bilgi.photoUrl }}
+                      style={styles.photo}
+                    />
+                  </View>
+                  <View style={styles.photoBadge}>
+                    <MaterialIcons
+                      name="workspace-premium"
+                      size={18}
+                      color={colors.onPrimary}
+                    />
+                  </View>
+                </View>
+              )}
+              <Text style={styles.name}>{bilgi.name}</Text>
+              <View style={styles.dividerRow}>
+                <View style={styles.dividerLine} />
+                <MaterialIcons
+                  name="account-balance"
+                  size={14}
+                  color={colors.secondary}
+                  style={styles.dividerIcon}
+                />
+                <View style={styles.dividerLine} />
+              </View>
+              <Text style={styles.titleBadgeText}>{t("baskan_roleLabel")}</Text>
+            </View>
             {bilgi.introText ? (
               <Text style={styles.paragraph}>{bilgi.introText}</Text>
             ) : null}
@@ -125,15 +152,82 @@ const createStyles = (colors: Colors) =>
       ...typography.bodyMd,
       color: colors.error,
     },
+    heroCard: {
+      alignItems: "center",
+      gap: 4,
+      paddingVertical: spacing.containerMargin * 1.5,
+      paddingHorizontal: spacing.containerMargin,
+      borderRadius: shape.roundedXl,
+      backgroundColor: colors.secondaryContainer,
+    },
+    photoFrameOuter: {
+      width: 168,
+      height: 168,
+      borderRadius: 84,
+      borderWidth: 3,
+      borderColor: colors.primaryContainer,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: spacing.stackGap,
+      backgroundColor: colors.surfaceContainerLowest,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.15,
+      shadowRadius: 6,
+      elevation: 4,
+    },
+    photoFrameInner: {
+      width: 148,
+      height: 148,
+      borderRadius: 74,
+      borderWidth: 2,
+      borderColor: colors.surfaceContainerLowest,
+      overflow: "hidden",
+      backgroundColor: colors.outlineVariant,
+    },
     photo: {
       width: "100%",
-      aspectRatio: 4 / 5,
-      borderRadius: shape.rounded,
-      backgroundColor: colors.outlineVariant,
+      height: "100%",
+    },
+    photoBadge: {
+      position: "absolute",
+      bottom: 2,
+      right: 2,
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.primaryContainer,
+      borderWidth: 2,
+      borderColor: colors.secondaryContainer,
     },
     name: {
       ...typography.titleLg,
       color: colors.onBackground,
+      textAlign: "center",
+    },
+    dividerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      width: 120,
+      marginTop: 2,
+    },
+    dividerLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: colors.outline,
+      opacity: 0.5,
+    },
+    dividerIcon: {
+      marginHorizontal: 6,
+    },
+    titleBadgeText: {
+      ...typography.labelSm,
+      color: colors.onPrimaryContainer,
+      textTransform: "uppercase",
+      letterSpacing: 0.8,
+      marginTop: 2,
     },
     paragraph: {
       ...typography.bodyMd,

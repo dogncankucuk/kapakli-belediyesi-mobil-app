@@ -81,6 +81,10 @@ export default function HizliIslemlerModal({
           </Pressable>
         </View>
 
+        {draft.length === 0 ? (
+          <Text style={styles.warning}>{t("home_quickActionsMinWarning")}</Text>
+        ) : null}
+
         <Text style={styles.hint}>{t("home_quickActionsEditHint")}</Text>
 
         <ScrollView
@@ -143,6 +147,12 @@ const createStyles = (colors: Colors) =>
     },
     saveLabelDisabled: {
       color: colors.outline,
+    },
+    warning: {
+      ...typography.labelSm,
+      color: colors.error,
+      paddingHorizontal: spacing.containerMargin,
+      paddingBottom: spacing.stackGap / 2,
     },
     hint: {
       ...typography.bodyMd,

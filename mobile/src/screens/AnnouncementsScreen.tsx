@@ -8,7 +8,6 @@ import { GuncelIcerikKategori } from "../api/guncelIcerik";
 import { Card, TopBar } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { TranslationKey } from "../i18n/tr";
-import { useAppShell } from "../navigation/AppShellContext";
 import { Colors, spacing, typography, useThemeColors } from "../theme";
 
 type HubItem =
@@ -71,7 +70,6 @@ const HUB_ITEMS: HubItem[] = [
 
 export default function AnnouncementsScreen() {
   const navigation = useNavigation();
-  const { openMenu } = useAppShell();
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -90,7 +88,10 @@ export default function AnnouncementsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <TopBar title={t("guncel_title")} onMenuPress={openMenu} />
+      <TopBar
+        title={t("guncel_title")}
+        onBackPress={() => navigation.goBack()}
+      />
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}

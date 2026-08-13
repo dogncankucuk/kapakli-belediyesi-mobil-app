@@ -417,7 +417,7 @@ export default function GirisEkraniScreen() {
             onBack={() => setInfoModal(null)}
             onNavigateToMap={() => {
               setInfoModal(null);
-              previewApp({ tab: "Map", screen: "MapMain" });
+              previewApp({ screen: "Map" });
             }}
           />
         )}

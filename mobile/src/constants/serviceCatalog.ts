@@ -20,9 +20,8 @@ export type ServiceId =
   | "engelli-yasli"
   | "ulasim"
   | "nobetci-eczane"
-  | "wifi"
-  | "sehir-kameralari"
-  | "kent-lokantasi"
+  | "atik-noktalari"
+  | "asevi"
   | "hava-durumu"
   | "hava-kalitesi"
   | "etkinlik-tarihleri"
@@ -95,22 +94,16 @@ export const SERVICE_CATALOG: ServiceDefinition[] = [
     target: { tab: "Map", screen: "NobetciEczaneler" },
   },
   {
-    id: "wifi",
-    icon: "wifi",
-    labelKey: "services_wifi",
-    target: { tab: "Map", screen: "WifiNoktalari" },
+    id: "atik-noktalari",
+    icon: "recycling",
+    labelKey: "services_atikNoktalari",
+    target: { tab: "Services", screen: "AtikRehberi" },
   },
   {
-    id: "sehir-kameralari",
-    icon: "videocam",
-    labelKey: "services_sehirKameralari",
-    target: { tab: "Map", screen: "SehirKameralari" },
-  },
-  {
-    id: "kent-lokantasi",
+    id: "asevi",
     icon: "restaurant",
-    labelKey: "services_kentLokantasi",
-    target: { tab: "Map", screen: "KentLokantasi" },
+    labelKey: "services_asevi",
+    target: { tab: "Map", screen: "Asevi" },
   },
   {
     id: "hava-durumu",

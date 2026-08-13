@@ -7,17 +7,37 @@ import { Colors, spacing, typography, useThemeColors } from "../theme";
 type TopBarProps = {
   title: string;
   onMenuPress?: () => void;
+  onBackPress?: () => void;
   rightSlot?: ReactNode;
 };
 
-export default function TopBar({ title, onMenuPress, rightSlot }: TopBarProps) {
+export default function TopBar({
+  title,
+  onMenuPress,
+  onBackPress,
+  rightSlot,
+}: TopBarProps) {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <View style={styles.container}>
       <View style={styles.left}>
-        {onMenuPress ? (
+        {onBackPress ? (
+          <Pressable
+            onPress={onBackPress}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Geri dön"
+            style={styles.menuButton}
+          >
+            <MaterialIcons
+              name="arrow-back"
+              size={24}
+              color={colors.onPrimary}
+            />
+          </Pressable>
+        ) : onMenuPress ? (
           <Pressable
             onPress={onMenuPress}
             hitSlop={8}

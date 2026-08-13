@@ -22,6 +22,16 @@ type MenuItem = {
 
 const MENU_ITEMS: MenuItem[] = [
   {
+    labelKey: "tabs_map",
+    icon: "map",
+    target: { screen: "Map" },
+  },
+  {
+    labelKey: "tabs_announcements",
+    icon: "campaign",
+    target: { screen: "Announcements" },
+  },
+  {
     labelKey: "baskan_title",
     icon: "groups",
     target: { screen: "Baskan" },

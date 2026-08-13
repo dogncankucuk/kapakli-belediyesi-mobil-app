@@ -166,6 +166,35 @@ export default function HomeScreen() {
           onPress={() => navigation.navigate("Taleplerim" as never)}
         />
 
+        <View style={styles.shortcutsRow}>
+          <Pressable
+            onPress={() => navigation.navigate("Map" as never)}
+            accessibilityRole="button"
+            style={styles.shortcutItem}
+          >
+            <Card style={styles.shortcutCard}>
+              <MaterialIcons name="map" size={26} color={colors.onPrimary} />
+              <Text style={styles.shortcutLabel}>{t("tabs_map")}</Text>
+            </Card>
+          </Pressable>
+          <Pressable
+            onPress={() => navigation.navigate("Announcements" as never)}
+            accessibilityRole="button"
+            style={styles.shortcutItem}
+          >
+            <Card style={styles.shortcutCard}>
+              <MaterialIcons
+                name="campaign"
+                size={26}
+                color={colors.onPrimary}
+              />
+              <Text style={styles.shortcutLabel}>
+                {t("tabs_announcements")}
+              </Text>
+            </Card>
+          </Pressable>
+        </View>
+
         <Pressable
           onPress={() => navigation.navigate("Projelerimiz" as never)}
           accessibilityRole="button"
@@ -259,6 +288,27 @@ const createStyles = (colors: Colors) =>
     },
     quickActionItem: {
       width: "31%",
+    },
+    shortcutsRow: {
+      flexDirection: "row",
+      gap: spacing.gridGutter,
+    },
+    shortcutItem: {
+      flex: 1,
+    },
+    shortcutCard: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.stackGap / 2,
+      minHeight: 56,
+      padding: spacing.stackGap,
+      borderRadius: shape.roundedLg,
+      backgroundColor: colors.primaryContainer,
+    },
+    shortcutLabel: {
+      ...typography.labelLg,
+      color: colors.onPrimary,
+      flexShrink: 1,
     },
     projelerButton: {
       flexDirection: "row",

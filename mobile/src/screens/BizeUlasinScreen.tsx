@@ -171,9 +171,7 @@ export default function BizeUlasinScreen() {
   return (
     <BizeUlasinContent
       onBack={() => navigation.goBack()}
-      onNavigateToMap={() =>
-        navigation.navigate("Tabs", { screen: "Map" } as never)
-      }
+      onNavigateToMap={() => navigation.navigate("Map" as never)}
     />
   );
 }
