@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateUlasimHattiDto {
   @IsString()
@@ -15,4 +15,8 @@ export class CreateUlasimHattiDto {
 
   @IsBoolean()
   canli: boolean;
+
+  @IsOptional()
+  @IsString()
+  hatKodu?: string;
 }

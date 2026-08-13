@@ -13,6 +13,10 @@ export interface PublicRequest {
   telefon: string;
   durum: string;
   ekDosyaUrl: string | null;
+  lat: number | null;
+  lng: number | null;
+  fotograflar: string[];
+  yogunluk: number | null;
   userId: string | null;
   createdAt: string;
   updatedAt: string;
@@ -37,6 +41,10 @@ export class RequestsService {
       adSoyad: dto.adSoyad,
       telefon: dto.telefon,
       ekDosyaUrl: dto.ekDosyaUrl ?? null,
+      lat: dto.lat ?? null,
+      lng: dto.lng ?? null,
+      fotograflar: dto.fotograflar ?? [],
+      yogunluk: dto.yogunluk ?? null,
       userId: dto.userId ?? null,
       durum: 'beklemede',
     })) as unknown as TimestampedRequest;
@@ -68,6 +76,10 @@ export class RequestsService {
       telefon: doc.telefon,
       durum: doc.durum,
       ekDosyaUrl: doc.ekDosyaUrl ?? null,
+      lat: doc.lat ?? null,
+      lng: doc.lng ?? null,
+      fotograflar: doc.fotograflar ?? [],
+      yogunluk: doc.yogunluk ?? null,
       userId: doc.userId ?? null,
       createdAt: doc.createdAt.toISOString(),
       updatedAt: doc.updatedAt.toISOString(),

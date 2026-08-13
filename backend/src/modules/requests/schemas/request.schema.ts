@@ -27,6 +27,18 @@ export class RequestItem {
   @Prop({ type: String, default: null })
   ekDosyaUrl?: string | null;
 
+  @Prop({ type: Number, default: null })
+  lat?: number | null;
+
+  @Prop({ type: Number, default: null })
+  lng?: number | null;
+
+  @Prop({ type: [String], default: [] })
+  fotograflar?: string[];
+
+  @Prop({ type: Number, default: null })
+  yogunluk?: number | null;
+
   @Prop()
   updatedBy?: string;
 }

@@ -13,6 +13,10 @@ export interface AdminRequest {
   telefon: string;
   durum: string;
   ekDosyaUrl: string | null;
+  lat: number | null;
+  lng: number | null;
+  fotograflar: string[];
+  yogunluk: number | null;
   userId: string | null;
   updatedBy: string | null;
   createdAt: string;
@@ -70,6 +74,10 @@ export class AdminRequestsService {
       telefon: doc.telefon,
       durum: doc.durum,
       ekDosyaUrl: doc.ekDosyaUrl ?? null,
+      lat: doc.lat ?? null,
+      lng: doc.lng ?? null,
+      fotograflar: doc.fotograflar ?? [],
+      yogunluk: doc.yogunluk ?? null,
       userId: doc.userId ?? null,
       updatedBy: doc.updatedBy ?? null,
       createdAt: doc.createdAt.toISOString(),

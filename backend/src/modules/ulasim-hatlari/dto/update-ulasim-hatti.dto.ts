@@ -19,4 +19,8 @@ export class UpdateUlasimHattiDto {
   @IsOptional()
   @IsBoolean()
   canli?: boolean;
+
+  @IsOptional()
+  @IsString()
+  hatKodu?: string;
 }

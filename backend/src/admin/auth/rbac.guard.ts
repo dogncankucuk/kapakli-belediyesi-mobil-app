@@ -18,14 +18,13 @@ import {
 // üzerinde create/update/delete" - tum icerik/POI tipi kaynaklar bu grupta.
 const CONTENT_MANAGER_RESOURCES: AdminResource[] = [
   'announcements',
+  'atikNoktalari',
   'pharmacies',
   'meclisKararlari',
   'vefatEdenler',
   'wifiNoktalari',
-  'sehirKameralari',
   'ulasimHatlari',
   'suHizmetleri',
-  'kentLokantasi',
   'camiler',
   'onemliKurumlar',
   'parklar',
@@ -37,6 +36,7 @@ const CONTENT_MANAGER_RESOURCES: AdminResource[] = [
 const OPERATOR_EDIT_ONLY_RESOURCES: AdminResource[] = [
   'appointments',
   'requests',
+  'asevi',
 ];
 
 // architecture.md §9 rol tablosunun birebir karşılığı (eski admin.rbac.ts'ten taşındı)

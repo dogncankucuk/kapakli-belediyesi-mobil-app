@@ -15,6 +15,7 @@ export interface AdminUlasimHatti {
   guzergah: string;
   durum: string;
   canli: boolean;
+  hatKodu: string | null;
   updatedBy: string | null;
   createdAt: string;
   updatedAt: string;
@@ -84,6 +85,7 @@ export class AdminUlasimHatlariService {
       guzergah: doc.guzergah,
       durum: doc.durum,
       canli: doc.canli,
+      hatKodu: doc.hatKodu ?? null,
       updatedBy: doc.updatedBy ?? null,
       createdAt: doc.createdAt.toISOString(),
       updatedAt: doc.updatedAt.toISOString(),

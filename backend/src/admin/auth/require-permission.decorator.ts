@@ -2,16 +2,16 @@ import { SetMetadata } from '@nestjs/common';
 
 export type AdminResource =
   | 'announcements'
+  | 'atikNoktalari'
   | 'appointments'
   | 'requests'
   | 'pharmacies'
   | 'meclisKararlari'
   | 'vefatEdenler'
   | 'wifiNoktalari'
-  | 'sehirKameralari'
   | 'ulasimHatlari'
   | 'suHizmetleri'
-  | 'kentLokantasi'
+  | 'asevi'
   | 'camiler'
   | 'onemliKurumlar'
   | 'parklar'

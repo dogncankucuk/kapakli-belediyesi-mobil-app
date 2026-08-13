@@ -10,16 +10,17 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AnnouncementsModule } from './modules/announcements/announcements.module';
+import { AtikNoktalariModule } from './modules/atik-noktalari/atik-noktalari.module';
+import { AtikSiniflandirmaModule } from './modules/atik-siniflandirma/atik-siniflandirma.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { RequestsModule } from './modules/requests/requests.module';
 import { PharmaciesModule } from './modules/pharmacies/pharmacies.module';
 import { MeclisKararlariModule } from './modules/meclis-kararlari/meclis-kararlari.module';
 import { VefatEdenlerModule } from './modules/vefat-edenler/vefat-edenler.module';
 import { WifiNoktalariModule } from './modules/wifi-noktalari/wifi-noktalari.module';
-import { SehirKameralariModule } from './modules/sehir-kameralari/sehir-kameralari.module';
 import { UlasimHatlariModule } from './modules/ulasim-hatlari/ulasim-hatlari.module';
 import { SuHizmetleriModule } from './modules/su-hizmetleri/su-hizmetleri.module';
-import { KentLokantasiModule } from './modules/kent-lokantasi/kent-lokantasi.module';
+import { AseviModule } from './modules/asevi/asevi.module';
 import { HavaKalitesiModule } from './modules/hava-kalitesi/hava-kalitesi.module';
 import { HavaDurumuModule } from './modules/hava-durumu/hava-durumu.module';
 import { AdminUsersModule } from './modules/admin-users/admin-users.module';
@@ -50,16 +51,17 @@ import { AdminModule } from './admin/admin.module';
     // route'larinda @Throttle ile daha siki limit tanimliyor.
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 100 }]),
     AnnouncementsModule,
+    AtikNoktalariModule,
+    AtikSiniflandirmaModule,
     AppointmentsModule,
     RequestsModule,
     PharmaciesModule,
     MeclisKararlariModule,
     VefatEdenlerModule,
     WifiNoktalariModule,
-    SehirKameralariModule,
     UlasimHatlariModule,
     SuHizmetleriModule,
-    KentLokantasiModule,
+    AseviModule,
     HavaKalitesiModule,
     HavaDurumuModule,
     AdminUsersModule,

@@ -15,6 +15,7 @@ export const KURUM_TURLERI = [
   'İtfaiye',
   'Sağlık',
   'PTT',
+  'Aşevi',
   'Diğer',
 ] as const;
 

@@ -3,11 +3,17 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
 import session from 'express-session';
+import { json } from 'express';
 
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // Atik siniflandirma (yapay zeka goruntu analizi) base64 kodlu fotograf
+  // govdesi tasiyor - Nest'in varsayilan body-parser limiti (100kb) bunun
+  // icin cok kucuk, o yuzden otomatik body-parser kapatilip elle, daha
+  // yuksek bir limitle kuruldu.
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
+  app.use(json({ limit: '10mb' }));
   const configService = app.get(ConfigService);
 
   app.use(helmet());
