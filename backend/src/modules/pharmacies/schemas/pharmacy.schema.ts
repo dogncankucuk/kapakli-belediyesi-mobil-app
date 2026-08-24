@@ -13,6 +13,9 @@ export class Pharmacy {
   @Prop({ required: true })
   adres: string;
 
+  @Prop()
+  adresTarifi?: string;
+
   @Prop({ required: true })
   telefon: string;
 

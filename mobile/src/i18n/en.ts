@@ -260,6 +260,7 @@ export const en: Record<TranslationKey, string> = {
   nobetciEczaneler_error: "On-duty pharmacies could not be loaded.",
   nobetciEczaneler_empty: "No on-duty pharmacy found for today.",
   nobetciEczaneler_officialLink: "View on official page",
+  nobetciEczaneler_konumButton: "Tap for location",
   nobetciEczaneler_colAd: "Pharmacy",
   nobetciEczaneler_colTelefon: "Phone",
   nobetciEczaneler_colAdres: "Address",

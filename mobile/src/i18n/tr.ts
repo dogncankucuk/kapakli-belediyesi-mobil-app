@@ -258,6 +258,7 @@ export const tr = {
   nobetciEczaneler_error: "Nöbetçi eczaneler yüklenemedi.",
   nobetciEczaneler_empty: "Bugün için nöbetçi eczane kaydı bulunamadı.",
   nobetciEczaneler_officialLink: "Resmi sayfada gör",
+  nobetciEczaneler_konumButton: "Konum için tıklayınız",
   nobetciEczaneler_colAd: "Eczane",
   nobetciEczaneler_colTelefon: "Telefon",
   nobetciEczaneler_colAdres: "Adres",

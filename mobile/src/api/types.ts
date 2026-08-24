@@ -114,6 +114,7 @@ export type Pharmacy = {
   id: string;
   ad: string;
   adres: string;
+  adresTarifi: string | null;
   telefon: string;
   nobetTarihi: string;
   lat: number;

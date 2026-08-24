@@ -1,4 +1,5 @@
 import { mkdirSync } from 'fs';
+import { setDefaultResultOrder } from 'dns';
 
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
@@ -9,6 +10,13 @@ import { json } from 'express';
 
 import { AppModule } from './app.module';
 import { UPLOADS_DIR } from './uploads-dir';
+
+// IPv6 rotasi calismayan/kararsiz oldugu makine ve aglarda Node'un fetch'i
+// (undici) disariya HTTPS istegi atarken once IPv6'yi deneyip baglanti
+// zaman asimina ugruyor, IPv4'e dusmuyor - hava durumu/hava kalitesi ve TEO
+// eczane kazima servislerinde goruldu. IPv4'u once denetmek bu gecikmeyi/
+// hatayi ortadan kaldirir, IPv6 calisan aglarda hicbir olumsuz etkisi yok.
+setDefaultResultOrder('ipv4first');
 
 async function bootstrap() {
   // Medya kutuphanesinin yazacagi klasor ilk calistirmada yoksa olusturulur.

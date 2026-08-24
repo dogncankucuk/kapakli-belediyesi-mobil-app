@@ -474,6 +474,7 @@ export function updateRequest(id: string, durum: TalepDurumu) {
 export type PharmacyInput = {
   ad: string;
   adres: string;
+  adresTarifi?: string;
   telefon: string;
   nobetTarihi: string;
   lat: number;
@@ -494,6 +495,31 @@ export function updatePharmacy(id: string, data: Partial<PharmacyInput>) {
 
 export function deletePharmacy(id: string) {
   return request<{ success: boolean }>(`/pharmacies/${id}`, { method: 'DELETE' });
+}
+
+// TEO (Tekirdağ Eczacılar Odası) sitesinden nöbetçi eczane CSV'si üretir -
+// generic `request` JSON bekledigi icin burada ayri, dosya indirmeye uygun
+// bir istek atiyoruz.
+export async function fetchTeoEczaneCsv(
+  ilce: string,
+  baslangic: string,
+  bitis: string,
+): Promise<Blob> {
+  const params = new URLSearchParams({ ilce, baslangic, bitis });
+  const res = await fetch(`${API_BASE}/pharmacies/teo-csv?${params}`, {
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    let message = `CSV oluşturulamadı (${res.status})`;
+    try {
+      const data = await res.json();
+      if (data?.message) message = data.message;
+    } catch {
+      // yanıt gövdesi yoksa varsayılan mesaj kullanılır
+    }
+    throw new Error(message);
+  }
+  return res.blob();
 }
 
 export type MeclisKarariInput = {

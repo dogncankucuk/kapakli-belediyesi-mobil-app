@@ -3,6 +3,7 @@ import {
   IsLatitude,
   IsLongitude,
   IsNotEmpty,
+  IsOptional,
   IsString,
 } from 'class-validator';
 
@@ -14,6 +15,10 @@ export class CreatePharmacyDto {
   @IsString()
   @IsNotEmpty()
   adres: string;
+
+  @IsOptional()
+  @IsString()
+  adresTarifi?: string;
 
   @IsString()
   @IsNotEmpty()

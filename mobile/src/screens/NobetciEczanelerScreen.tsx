@@ -14,10 +14,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { getNobetciEczaneler } from "../api/pharmacies";
 import { Pharmacy } from "../api/types";
+import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
 
-const RESMI_SAYFA_URL = "https://www.kapakli.bel.tr/kapakli-nobetci-eczaneler";
+const RESMI_SAYFA_URL = "https://www.teo.org.tr/nobetci-eczaneler";
 
 // Bazi eczanelerin kendi hatti OSM'de kayitli degil - bu durumda telefon
 // alaninda uzun bir aciklama cumlesi tutuluyor (bkz. seed script). Tabloda
@@ -35,6 +36,12 @@ function formatTelefon(raw: string): { display: string; dial: string } {
     };
   }
   return { display: raw, dial: raw };
+}
+
+function openInGoogleMaps(lat: number, lng: number) {
+  Linking.openURL(
+    `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`,
+  );
 }
 
 export default function NobetciEczanelerScreen() {
@@ -82,55 +89,66 @@ export default function NobetciEczanelerScreen() {
           <Text style={styles.emptyText}>{t("nobetciEczaneler_empty")}</Text>
         )}
 
-        {!isLoading && !error && eczaneler.length > 0 && (
-          <View style={styles.table}>
-            <View style={[styles.tableRow, styles.tableHeaderRow]}>
-              <Text style={[styles.tableHeaderCell, styles.colAd]}>
-                {t("nobetciEczaneler_colAd")}
-              </Text>
-              <Text style={[styles.tableHeaderCell, styles.colTelefon]}>
-                {t("nobetciEczaneler_colTelefon")}
-              </Text>
-              <Text style={[styles.tableHeaderCell, styles.colAdres]}>
-                {t("nobetciEczaneler_colAdres")}
-              </Text>
-            </View>
-            {eczaneler.map((eczane, index) => {
-              const telefon = formatTelefon(eczane.telefon);
-              return (
-                <View
-                  key={eczane.id}
-                  style={[
-                    styles.tableRow,
-                    index % 2 === 1 && styles.tableRowAlt,
-                  ]}
+        {!isLoading &&
+          !error &&
+          eczaneler.map((eczane) => {
+            const telefon = formatTelefon(eczane.telefon);
+            return (
+              <Card key={eczane.id} style={styles.eczaneCard}>
+                <Text style={styles.eczaneAdi}>{eczane.ad}</Text>
+
+                <Pressable
+                  onPress={() => Linking.openURL(`tel:${telefon.dial}`)}
+                  accessibilityRole="button"
+                  style={styles.infoRow}
                 >
-                  <Text
-                    style={[
-                      styles.tableCell,
-                      styles.colAd,
-                      styles.tableCellStrong,
-                    ]}
-                  >
-                    {eczane.ad}
-                  </Text>
-                  <Pressable
-                    style={styles.colTelefon}
-                    onPress={() => Linking.openURL(`tel:${telefon.dial}`)}
-                    accessibilityRole="button"
-                  >
-                    <Text style={[styles.tableCell, styles.telefonCellText]}>
-                      {telefon.display}
-                    </Text>
-                  </Pressable>
-                  <Text style={[styles.tableCell, styles.colAdres]}>
-                    {eczane.adres}
-                  </Text>
+                  <MaterialIcons
+                    name="phone"
+                    size={16}
+                    color={colors.secondary}
+                  />
+                  <Text style={styles.telefonText}>{telefon.display}</Text>
+                </Pressable>
+
+                <View style={styles.infoRow}>
+                  <MaterialIcons
+                    name="home"
+                    size={16}
+                    color={colors.outline}
+                  />
+                  <Text style={styles.adresText}>{eczane.adres}</Text>
                 </View>
-              );
-            })}
-          </View>
-        )}
+
+                {eczane.adresTarifi && (
+                  <View style={styles.infoRow}>
+                    <MaterialIcons
+                      name="info-outline"
+                      size={16}
+                      color={colors.outline}
+                    />
+                    <Text style={styles.adresTarifiText}>
+                      {eczane.adresTarifi}
+                    </Text>
+                  </View>
+                )}
+
+                <Pressable
+                  onPress={() => openInGoogleMaps(eczane.lat, eczane.lng)}
+                  accessibilityRole="button"
+                  style={styles.konumButton}
+                >
+                  <MaterialIcons
+                    name="location-on"
+                    size={18}
+                    color={colors.primaryContainer}
+                  />
+                  <Text style={styles.konumButtonText}>
+                    {t("nobetciEczaneler_konumButton")}
+                  </Text>
+                </Pressable>
+              </Card>
+            );
+          })}
 
         <Pressable
           onPress={() => Linking.openURL(RESMI_SAYFA_URL)}
@@ -192,57 +210,49 @@ const createStyles = (colors: Colors) =>
       ...typography.bodyMd,
       color: colors.outline,
     },
-    table: {
-      borderRadius: shape.rounded,
-      borderWidth: 1,
-      borderColor: colors.outlineVariant,
-      overflow: "hidden",
+    eczaneCard: {
+      padding: spacing.stackGap,
+      gap: spacing.stackGap / 2,
     },
-    tableRow: {
-      flexDirection: "row",
-      borderBottomWidth: 1,
-      borderBottomColor: colors.outlineVariant,
-      backgroundColor: colors.surfaceContainerLowest,
-    },
-    tableRowAlt: {
-      backgroundColor: colors.background,
-    },
-    tableHeaderRow: {
-      backgroundColor: colors.primaryContainer,
-      borderBottomWidth: 0,
-    },
-    tableHeaderCell: {
-      ...typography.labelSm,
-      color: colors.onPrimary,
-      fontWeight: "700",
-      textTransform: "uppercase",
-      letterSpacing: 0.4,
-      paddingVertical: 10,
-      paddingHorizontal: 8,
-    },
-    tableCell: {
-      ...typography.bodyMd,
+    eczaneAdi: {
+      ...typography.titleMd,
       color: colors.onBackground,
-      paddingVertical: 10,
-      paddingHorizontal: 8,
     },
-    tableCellStrong: {
-      fontWeight: "700",
+    infoRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: spacing.stackGap / 2,
     },
-    telefonCellText: {
+    telefonText: {
+      ...typography.bodyMd,
       color: colors.secondary,
       fontWeight: "600",
       textDecorationLine: "underline",
+      flex: 1,
     },
-    colAd: {
-      flex: 1.1,
+    adresText: {
+      ...typography.bodyMd,
+      color: colors.onBackground,
+      flex: 1,
     },
-    colTelefon: {
-      flex: 1.2,
+    adresTarifiText: {
+      ...typography.bodyMd,
+      color: colors.outline,
+      flex: 1,
+    },
+    konumButton: {
+      flexDirection: "row",
+      alignItems: "center",
       justifyContent: "center",
+      gap: spacing.stackGap / 2,
+      marginTop: spacing.stackGap / 2,
+      paddingVertical: 10,
+      borderRadius: shape.rounded,
+      backgroundColor: colors.secondaryContainer,
     },
-    colAdres: {
-      flex: 1.4,
+    konumButtonText: {
+      ...typography.labelLg,
+      color: colors.primaryContainer,
     },
     officialLinkRow: {
       flexDirection: "row",

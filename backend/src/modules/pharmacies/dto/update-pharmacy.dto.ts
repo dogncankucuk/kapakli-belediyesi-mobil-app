@@ -20,6 +20,10 @@ export class UpdatePharmacyDto {
 
   @IsOptional()
   @IsString()
+  adresTarifi?: string;
+
+  @IsOptional()
+  @IsString()
   @IsNotEmpty()
   telefon?: string;
 

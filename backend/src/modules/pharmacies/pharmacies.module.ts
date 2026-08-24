@@ -6,6 +6,7 @@ import { AdminPharmaciesController } from './admin-pharmacies.controller';
 import { AdminPharmaciesService } from './admin-pharmacies.service';
 import { PharmaciesController } from './pharmacies.controller';
 import { PharmaciesService } from './pharmacies.service';
+import { TeoEczaneScraperService } from './teo-eczane-scraper.service';
 
 @Module({
   imports: [
@@ -14,7 +15,11 @@ import { PharmaciesService } from './pharmacies.service';
     ]),
   ],
   controllers: [PharmaciesController, AdminPharmaciesController],
-  providers: [PharmaciesService, AdminPharmaciesService],
+  providers: [
+    PharmaciesService,
+    AdminPharmaciesService,
+    TeoEczaneScraperService,
+  ],
   exports: [MongooseModule],
 })
 export class PharmaciesModule {}

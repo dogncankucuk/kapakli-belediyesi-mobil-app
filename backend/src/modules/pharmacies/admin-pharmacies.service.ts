@@ -10,6 +10,7 @@ export interface AdminPharmacy {
   id: string;
   ad: string;
   adres: string;
+  adresTarifi: string | null;
   telefon: string;
   nobetTarihi: string;
   lat: number;
@@ -81,6 +82,7 @@ export class AdminPharmaciesService {
       id: doc._id.toString(),
       ad: doc.ad,
       adres: doc.adres,
+      adresTarifi: doc.adresTarifi ?? null,
       telefon: doc.telefon,
       nobetTarihi: doc.nobetTarihi.toISOString(),
       lat: doc.lat,

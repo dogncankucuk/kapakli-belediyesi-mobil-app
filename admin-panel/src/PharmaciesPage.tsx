@@ -3,10 +3,12 @@ import type { ChangeEvent, FormEvent } from 'react';
 import {
   createPharmacy,
   deletePharmacy,
+  fetchTeoEczaneCsv,
   getPharmacies,
   updatePharmacy,
 } from './api';
 import type { PharmacyInput } from './api';
+import KonumSecici from './KonumSecici';
 import type { Pharmacy } from './types';
 
 interface Props {
@@ -16,11 +18,33 @@ interface Props {
 const emptyForm: PharmacyInput = {
   ad: '',
   adres: '',
+  adresTarifi: '',
   telefon: '',
   nobetTarihi: '',
   lat: 41.33,
   lng: 27.97,
 };
+
+// TEO'nun (Tekirdağ Eczacılar Odası) nöbetçi eczane arama formundaki ilçe
+// kodlarıyla birebir aynı - https://www.teo.org.tr/nobetci-eczaneler
+const TEO_ILCELER = [
+  { kod: '813', ad: 'KAPAKLI' },
+  { kod: '808', ad: 'SÜLEYMANPAŞA' },
+  { kod: '812', ad: 'ÇERKEZKÖY' },
+  { kod: '809', ad: 'ÇORLU' },
+  { kod: '817', ad: 'HAYRABOLU' },
+  { kod: '820', ad: 'MALKARA' },
+  { kod: '816', ad: 'MURATLI' },
+  { kod: '818', ad: 'MARMARA EREĞLİSİ' },
+  { kod: '814', ad: 'SARAY' },
+  { kod: '815', ad: 'ŞARKÖY' },
+  { kod: '821', ad: 'YENİÇİFTLİK' },
+  { kod: '819', ad: 'ERGENE' },
+];
+
+function bugun(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 // Basit CSV satir ayirici - tirnak icindeki virgulleri korur ("" ile
 // kacirilmis tirnaklari da destekler).
@@ -65,6 +89,9 @@ const HEADER_ALIASES: Record<string, keyof PharmacyInput> = {
   telefon: 'telefon',
   tel: 'telefon',
   adres: 'adres',
+  'adres tarifi': 'adresTarifi',
+  adrestarifi: 'adresTarifi',
+  tarif: 'adresTarifi',
   lat: 'lat',
   enlem: 'lat',
   latitude: 'lat',
@@ -119,6 +146,7 @@ function parsePharmacyCsv(text: string): PharmacyInput[] {
         ad: record.ad,
         telefon: record.telefon,
         adres: record.adres,
+        adresTarifi: record.adresTarifi,
         nobetTarihi: record.nobetTarihi,
         lat: record.lat ?? 0,
         lng: record.lng ?? 0,
@@ -138,10 +166,35 @@ function PharmaciesPage({ canManage }: Props) {
   const [csvBusy, setCsvBusy] = useState(false);
   const [csvResult, setCsvResult] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [teoIlce, setTeoIlce] = useState('813');
+  const [teoBaslangic, setTeoBaslangic] = useState(bugun());
+  const [teoBitis, setTeoBitis] = useState(bugun());
+  const [teoBusy, setTeoBusy] = useState(false);
+  const [teoError, setTeoError] = useState<string | null>(null);
 
   useEffect(() => {
     load();
   }, []);
+
+  async function handleTeoIndir() {
+    setTeoBusy(true);
+    setTeoError(null);
+    try {
+      const blob = await fetchTeoEczaneCsv(teoIlce, teoBaslangic, teoBitis);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `nobetci-eczaneler-${teoBaslangic}-${teoBitis}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setTeoError(err instanceof Error ? err.message : 'CSV oluşturulamadı');
+    } finally {
+      setTeoBusy(false);
+    }
+  }
 
   async function handleCsvUpload(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -207,6 +260,7 @@ function PharmaciesPage({ canManage }: Props) {
     setEditForm({
       ad: item.ad,
       adres: item.adres,
+      adresTarifi: item.adresTarifi ?? '',
       telefon: item.telefon,
       nobetTarihi: item.nobetTarihi.slice(0, 10),
       lat: item.lat,
@@ -251,9 +305,10 @@ function PharmaciesPage({ canManage }: Props) {
           <h3>CSV ile Toplu Yükleme</h3>
           <p>
             Beklenen sütunlar: <code>Tarih, Eczane Adı, Telefon, Adres, Lat, Lng</code>{' '}
-            (başlık satırı zorunlu, sütun sırası önemli değil, virgül veya
-            noktalı virgülle ayrılmış olabilir. Tarih <code>YYYY-AA-GG</code>{' '}
-            veya <code>GG.AA.YYYY</code> formatında olabilir).
+            (<code>Adres Tarifi</code> opsiyonel bir sütundur; başlık satırı
+            zorunlu, sütun sırası önemli değil, virgül veya noktalı virgülle
+            ayrılmış olabilir. Tarih <code>YYYY-AA-GG</code> veya{' '}
+            <code>GG.AA.YYYY</code> formatında olabilir).
           </p>
           <input
             ref={fileInputRef}
@@ -264,6 +319,50 @@ function PharmaciesPage({ canManage }: Props) {
           />
           {csvBusy && <p>Yükleniyor...</p>}
           {csvResult && <p className="success-message">{csvResult}</p>}
+        </div>
+      )}
+
+      {canManage && (
+        <div className="inline-form">
+          <h3>TEO'dan Otomatik Çek</h3>
+          <p>
+            Seçilen tarih aralığı ve ilçe için{' '}
+            <a href="https://www.teo.org.tr/nobetci-eczaneler" target="_blank" rel="noreferrer">
+              Tekirdağ Eczacılar Odası
+            </a>{' '}
+            sitesinden nöbetçi eczaneleri çekip bir CSV dosyası indirir. İndirilen
+            dosyayı yukarıdaki "CSV ile Toplu Yükleme" ile içe aktarabilirsiniz.
+          </p>
+          <label>
+            Başlangıç Tarihi
+            <input
+              type="date"
+              value={teoBaslangic}
+              onChange={(e) => setTeoBaslangic(e.target.value)}
+            />
+          </label>
+          <label>
+            Bitiş Tarihi
+            <input
+              type="date"
+              value={teoBitis}
+              onChange={(e) => setTeoBitis(e.target.value)}
+            />
+          </label>
+          <label>
+            İlçe
+            <select value={teoIlce} onChange={(e) => setTeoIlce(e.target.value)}>
+              {TEO_ILCELER.map((ilce) => (
+                <option key={ilce.kod} value={ilce.kod}>
+                  {ilce.ad}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button type="button" onClick={handleTeoIndir} disabled={teoBusy}>
+            {teoBusy ? 'Oluşturuluyor...' : 'CSV Oluştur ve İndir'}
+          </button>
+          {teoError && <p className="error-message">{teoError}</p>}
         </div>
       )}
 
@@ -299,6 +398,13 @@ function PharmaciesPage({ canManage }: Props) {
               required
             />
           </label>
+          <label>
+            Adres Tarifi (opsiyonel)
+            <input
+              value={form.adresTarifi}
+              onChange={(e) => setForm({ ...form, adresTarifi: e.target.value })}
+            />
+          </label>
           <h3 className="form-section-divider">Harita Konumu</h3>
           <label>
             Enlem (lat)
@@ -320,6 +426,13 @@ function PharmaciesPage({ canManage }: Props) {
               required
             />
           </label>
+          <KonumSecici
+            lat={form.lat}
+            lng={form.lng}
+            onChange={(lat, lng, adres) =>
+              setForm({ ...form, lat, lng, adres: adres ?? form.adres })
+            }
+          />
           <button type="submit">Kaydet</button>
         </form>
       )}
@@ -375,6 +488,15 @@ function PharmaciesPage({ canManage }: Props) {
                         />
                       </label>
                       <label>
+                        Adres Tarifi (opsiyonel)
+                        <input
+                          value={editForm.adresTarifi}
+                          onChange={(e) =>
+                            setEditForm({ ...editForm, adresTarifi: e.target.value })
+                          }
+                        />
+                      </label>
+                      <label>
                         Enlem (lat)
                         <input
                           type="number"
@@ -392,6 +514,13 @@ function PharmaciesPage({ canManage }: Props) {
                           onChange={(e) => setEditForm({ ...editForm, lng: Number(e.target.value) })}
                         />
                       </label>
+                      <KonumSecici
+                        lat={editForm.lat}
+                        lng={editForm.lng}
+                        onChange={(lat, lng, adres) =>
+                          setEditForm({ ...editForm, lat, lng, adres: adres ?? editForm.adres })
+                        }
+                      />
                       <div className="row-actions">
                         <button type="button" onClick={() => handleUpdate(item.id)}>
                           Kaydet
