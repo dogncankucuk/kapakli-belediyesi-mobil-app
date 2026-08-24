@@ -17,6 +17,7 @@ import {
   AdminRole,
   AdminRoleDocument,
 } from '../modules/roles/schemas/admin-role.schema';
+import '../admin/auth/session.types';
 
 // Sadece bu script için minimal bir modül -- AdminModule (AdminJS bootstrap) dahil edilmez,
 // çünkü seed işlemi için gerekli değildir.

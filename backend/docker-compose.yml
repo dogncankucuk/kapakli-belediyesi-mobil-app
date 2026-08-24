@@ -1,7 +1,9 @@
+name: kapakli-bel-app-v5
+
 services:
   mongo:
     image: mongo:8
-    container_name: kapakli-bel-mongo
+    container_name: kapakli-bel-app-v5-mongo
     ports:
       - '27017:27017'
     volumes:
