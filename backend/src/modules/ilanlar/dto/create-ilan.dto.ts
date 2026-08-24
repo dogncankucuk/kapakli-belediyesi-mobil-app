@@ -1,0 +1,18 @@
+import { IsDateString, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+
+export class CreateIlanDto {
+  @IsString()
+  @IsNotEmpty()
+  baslik: string;
+
+  @IsString()
+  @IsNotEmpty()
+  icerik: string;
+
+  @IsOptional()
+  @IsString()
+  resimUrl?: string;
+
+  @IsDateString()
+  yayinTarihi: string;
+}

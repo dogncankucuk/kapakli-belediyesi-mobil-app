@@ -21,15 +21,40 @@ export class PharmaciesService {
     private readonly pharmacyModel: Model<PharmacyDocument>,
   ) {}
 
-  // Gercek nobetci eczane bilgisi NobetciEczanelerScreen'de belediyenin kendi
-  // canli sayfasi (kapakli.bel.tr/kapakli-nobetci-eczaneler) WebView ile
-  // gosteriliyor - bu koleksiyon/servis onu tekrar etmiyor, sadece haritadaki
-  // Eczaneler katmani icin TUM eczane konumlarini dondurur (nobetTarihi alani
-  // hala schema'da duruyor ama burada filtre olarak kullanilmiyor).
+  // Haritadaki Eczaneler katmani icin TUM eczane konumlarini dondurur
+  // (nobetTarihi burada filtre olarak kullanilmiyor - bkz. findNobetci).
   async findAll(): Promise<PublicPharmacy[]> {
     const pharmacies = await this.pharmacyModel.find().sort({ ad: 1 }).exec();
 
-    return pharmacies.map((doc) => ({
+    return pharmacies.map((doc) => this.toPublic(doc));
+  }
+
+  // "Nobetci Eczaneler" ekrani icin: nobetTarihi'nin takvim gunu bugune denk
+  // gelen kayitlar. Bu alan artik sadece admin panelden elle giriliyor
+  // (bkz. AdminPharmaciesController) - otomatik kazima/senkron yok.
+  async findNobetci(): Promise<PublicPharmacy[]> {
+    const now = new Date();
+    const startOfDay = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
+    const endOfDay = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + 1,
+    );
+
+    const pharmacies = await this.pharmacyModel
+      .find({ nobetTarihi: { $gte: startOfDay, $lt: endOfDay } })
+      .sort({ ad: 1 })
+      .exec();
+
+    return pharmacies.map((doc) => this.toPublic(doc));
+  }
+
+  private toPublic(doc: PharmacyDocument): PublicPharmacy {
+    return {
       id: doc._id.toString(),
       ad: doc.ad,
       adres: doc.adres,
@@ -37,6 +62,6 @@ export class PharmaciesService {
       nobetTarihi: doc.nobetTarihi.toISOString(),
       lat: doc.lat,
       lng: doc.lng,
-    }));
+    };
   }
 }

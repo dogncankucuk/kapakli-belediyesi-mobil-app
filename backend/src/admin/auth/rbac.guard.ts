@@ -7,72 +7,25 @@ import {
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 
-import { AdminRole } from '../../modules/admin-users/admin-role.enum';
+import { PermissionsService } from '../../modules/roles/permissions.service';
 import {
-  AdminResource,
   PERMISSION_KEY,
   RequiredPermission,
 } from './require-permission.decorator';
 
-// architecture.md §9: "İçerik Yöneticisi: announcements, harita POI verileri
-// üzerinde create/update/delete" - tum icerik/POI tipi kaynaklar bu grupta.
-const CONTENT_MANAGER_RESOURCES: AdminResource[] = [
-  'announcements',
-  'atikNoktalari',
-  'pharmacies',
-  'meclisKararlari',
-  'vefatEdenler',
-  'wifiNoktalari',
-  'ulasimHatlari',
-  'suHizmetleri',
-  'camiler',
-  'onemliKurumlar',
-  'parklar',
-  'tarihiYerler',
-];
-
-// architecture.md §9: "Randevu/Talep Operatörü: appointments, requests
-// üzerinde read/update - silme yetkisi yok".
-const OPERATOR_EDIT_ONLY_RESOURCES: AdminResource[] = [
-  'appointments',
-  'requests',
-  'asevi',
-];
-
-// architecture.md §9 rol tablosunun birebir karşılığı (eski admin.rbac.ts'ten taşındı)
-function isActionAllowed(
-  permission: RequiredPermission,
-  role: AdminRole,
-): boolean {
-  if (role === AdminRole.SUPER_ADMIN) return true;
-
-  // Vatandas hesaplari (T.C. kimlik no, telefon gibi KVKK kapsaminda hassas
-  // kisisel veri icerir) - listeleme dahil sadece Super Admin erisebilir,
-  // digerlerinde asagidaki genel list/show serbestligi gecerli degil.
-  if (permission.resource === 'users') {
-    return false;
-  }
-
-  if (permission.action === 'list' || permission.action === 'show') {
-    return true;
-  }
-
-  if (CONTENT_MANAGER_RESOURCES.includes(permission.resource)) {
-    return role === AdminRole.CONTENT_MANAGER;
-  }
-
-  return (
-    OPERATOR_EDIT_ONLY_RESOURCES.includes(permission.resource) &&
-    permission.action === 'edit' &&
-    role === AdminRole.APPOINTMENT_OPERATOR
-  );
-}
-
+// Yetkiler artik veritabaninda (bkz. modules/roles) - roller admin panelden
+// dinamik olarak tanimlanip her kaynak (resource) icin ayri ayri
+// list/show/create/edit/delete izni verilebiliyor. Eskiden burada
+// CONTENT_MANAGER_RESOURCES / OPERATOR_EDIT_ONLY_RESOURCES adinda 2 sabit
+// dizi + switch-case vardi, artik tum kontrol PermissionsService uzerinden.
 @Injectable()
 export class RbacGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly permissionsService: PermissionsService,
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const permission = this.reflector.get<RequiredPermission | undefined>(
       PERMISSION_KEY,
       context.getHandler(),
@@ -80,8 +33,17 @@ export class RbacGuard implements CanActivate {
     if (!permission) return true;
 
     const request = context.switchToHttp().getRequest<Request>();
-    const role = request.session?.adminUser?.role;
-    if (!role || !isActionAllowed(permission, role)) {
+    const adminUser = request.session?.adminUser;
+    if (!adminUser) {
+      throw new ForbiddenException();
+    }
+
+    const allowed = await this.permissionsService.hasPermission(
+      adminUser.roleId,
+      permission.resource,
+      permission.action,
+    );
+    if (!allowed) {
       throw new ForbiddenException();
     }
 

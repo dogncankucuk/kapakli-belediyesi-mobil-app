@@ -1,7 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
-
-import { AdminRole } from '../admin-role.enum';
+import { HydratedDocument, Types } from 'mongoose';
 
 export type AdminUserDocument = HydratedDocument<AdminUser>;
 
@@ -14,8 +12,17 @@ export class AdminUser {
   @Prop({ required: true })
   passwordHash: string;
 
-  @Prop({ required: true, enum: AdminRole })
-  role: AdminRole;
+  @Prop()
+  ad?: string;
+
+  // Roller artik dinamik (bkz. modules/roles) - sabit enum yerine referans.
+  @Prop({ required: true, type: Types.ObjectId, ref: 'AdminRole' })
+  roleId: Types.ObjectId;
+
+  // Pasife alinan kullanici giris yapamaz (bkz. auth.service.ts) ama kaydi
+  // silinmez - gecmis updatedBy referanslari icin.
+  @Prop({ default: false })
+  disabled: boolean;
 
   // Hassas alan: loglara/response'lara asla düz metin yazılmaz
   @Prop()
@@ -23,6 +30,9 @@ export class AdminUser {
 
   @Prop({ default: false })
   totpEnabled: boolean;
+
+  @Prop()
+  updatedBy?: string;
 }
 
 export const AdminUserSchema = SchemaFactory.createForClass(AdminUser);

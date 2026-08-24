@@ -9,7 +9,6 @@ import { AdminAnnouncementsController } from './admin-announcements.controller';
 import { AdminAnnouncementsService } from './admin-announcements.service';
 import { AnnouncementsController } from './announcements.controller';
 import { AnnouncementsService } from './announcements.service';
-import { KapakliWebAnnouncementsService } from './kapakli-web-announcements.service';
 
 @Module({
   imports: [
@@ -18,11 +17,7 @@ import { KapakliWebAnnouncementsService } from './kapakli-web-announcements.serv
     ]),
   ],
   controllers: [AnnouncementsController, AdminAnnouncementsController],
-  providers: [
-    AnnouncementsService,
-    AdminAnnouncementsService,
-    KapakliWebAnnouncementsService,
-  ],
+  providers: [AnnouncementsService, AdminAnnouncementsService],
   exports: [MongooseModule],
 })
 export class AnnouncementsModule {}

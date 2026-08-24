@@ -1,3 +1,5 @@
+import { mkdirSync } from 'fs';
+
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -6,8 +8,12 @@ import session from 'express-session';
 import { json } from 'express';
 
 import { AppModule } from './app.module';
+import { UPLOADS_DIR } from './uploads-dir';
 
 async function bootstrap() {
+  // Medya kutuphanesinin yazacagi klasor ilk calistirmada yoksa olusturulur.
+  mkdirSync(UPLOADS_DIR, { recursive: true });
+
   // Atik siniflandirma (yapay zeka goruntu analizi) base64 kodlu fotograf
   // govdesi tasiyor - Nest'in varsayilan body-parser limiti (100kb) bunun
   // icin cok kucuk, o yuzden otomatik body-parser kapatilip elle, daha
@@ -16,7 +22,20 @@ async function bootstrap() {
   app.use(json({ limit: '10mb' }));
   const configService = app.get(ConfigService);
 
-  app.use(helmet());
+  // Admin panelindeki Harita Editoru sayfasi Leaflet ile OpenStreetMap karo
+  // gorsellerini disaridan cekiyor - helmet'in varsayilan img-src 'self'
+  // data: kurali bunu engelliyordu, tile.openstreetmap.org alt alan
+  // adlarina acikca izin veriliyor.
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+          'img-src': ["'self'", 'data:', 'https://*.tile.openstreetmap.org'],
+        },
+      },
+    }),
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({

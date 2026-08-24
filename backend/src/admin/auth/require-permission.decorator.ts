@@ -2,6 +2,20 @@ import { SetMetadata } from '@nestjs/common';
 
 export type AdminResource =
   | 'announcements'
+  | 'haberler'
+  | 'ilanlar'
+  | 'ihaleler'
+  | 'makaleler'
+  | 'meclisGundemleri'
+  | 'baskan'
+  | 'hakkimizda'
+  | 'bizeUlasin'
+  | 'yardimMerkezi'
+  | 'faturaOdeme'
+  | 'ulasimHizmetleri'
+  | 'temaAyarlari'
+  | 'panelTemasi'
+  | 'medya'
   | 'atikNoktalari'
   | 'appointments'
   | 'requests'
@@ -16,7 +30,50 @@ export type AdminResource =
   | 'onemliKurumlar'
   | 'parklar'
   | 'tarihiYerler'
-  | 'users';
+  | 'formlar'
+  | 'basvuruHizmetleri'
+  | 'users'
+  | 'roles'
+  | 'adminUsers';
+
+// Admin panelin izin matrisi UI'inda kullanilan tam kaynak listesi -
+// PermissionsService.getPermissionMap ve migrasyon script'i de bunu kullanir.
+export const ALL_ADMIN_RESOURCES: AdminResource[] = [
+  'announcements',
+  'haberler',
+  'ilanlar',
+  'ihaleler',
+  'makaleler',
+  'meclisGundemleri',
+  'baskan',
+  'hakkimizda',
+  'bizeUlasin',
+  'yardimMerkezi',
+  'faturaOdeme',
+  'ulasimHizmetleri',
+  'temaAyarlari',
+  'panelTemasi',
+  'medya',
+  'atikNoktalari',
+  'appointments',
+  'requests',
+  'pharmacies',
+  'meclisKararlari',
+  'vefatEdenler',
+  'wifiNoktalari',
+  'ulasimHatlari',
+  'suHizmetleri',
+  'asevi',
+  'camiler',
+  'onemliKurumlar',
+  'parklar',
+  'tarihiYerler',
+  'formlar',
+  'basvuruHizmetleri',
+  'users',
+  'roles',
+  'adminUsers',
+];
 export type AdminAction = 'list' | 'show' | 'create' | 'edit' | 'delete';
 
 export interface RequiredPermission {

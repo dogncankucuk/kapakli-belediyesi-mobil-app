@@ -10,4 +10,9 @@ export class PharmaciesController {
   findAll(): Promise<PublicPharmacy[]> {
     return this.pharmaciesService.findAll();
   }
+
+  @Get('nobetci')
+  findNobetci(): Promise<PublicPharmacy[]> {
+    return this.pharmaciesService.findNobetci();
+  }
 }

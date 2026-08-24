@@ -10,6 +10,19 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AnnouncementsModule } from './modules/announcements/announcements.module';
+import { HaberlerModule } from './modules/haberler/haberler.module';
+import { IlanlarModule } from './modules/ilanlar/ilanlar.module';
+import { IhalelerModule } from './modules/ihaleler/ihaleler.module';
+import { MakalelerModule } from './modules/makaleler/makaleler.module';
+import { MeclisGundemleriModule } from './modules/meclis-gundemleri/meclis-gundemleri.module';
+import { BaskanModule } from './modules/baskan/baskan.module';
+import { HakkimizdaModule } from './modules/hakkimizda/hakkimizda.module';
+import { BizeUlasinModule } from './modules/bize-ulasin/bize-ulasin.module';
+import { YardimMerkeziModule } from './modules/yardim-merkezi/yardim-merkezi.module';
+import { FaturaOdemeModule } from './modules/fatura-odeme/fatura-odeme.module';
+import { UlasimHizmetleriModule } from './modules/ulasim-hizmetleri/ulasim-hizmetleri.module';
+import { TemaAyarlariModule } from './modules/tema-ayarlari/tema-ayarlari.module';
+import { PanelTemasiModule } from './modules/panel-temasi/panel-temasi.module';
 import { AtikNoktalariModule } from './modules/atik-noktalari/atik-noktalari.module';
 import { AtikSiniflandirmaModule } from './modules/atik-siniflandirma/atik-siniflandirma.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
@@ -29,7 +42,12 @@ import { OnemliKurumlarModule } from './modules/onemli-kurumlar/onemli-kurumlar.
 import { ParklarModule } from './modules/parklar/parklar.module';
 import { TarihiYerlerModule } from './modules/tarihi-yerler/tarihi-yerler.module';
 import { UsersModule } from './modules/users/users.module';
+import { FormlarModule } from './modules/formlar/formlar.module';
+import { BasvuruHizmetleriModule } from './modules/basvuru-hizmetleri/basvuru-hizmetleri.module';
+import { RolesModule } from './modules/roles/roles.module';
+import { MedyaModule } from './modules/medya/medya.module';
 import { AdminModule } from './admin/admin.module';
+import { UPLOADS_DIR } from './uploads-dir';
 
 @Module({
   imports: [
@@ -41,16 +59,38 @@ import { AdminModule } from './admin/admin.module';
       }),
       inject: [ConfigService],
     }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '..', 'admin-panel', 'dist'),
-      serveRoot: '/admin',
-      exclude: ['/admin-api*'],
-    }),
+    ServeStaticModule.forRoot(
+      {
+        rootPath: join(__dirname, '..', '..', 'admin-panel', 'dist'),
+        serveRoot: '/admin',
+        exclude: ['/admin-api*'],
+      },
+      {
+        // Medya kutuphanesine yuklenen dosyalar - herkese acik, kimlik
+        // dogrulamasiz statik sunum (icerikte kullanilan resim/dosya
+        // linkleri direkt bu yoldan calisir).
+        rootPath: UPLOADS_DIR,
+        serveRoot: '/uploads',
+      },
+    ),
     // Genel varsayilan: IP basina dakikada 100 istek. Brute-force/spam riski
     // yuksek olan public endpoint'ler (auth, requests, appointments) kendi
     // route'larinda @Throttle ile daha siki limit tanimliyor.
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 100 }]),
     AnnouncementsModule,
+    HaberlerModule,
+    IlanlarModule,
+    IhalelerModule,
+    MakalelerModule,
+    MeclisGundemleriModule,
+    BaskanModule,
+    HakkimizdaModule,
+    BizeUlasinModule,
+    YardimMerkeziModule,
+    FaturaOdemeModule,
+    UlasimHizmetleriModule,
+    TemaAyarlariModule,
+    PanelTemasiModule,
     AtikNoktalariModule,
     AtikSiniflandirmaModule,
     AppointmentsModule,
@@ -70,6 +110,10 @@ import { AdminModule } from './admin/admin.module';
     ParklarModule,
     TarihiYerlerModule,
     UsersModule,
+    FormlarModule,
+    BasvuruHizmetleriModule,
+    RolesModule,
+    MedyaModule,
     AdminModule,
   ],
   controllers: [AppController],

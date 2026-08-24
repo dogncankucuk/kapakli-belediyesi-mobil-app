@@ -18,7 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "seed:admin": "ts-node -r tsconfig-paths/register src/scripts/seed-admin.ts"
+    "seed:admin": "ts-node -r tsconfig-paths/register src/scripts/seed-admin.ts",
+    "migrate:roles": "ts-node -r tsconfig-paths/register src/scripts/migrate-admin-roles.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -52,6 +53,7 @@
     "@types/express": "^5.0.0",
     "@types/express-session": "^1.18.0",
     "@types/jest": "^30.0.0",
+    "@types/multer": "^2.2.0",
     "@types/node": "^24.0.0",
     "@types/qrcode": "^1.5.6",
     "@types/supertest": "^7.0.0",

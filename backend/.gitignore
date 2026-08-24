@@ -2,6 +2,9 @@
 /dist
 /node_modules
 
+# Medya kutuphanesine yuklenen dosyalar (kullanici verisi, git'e girmez)
+/uploads
+
 # AdminJS runtime bundle cache
 /.adminjs
 

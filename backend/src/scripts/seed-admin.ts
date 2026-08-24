@@ -12,7 +12,11 @@ import {
   AdminUser,
   AdminUserDocument,
 } from '../modules/admin-users/schemas/admin-user.schema';
-import { AdminRole } from '../modules/admin-users/admin-role.enum';
+import { RolesModule } from '../modules/roles/roles.module';
+import {
+  AdminRole,
+  AdminRoleDocument,
+} from '../modules/roles/schemas/admin-role.schema';
 
 // Sadece bu script için minimal bir modül -- AdminModule (AdminJS bootstrap) dahil edilmez,
 // çünkü seed işlemi için gerekli değildir.
@@ -27,6 +31,7 @@ import { AdminRole } from '../modules/admin-users/admin-role.enum';
       inject: [ConfigService],
     }),
     AdminUsersModule,
+    RolesModule,
   ],
 })
 class SeedModule {}
@@ -40,6 +45,22 @@ async function seedAdmin() {
     const adminUserModel = app.get<Model<AdminUserDocument>>(
       getModelToken(AdminUser.name),
     );
+    const roleModel = app.get<Model<AdminRoleDocument>>(
+      getModelToken(AdminRole.name),
+    );
+
+    let superAdminRole = await roleModel
+      .findOne({ isFullAccess: true })
+      .exec();
+    if (!superAdminRole) {
+      superAdminRole = await roleModel.create({
+        name: 'Süper Admin',
+        isFullAccess: true,
+        isProtected: true,
+        permissions: [],
+      });
+      console.log("'Süper Admin' rolü oluşturuldu.");
+    }
 
     const email = process.env.SEED_ADMIN_EMAIL ?? 'admin@kapakli.local';
     const password =
@@ -63,7 +84,7 @@ async function seedAdmin() {
     await adminUserModel.create({
       email,
       passwordHash,
-      role: AdminRole.SUPER_ADMIN,
+      roleId: superAdminRole._id,
       totpSecret,
       totpEnabled: true,
     });

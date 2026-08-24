@@ -5,7 +5,6 @@ import * as bcrypt from 'bcryptjs';
 import { Model } from 'mongoose';
 import { verify as verifyTotp } from 'otplib';
 
-import { AdminRole } from '../../modules/admin-users/admin-role.enum';
 import {
   AdminUser,
   AdminUserDocument,
@@ -14,7 +13,7 @@ import { LoginDto } from './dto/login.dto';
 
 export interface AdminSessionUser {
   email: string;
-  role: AdminRole;
+  roleId: string;
 }
 
 @Injectable()
@@ -30,6 +29,10 @@ export class AuthService {
 
     const adminUser = await this.adminUserModel.findOne({ email }).exec();
     if (!adminUser) {
+      return null;
+    }
+
+    if (adminUser.disabled) {
       return null;
     }
 
@@ -62,6 +65,6 @@ export class AuthService {
       }
     }
 
-    return { email: adminUser.email, role: adminUser.role };
+    return { email: adminUser.email, roleId: adminUser.roleId.toString() };
   }
 }
