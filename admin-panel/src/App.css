@@ -3,7 +3,10 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  color: var(--color-text-muted);
 }
+
+/* ---------- Giriş ekranı ---------- */
 
 .login-page {
   display: flex;
@@ -11,81 +14,214 @@
   justify-content: center;
   min-height: 100vh;
   padding: 16px;
+  background:
+    radial-gradient(circle at 15% 15%, rgba(31, 92, 86, 0.08), transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(62, 125, 116, 0.1), transparent 45%),
+    var(--color-bg);
 }
 
 .login-form {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 32px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 40px 36px;
   width: 100%;
-  max-width: 360px;
+  max-width: 380px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
+  box-shadow: var(--shadow-md);
+}
+
+.login-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 4px;
+  box-shadow: var(--shadow-sm);
 }
 
 .login-form h1 {
-  font-size: 20px;
-  margin: 0 0 8px;
+  font-size: 19px;
+  margin: 0;
   text-align: center;
+  line-height: 1.3;
 }
+
+.login-subtitle {
+  margin: -10px 0 4px;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.login-form label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.login-form button[type='submit'] {
+  margin-top: 6px;
+  padding: 11px 14px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ---------- Uygulama iskeleti (sol sidebar + icerik) ---------- */
 
 .app {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: stretch;
 }
 
-.topbar {
+.sidebar {
+  width: 264px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.sidebar-brand {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 24px;
-  background: #fff;
-  border-bottom: 1px solid var(--border);
+  gap: 10px;
+  font-weight: 700;
+  color: var(--color-primary);
+  font-size: 15px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--color-border);
 }
 
-.topbar nav {
+.topbar-brand-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: #fff;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 12px;
+}
+
+.sidebar-group {
+  margin-bottom: 24px;
+}
+
+.sidebar-group:last-child {
+  margin-bottom: 0;
+}
+
+.sidebar-group-heading {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-primary);
+  padding: 0 10px 8px;
+  margin-bottom: 8px;
+  border-bottom: 2px solid var(--color-primary-light);
+}
+
+.sidebar-link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 1px solid transparent;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: background 0.15s ease, color 0.15s ease;
+  margin-bottom: 2px;
+}
+
+.sidebar-link:hover:not(:disabled) {
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  border-color: transparent;
+}
+
+.sidebar-link.active {
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+.sidebar-footer {
+  border-top: 1px solid var(--color-border);
+  padding: 14px 20px 18px;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-.topbar nav button {
-  background: none;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  color: var(--text);
+.user-info-text {
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+  word-break: break-word;
 }
 
-.topbar nav button.active {
-  background: var(--accent);
-  color: #fff;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
+.sidebar-footer button {
+  width: 100%;
 }
 
 main {
   flex: 1;
-  padding: 24px;
+  min-width: 0;
+  padding: 28px 32px 48px;
 }
 
 .page {
-  max-width: 960px;
+  max-width: 1040px;
   margin: 0 auto;
 }
+
+.page h2 {
+  font-size: 22px;
+  margin: 0 0 4px;
+  padding-left: 14px;
+  border-left: 4px solid var(--color-primary);
+}
+
+.page > p {
+  color: var(--color-text-muted);
+  font-size: 13.5px;
+  margin: 0 0 20px;
+  padding-left: 14px;
+}
+
+/* ---------- Formlar ---------- */
 
 label {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 14px;
+  gap: 5px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 .checkbox-label {
@@ -98,96 +234,496 @@ input,
 textarea,
 select {
   font: inherit;
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  font-weight: 400;
+  padding: 9px 11px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+textarea {
+  resize: vertical;
+  font-family: inherit;
 }
 
 button {
   padding: 8px 14px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 500;
+  font-size: 13.5px;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
 }
 
-.login-form button,
-.inline-form button {
-  background: var(--accent);
+button:hover:not(:disabled) {
+  border-color: var(--color-secondary);
+  background: var(--color-primary-light);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.login-form button[type='submit'],
+.inline-form button[type='submit'],
+.edit-row .row-actions button:first-child {
+  background: var(--color-primary);
   color: #fff;
-  border-color: var(--accent);
+  border-color: var(--color-primary);
+}
+
+.login-form button[type='submit']:hover:not(:disabled),
+.inline-form button[type='submit']:hover:not(:disabled),
+.edit-row .row-actions button:first-child:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
 }
 
 .error-message {
-  color: var(--danger);
-  font-size: 14px;
+  color: var(--color-danger);
+  background: var(--color-danger-bg);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 13.5px;
+}
+
+.success-message {
+  color: var(--color-primary-dark);
+  background: var(--color-primary-light);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 13.5px;
+  margin: 0 0 16px 14px;
 }
 
 .inline-form {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-width: 480px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  margin: 0 0 28px 14px;
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px 18px;
+  max-width: 900px;
+  align-items: start;
 }
+
+/* Uzun metin alanlari (Icerik/Aciklama vb.) kisa alanlarla ayni dar
+   sutuna sikismasin - kendi satirinda tam genislik kaplasin. */
+.inline-form label:has(textarea),
+.edit-row label:has(textarea) {
+  grid-column: 1 / -1;
+}
+
+.inline-form h3 {
+  grid-column: 1 / -1;
+  margin: 0 0 2px;
+  font-size: 15px;
+  color: var(--color-primary);
+}
+
+.inline-form h3.form-section-divider {
+  margin-top: 10px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.inline-form button[type='submit'] {
+  grid-column: 1 / -1;
+  justify-self: start;
+  padding: 10px 22px;
+}
+
+/* ---------- Tablolar ---------- */
 
 table {
   width: 100%;
   border-collapse: collapse;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 th,
 td {
   text-align: left;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border);
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--color-border);
   vertical-align: top;
+  font-size: 13.5px;
 }
 
 th {
-  background: #eef1f5;
-  font-size: 13px;
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  font-size: 11.5px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
+}
+
+tbody tr:nth-child(even) {
+  background: rgba(31, 92, 86, 0.02);
+}
+
+tbody tr:hover {
+  background: var(--color-primary-light);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .row-actions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+.row-actions button {
+  padding: 6px 12px;
+  font-size: 12.5px;
+}
+
+td.row-actions button:last-child {
+  color: var(--color-danger);
+  border-color: rgba(179, 38, 30, 0.35);
+}
+
+td.row-actions button:last-child:hover:not(:disabled) {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
+}
+
+/* AppointmentsPage duzenleme modu Kaydet/Vazgec ikilisi de td.row-actions
+   icinde ama son eleman "Sil" degil "Vazgec" - yukaridaki genel kural
+   yanlislikla kirmizi yapmasin diye burada acikca override ediliyor. */
+td.row-actions button.btn-primary {
+  color: #fff;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+td.row-actions button.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+}
+
+td.row-actions button.btn-neutral {
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+td.row-actions button.btn-neutral:hover:not(:disabled) {
+  background: var(--color-primary-light);
+  border-color: var(--color-secondary);
 }
 
 .edit-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 8px 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px 16px;
+  padding: 10px 2px;
 }
 
-.edit-row label {
-  flex: 1 1 200px;
+.edit-row .row-actions {
+  grid-column: 1 / -1;
+}
+
+.color-field-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-field-row input[type='color'] {
+  width: 40px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.color-field-row input[type='text'] {
+  flex: 1;
+}
+
+.medya-secici-row {
+  display: flex;
+  gap: 8px;
+}
+
+.medya-secici-row input {
+  flex: 1;
+}
+
+.medya-secici-row button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.medya-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(34, 48, 44, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+}
+
+.medya-modal {
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 24px;
+  width: 100%;
+  max-width: 720px;
+  max-height: 85vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.medya-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.medya-modal-header h3 {
+  margin: 0;
+  color: var(--color-primary);
+}
+
+.medya-modal-grid {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.medya-card-select {
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+.medya-card-select:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
+.medya-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.medya-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.medya-thumb {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  background: var(--color-bg);
+}
+
+.medya-thumb-file {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.medya-card-body {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.medya-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.medya-card-meta {
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+}
+
+.request-photo-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.request-photo-thumb {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
 }
 
 .hint {
-  color: #666;
+  color: var(--color-text-muted);
   font-size: 13px;
   max-width: 640px;
-  margin-bottom: 16px;
+  margin: 0 0 16px 14px;
 }
 
 .search-form {
   display: flex;
   gap: 8px;
-  margin-bottom: 16px;
+  margin: 0 0 16px 14px;
   max-width: 480px;
 }
 
 .search-form input {
   flex: 1;
+}
+
+/* ---------- Roller / İzin Matrisi ---------- */
+
+.role-form {
+  max-width: 640px;
+}
+
+.permission-matrix-wrap {
+  grid-column: 1 / -1;
+  max-height: 420px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.permission-matrix {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+}
+
+.permission-matrix th,
+.permission-matrix td {
+  padding: 8px 12px;
+}
+
+.permission-matrix th:not(:first-child),
+.permission-matrix td:not(:first-child) {
+  text-align: center;
+  width: 100px;
+}
+
+.permission-matrix thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.permission-matrix input[type='checkbox'] {
+  width: 17px;
+  height: 17px;
+  cursor: pointer;
+}
+
+/* ---------- Harita Editörü ---------- */
+
+.map-editor-controls {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 0 0 16px 14px;
+  max-width: 640px;
+}
+
+.map-editor-controls label {
+  flex: 1 1 220px;
+}
+
+.map-editor-shell {
+  margin-left: 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.map-editor-canvas {
+  width: 100%;
+  height: 480px;
+}
+
+.map-editor-footer {
+  margin: 16px 0 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  max-width: 900px;
+}
+
+.map-editor-coords {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+}
+
+.map-editor-coords strong {
+  color: var(--color-text);
+}
+
+.map-editor-readonly-note {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  font-style: italic;
 }

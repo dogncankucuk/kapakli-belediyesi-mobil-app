@@ -1,20 +1,94 @@
-export type Role =
-  | 'superAdmin'
-  | 'contentManager'
-  | 'appointmentOperator'
-  | 'readOnlyAuditor';
+// Roller artik veritabaninda tanimli, dinamik (bkz. RolesPage). Bir kaynak
+// (resource) icin iki seviye yetki var: "list" (goruntule) ve "manage"
+// (olustur+duzenle+sil hepsi birden - backend hala ayri ayri kontrol eder,
+// panel sadece 2 sutuna sadelestirir).
+export type PermissionLevel = 'list' | 'manage';
+export type PermissionsMap = Record<string, PermissionLevel[]>;
 
-export const roleLabels: Record<Role, string> = {
-  superAdmin: 'Süper Yönetici',
-  contentManager: 'İçerik Yöneticisi',
-  appointmentOperator: 'Randevu Operatörü',
-  readOnlyAuditor: 'Salt Okunur Denetçi',
-};
+export interface RoleRef {
+  id: string;
+  name: string;
+  isFullAccess: boolean;
+}
 
 export interface AdminUser {
   email: string;
-  role: Role;
+  role: RoleRef;
+  permissions: PermissionsMap;
 }
+
+export type ResourceAction = 'list' | 'show' | 'create' | 'edit' | 'delete';
+
+export interface ResourcePermission {
+  resource: string;
+  actions: ResourceAction[];
+}
+
+export interface AdminRole {
+  id: string;
+  name: string;
+  isFullAccess: boolean;
+  isProtected: boolean;
+  permissions: ResourcePermission[];
+  userCount: number;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminAccount {
+  id: string;
+  email: string;
+  ad: string | null;
+  roleId: string;
+  roleName: string;
+  disabled: boolean;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Izin matrisi (RolesPage) ve sidebar gorunurlugu (App.tsx) icin ortak
+// kaynak -> etiket eslemesi. Backend'deki AdminResource union'iyla birebir
+// aynı anahtarları kullanır (bkz. backend require-permission.decorator.ts).
+export const RESOURCE_LABELS: Record<string, string> = {
+  haberler: 'Haberler',
+  announcements: 'Duyurular',
+  ilanlar: 'İlanlar',
+  ihaleler: 'İhaleler',
+  makaleler: 'Makaleler',
+  meclisGundemleri: 'Meclis Gündemleri',
+  baskan: 'Başkanımız',
+  hakkimizda: 'Hakkımızda',
+  yardimMerkezi: 'Yardım Merkezi',
+  bizeUlasin: 'Bize Ulaşın',
+  faturaOdeme: 'Fatura Ödeme',
+  ulasimHizmetleri: 'Ulaşım Hizmetleri',
+  temaAyarlari: 'Mobil Görünüm Ayarları',
+  panelTemasi: 'Panel Görünümü',
+  medya: 'Medya Kütüphanesi',
+  formlar: 'Formlar ve Dilekçeler',
+  basvuruHizmetleri: 'Başvuru Hizmetleri',
+  appointments: 'Randevular',
+  requests: 'Talepler',
+  asevi: 'Aşevi',
+  camiler: 'Camiler',
+  onemliKurumlar: 'Önemli Kurumlar',
+  parklar: 'Parklar',
+  tarihiYerler: 'Tarihi Yerler',
+  wifiNoktalari: 'Wi-Fi Noktaları',
+  pharmacies: 'Nöbetçi Eczaneler',
+  ulasimHatlari: 'Ulaşım Hatları',
+  meclisKararlari: 'Meclis Kararları',
+  vefatEdenler: 'Vefat Edenler',
+  atikNoktalari: 'Atık Noktaları',
+  suHizmetleri: 'Su Hizmetleri',
+  users: 'Mobil Uygulama Kullanıcıları',
+  roles: 'Roller',
+  adminUsers: 'Yönetici Kullanıcılar',
+};
+
+export const RESOURCE_ORDER = Object.keys(RESOURCE_LABELS);
 
 export interface Announcement {
   id: string;
@@ -26,6 +100,152 @@ export interface Announcement {
   updatedBy: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Haber {
+  id: string;
+  baslik: string;
+  icerik: string;
+  resimUrl: string | null;
+  yayinTarihi: string;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Ilan {
+  id: string;
+  baslik: string;
+  icerik: string;
+  resimUrl: string | null;
+  yayinTarihi: string;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Ihale {
+  id: string;
+  baslik: string;
+  icerik: string;
+  resimUrl: string | null;
+  yayinTarihi: string;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Makale {
+  id: string;
+  baslik: string;
+  icerik: string;
+  resimUrl: string | null;
+  yayinTarihi: string;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MeclisGundemi {
+  id: string;
+  baslik: string;
+  tarih: string;
+  dosyaUrl: string | null;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Baskan {
+  ad: string;
+  photoUrl: string | null;
+  introText: string;
+  maddeler: string[];
+  kapanisText: string;
+  updatedBy: string | null;
+}
+
+export interface Hakkimizda {
+  baskanOzetMetni: string;
+  tarihcePhotoUrl: string | null;
+  tarihceParagraflari: string[];
+  kurulusYili: string;
+  buyuksehirYili: string;
+  nufus: string;
+  updatedBy: string | null;
+}
+
+export interface BizeUlasinBilgisi {
+  telefon: string;
+  whatsapp: string;
+  eposta: string;
+  adres: string;
+  lat: number;
+  lng: number;
+  updatedBy: string | null;
+}
+
+export interface YardimMerkeziSoru {
+  id: string;
+  soru: string;
+  cevap: string;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FaturaOdemeKurumu {
+  id: string;
+  ad: string;
+  aciklama: string;
+  url: string;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UlasimSecenegi {
+  id: string;
+  baslik: string;
+  aciklama: string;
+  url: string;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MedyaDosyasi {
+  id: string;
+  dosyaAdi: string;
+  orijinalAd: string;
+  mimeType: string;
+  boyut: number;
+  url: string;
+  updatedBy: string | null;
+  createdAt: string;
+}
+
+export interface PanelTemasi {
+  primaryColor: string;
+  secondaryColor: string;
+  backgroundColor: string;
+  surfaceColor: string;
+  textColor: string;
+  borderColor: string;
+  fontFamily: string;
+  radius: number;
+  updatedBy?: string | null;
+}
+
+export interface TemaAyarlari {
+  primaryColorLight: string;
+  secondaryColorLight: string;
+  backgroundColorLight: string;
+  primaryColorDark: string;
+  secondaryColorDark: string;
+  backgroundColorDark: string;
+  fontFamily: string;
+  updatedBy: string | null;
 }
 
 export interface Appointment {
@@ -56,6 +276,10 @@ export interface TalepRequest {
   telefon: string;
   durum: TalepDurumu;
   ekDosyaUrl: string | null;
+  lat: number | null;
+  lng: number | null;
+  fotograflar: string[];
+  yogunluk: number | null;
   userId: string | null;
   updatedBy: string | null;
   createdAt: string;
@@ -241,6 +465,12 @@ export interface Baraj {
   updatedAt: string;
 }
 
+export interface SuHizmetleriAyarlari {
+  kesintilerKaynakUrl: string;
+  kesintilerGoruntulemeUrl: string;
+  updatedBy: string | null;
+}
+
 export interface PlanliKesinti {
   id: string;
   tarih: string;
@@ -265,6 +495,45 @@ export interface AseviBasvuru {
   telefon: string;
   adres: string;
   durum: AseviBasvuruDurumu;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type FormBelgesiTuru = 'belge' | 'form';
+
+export const formBelgesiTuruLabels: Record<FormBelgesiTuru, string> = {
+  belge: 'Belge (dosya)',
+  form: 'Online Form',
+};
+
+export interface FormBelgesi {
+  id: string;
+  baslik: string;
+  url: string;
+  tur: string;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type BasvuruTuru = 'telefon' | 'link';
+
+export const basvuruTuruLabels: Record<BasvuruTuru, string> = {
+  telefon: 'Telefon',
+  link: 'Link',
+};
+
+export interface BasvuruHizmeti {
+  id: string;
+  baslik: string;
+  ozet: string;
+  hizmetler: string[];
+  kosullar: string[];
+  calismaSaatleri: string | null;
+  sorumluBirim: string | null;
+  basvuruTuru: string;
+  basvuruDegeri: string;
   updatedBy: string | null;
   createdAt: string;
   updatedAt: string;

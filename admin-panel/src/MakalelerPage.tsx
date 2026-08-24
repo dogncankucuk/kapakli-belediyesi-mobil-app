@@ -1,34 +1,33 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import {
-  createAnnouncement,
-  deleteAnnouncement,
-  getAnnouncements,
-  updateAnnouncement,
+  createMakale,
+  deleteMakale,
+  getMakaleler,
+  updateMakale,
 } from './api';
-import type { AnnouncementInput } from './api';
+import type { ArticleContentInput } from './api';
 import MedyaSecici from './MedyaSecici';
-import type { Announcement } from './types';
+import type { Makale } from './types';
 
 interface Props {
   canManage: boolean;
 }
 
-const emptyForm: AnnouncementInput = {
+const emptyForm: ArticleContentInput = {
   baslik: '',
   icerik: '',
   resimUrl: '',
   yayinTarihi: '',
-  kategori: '',
 };
 
-function AnnouncementsPage({ canManage }: Props) {
-  const [items, setItems] = useState<Announcement[]>([]);
+function MakalelerPage({ canManage }: Props) {
+  const [items, setItems] = useState<Makale[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState<AnnouncementInput>(emptyForm);
+  const [form, setForm] = useState<ArticleContentInput>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<AnnouncementInput>(emptyForm);
+  const [editForm, setEditForm] = useState<ArticleContentInput>(emptyForm);
 
   useEffect(() => {
     load();
@@ -38,9 +37,9 @@ function AnnouncementsPage({ canManage }: Props) {
     setLoading(true);
     setError(null);
     try {
-      setItems(await getAnnouncements());
+      setItems(await getMakaleler());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Duyurular yüklenemedi');
+      setError(err instanceof Error ? err.message : 'Makaleler yüklenemedi');
     } finally {
       setLoading(false);
     }
@@ -50,55 +49,54 @@ function AnnouncementsPage({ canManage }: Props) {
     e.preventDefault();
     setError(null);
     try {
-      await createAnnouncement({ ...form, resimUrl: form.resimUrl || null });
+      await createMakale({ ...form, resimUrl: form.resimUrl || null });
       setForm(emptyForm);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Duyuru oluşturulamadı');
+      setError(err instanceof Error ? err.message : 'Makale oluşturulamadı');
     }
   }
 
-  function startEdit(item: Announcement) {
+  function startEdit(item: Makale) {
     setEditingId(item.id);
     setEditForm({
       baslik: item.baslik,
       icerik: item.icerik,
       resimUrl: item.resimUrl ?? '',
       yayinTarihi: item.yayinTarihi.slice(0, 10),
-      kategori: item.kategori,
     });
   }
 
   async function handleUpdate(id: string) {
     setError(null);
     try {
-      await updateAnnouncement(id, { ...editForm, resimUrl: editForm.resimUrl || null });
+      await updateMakale(id, { ...editForm, resimUrl: editForm.resimUrl || null });
       setEditingId(null);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Duyuru güncellenemedi');
+      setError(err instanceof Error ? err.message : 'Makale güncellenemedi');
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Bu duyuru silinsin mi?')) return;
+    if (!confirm('Bu makale silinsin mi?')) return;
     setError(null);
     try {
-      await deleteAnnouncement(id);
+      await deleteMakale(id);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Duyuru silinemedi');
+      setError(err instanceof Error ? err.message : 'Makale silinemedi');
     }
   }
 
   return (
     <div className="page">
-      <h2>Duyurular</h2>
+      <h2>Makaleler</h2>
       {error && <p className="error-message">{error}</p>}
 
       {canManage && (
         <form className="inline-form" onSubmit={handleCreate}>
-          <h3>Yeni Duyuru</h3>
+          <h3>Yeni Makale</h3>
           <label>
             Başlık
             <input
@@ -131,14 +129,6 @@ function AnnouncementsPage({ canManage }: Props) {
               required
             />
           </label>
-          <label>
-            Kategori
-            <input
-              value={form.kategori}
-              onChange={(e) => setForm({ ...form, kategori: e.target.value })}
-              required
-            />
-          </label>
           <button type="submit">Kaydet</button>
         </form>
       )}
@@ -150,7 +140,6 @@ function AnnouncementsPage({ canManage }: Props) {
           <thead>
             <tr>
               <th>Başlık</th>
-              <th>Kategori</th>
               <th>Yayın Tarihi</th>
               <th>Son Güncelleyen</th>
               {canManage && <th>İşlemler</th>}
@@ -160,7 +149,7 @@ function AnnouncementsPage({ canManage }: Props) {
             {items.map((item) =>
               editingId === item.id ? (
                 <tr key={item.id}>
-                  <td colSpan={canManage ? 5 : 4}>
+                  <td colSpan={canManage ? 4 : 3}>
                     <div className="edit-row">
                       <label>
                         Başlık
@@ -193,13 +182,6 @@ function AnnouncementsPage({ canManage }: Props) {
                           }
                         />
                       </label>
-                      <label>
-                        Kategori
-                        <input
-                          value={editForm.kategori}
-                          onChange={(e) => setEditForm({ ...editForm, kategori: e.target.value })}
-                        />
-                      </label>
                       <div className="row-actions">
                         <button type="button" onClick={() => handleUpdate(item.id)}>
                           Kaydet
@@ -214,7 +196,6 @@ function AnnouncementsPage({ canManage }: Props) {
               ) : (
                 <tr key={item.id}>
                   <td>{item.baslik}</td>
-                  <td>{item.kategori}</td>
                   <td>{item.yayinTarihi.slice(0, 10)}</td>
                   <td>{item.updatedBy ?? '-'}</td>
                   {canManage && (
@@ -237,4 +218,4 @@ function AnnouncementsPage({ canManage }: Props) {
   );
 }
 
-export default AnnouncementsPage;
+export default MakalelerPage;

@@ -7,10 +7,13 @@ import {
   deletePlanliKesinti,
   getBarajlar,
   getPlanliKesintiler,
+  getSuHizmetleriAyarlari,
+  kesintilerCek,
   updateBaraj,
   updatePlanliKesinti,
+  updateSuHizmetleriAyarlari,
 } from './api';
-import type { BarajInput, PlanliKesintiInput } from './api';
+import type { BarajInput, PlanliKesintiInput, SuHizmetleriAyarlariInput } from './api';
 import type { Baraj, PlanliKesinti } from './types';
 
 interface Props {
@@ -19,6 +22,10 @@ interface Props {
 
 const emptyBarajForm: BarajInput = { ad: '', doluluk: 0 };
 const emptyKesintiForm: PlanliKesintiInput = { tarih: '', ilce: '', aciklama: '' };
+const emptyAyarlarForm: SuHizmetleriAyarlariInput = {
+  kesintilerKaynakUrl: '',
+  kesintilerGoruntulemeUrl: '',
+};
 
 function SuHizmetleriPage({ canManage }: Props) {
   const [barajlar, setBarajlar] = useState<Baraj[]>([]);
@@ -34,6 +41,11 @@ function SuHizmetleriPage({ canManage }: Props) {
   const [editingKesintiId, setEditingKesintiId] = useState<string | null>(null);
   const [editKesintiForm, setEditKesintiForm] = useState<PlanliKesintiInput>(emptyKesintiForm);
 
+  const [ayarlarForm, setAyarlarForm] = useState<SuHizmetleriAyarlariInput>(emptyAyarlarForm);
+  const [ayarlarSaving, setAyarlarSaving] = useState(false);
+  const [cekiliyor, setCekiliyor] = useState(false);
+  const [cekSonucu, setCekSonucu] = useState<string | null>(null);
+
   useEffect(() => {
     load();
   }, []);
@@ -42,13 +54,51 @@ function SuHizmetleriPage({ canManage }: Props) {
     setLoading(true);
     setError(null);
     try {
-      const [b, k] = await Promise.all([getBarajlar(), getPlanliKesintiler()]);
+      const [b, k, a] = await Promise.all([
+        getBarajlar(),
+        getPlanliKesintiler(),
+        getSuHizmetleriAyarlari(),
+      ]);
       setBarajlar(b);
       setKesintiler(k);
+      setAyarlarForm({
+        kesintilerKaynakUrl: a.kesintilerKaynakUrl,
+        kesintilerGoruntulemeUrl: a.kesintilerGoruntulemeUrl,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Veriler yüklenemedi');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleAyarlarSubmit(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setAyarlarSaving(true);
+    try {
+      await updateSuHizmetleriAyarlari(ayarlarForm);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ayarlar kaydedilemedi');
+    } finally {
+      setAyarlarSaving(false);
+    }
+  }
+
+  async function handleKesintilerCek() {
+    setError(null);
+    setCekSonucu(null);
+    setCekiliyor(true);
+    try {
+      const sonuc = await kesintilerCek(ayarlarForm.kesintilerKaynakUrl || undefined);
+      setCekSonucu(
+        `${sonuc.bulunan} kayıt bulundu, ${sonuc.eklenen} tanesi Planlı Kesintiler'e eklendi.`,
+      );
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Veri çekilemedi');
+    } finally {
+      setCekiliyor(false);
     }
   }
 
@@ -133,6 +183,61 @@ function SuHizmetleriPage({ canManage }: Props) {
     <div className="page">
       <h2>Su Hizmetleri</h2>
       {error && <p className="error-message">{error}</p>}
+
+      <h3>Dış Kaynak</h3>
+      <p>
+        TESKİ gibi bir dış kaynaktan planlı kesinti verisi çekmek veya
+        vatandaşa kaynağın orijinal sayfasını göstermek için buradan
+        yapılandırın.
+      </p>
+      <form className="inline-form" onSubmit={handleAyarlarSubmit}>
+        <label>
+          Veri Çekme Kaynağı (URL)
+          <input
+            value={ayarlarForm.kesintilerKaynakUrl}
+            onChange={(e) =>
+              setAyarlarForm({ ...ayarlarForm, kesintilerKaynakUrl: e.target.value })
+            }
+            placeholder="https://www.teski.gov.tr/sukesintileri/"
+            disabled={!canManage}
+          />
+        </label>
+        <label>
+          Sayfa Görüntüleme Linki
+          <input
+            value={ayarlarForm.kesintilerGoruntulemeUrl}
+            onChange={(e) =>
+              setAyarlarForm({ ...ayarlarForm, kesintilerGoruntulemeUrl: e.target.value })
+            }
+            placeholder="https://www.teski.gov.tr/sukesintileri/"
+            disabled={!canManage}
+          />
+        </label>
+        {ayarlarForm.kesintilerGoruntulemeUrl && (
+          <a
+            href={ayarlarForm.kesintilerGoruntulemeUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Sayfayı görüntüle
+          </a>
+        )}
+        {canManage && (
+          <div className="row-actions">
+            <button type="submit" disabled={ayarlarSaving}>
+              {ayarlarSaving ? 'Kaydediliyor...' : 'Ayarları Kaydet'}
+            </button>
+            <button
+              type="button"
+              onClick={handleKesintilerCek}
+              disabled={cekiliyor || !ayarlarForm.kesintilerKaynakUrl}
+            >
+              {cekiliyor ? 'Çekiliyor...' : 'Verileri Çek'}
+            </button>
+          </div>
+        )}
+        {cekSonucu && <p className="success-message">{cekSonucu}</p>}
+      </form>
 
       <h3>Baraj Doluluk</h3>
       {canManage && (

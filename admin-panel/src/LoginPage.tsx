@@ -30,7 +30,16 @@ function LoginPage({ onLogin }: Props) {
   return (
     <div className="login-page">
       <form className="login-form" onSubmit={handleSubmit}>
+        <div className="login-icon" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 2 2 7v2h20V7L12 2Z M4 10v9H2v2h20v-2h-2v-9h-2v9h-3v-9h-2v9H9v-9H7v9H4v-9Z"
+              fill="currentColor"
+            />
+          </svg>
+        </div>
         <h1>Kapaklı Belediyesi Yönetim Paneli</h1>
+        <p className="login-subtitle">Devam etmek için giriş yapın</p>
         <label>
           E-posta
           <input

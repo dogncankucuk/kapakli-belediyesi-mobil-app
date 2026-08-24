@@ -103,11 +103,12 @@ function AppointmentsPage({ canManage }: Props) {
                   </td>
                   <td>{item.userId ?? '-'}</td>
                   <td className="row-actions">
-                    <button type="button" onClick={() => handleUpdate(item.id)}>
+                    <button type="button" className="btn-primary" onClick={() => handleUpdate(item.id)}>
                       Kaydet
                     </button>
                     <button
                       type="button"
+                      className="btn-neutral"
                       onClick={() => {
                         setEditingId(null);
                         setEditForm(null);

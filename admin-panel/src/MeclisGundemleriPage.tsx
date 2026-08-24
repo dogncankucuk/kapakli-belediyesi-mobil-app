@@ -1,34 +1,32 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import {
-  createAnnouncement,
-  deleteAnnouncement,
-  getAnnouncements,
-  updateAnnouncement,
+  createMeclisGundemi,
+  deleteMeclisGundemi,
+  getMeclisGundemleri,
+  updateMeclisGundemi,
 } from './api';
-import type { AnnouncementInput } from './api';
+import type { MeclisGundemiInput } from './api';
 import MedyaSecici from './MedyaSecici';
-import type { Announcement } from './types';
+import type { MeclisGundemi } from './types';
 
 interface Props {
   canManage: boolean;
 }
 
-const emptyForm: AnnouncementInput = {
+const emptyForm: MeclisGundemiInput = {
   baslik: '',
-  icerik: '',
-  resimUrl: '',
-  yayinTarihi: '',
-  kategori: '',
+  tarih: '',
+  dosyaUrl: '',
 };
 
-function AnnouncementsPage({ canManage }: Props) {
-  const [items, setItems] = useState<Announcement[]>([]);
+function MeclisGundemleriPage({ canManage }: Props) {
+  const [items, setItems] = useState<MeclisGundemi[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState<AnnouncementInput>(emptyForm);
+  const [form, setForm] = useState<MeclisGundemiInput>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<AnnouncementInput>(emptyForm);
+  const [editForm, setEditForm] = useState<MeclisGundemiInput>(emptyForm);
 
   useEffect(() => {
     load();
@@ -38,9 +36,9 @@ function AnnouncementsPage({ canManage }: Props) {
     setLoading(true);
     setError(null);
     try {
-      setItems(await getAnnouncements());
+      setItems(await getMeclisGundemleri());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Duyurular yüklenemedi');
+      setError(err instanceof Error ? err.message : 'Meclis gündemleri yüklenemedi');
     } finally {
       setLoading(false);
     }
@@ -50,55 +48,53 @@ function AnnouncementsPage({ canManage }: Props) {
     e.preventDefault();
     setError(null);
     try {
-      await createAnnouncement({ ...form, resimUrl: form.resimUrl || null });
+      await createMeclisGundemi({ ...form, dosyaUrl: form.dosyaUrl || null });
       setForm(emptyForm);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Duyuru oluşturulamadı');
+      setError(err instanceof Error ? err.message : 'Meclis gündemi oluşturulamadı');
     }
   }
 
-  function startEdit(item: Announcement) {
+  function startEdit(item: MeclisGundemi) {
     setEditingId(item.id);
     setEditForm({
       baslik: item.baslik,
-      icerik: item.icerik,
-      resimUrl: item.resimUrl ?? '',
-      yayinTarihi: item.yayinTarihi.slice(0, 10),
-      kategori: item.kategori,
+      tarih: item.tarih.slice(0, 10),
+      dosyaUrl: item.dosyaUrl ?? '',
     });
   }
 
   async function handleUpdate(id: string) {
     setError(null);
     try {
-      await updateAnnouncement(id, { ...editForm, resimUrl: editForm.resimUrl || null });
+      await updateMeclisGundemi(id, { ...editForm, dosyaUrl: editForm.dosyaUrl || null });
       setEditingId(null);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Duyuru güncellenemedi');
+      setError(err instanceof Error ? err.message : 'Meclis gündemi güncellenemedi');
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Bu duyuru silinsin mi?')) return;
+    if (!confirm('Bu meclis gündemi silinsin mi?')) return;
     setError(null);
     try {
-      await deleteAnnouncement(id);
+      await deleteMeclisGundemi(id);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Duyuru silinemedi');
+      setError(err instanceof Error ? err.message : 'Meclis gündemi silinemedi');
     }
   }
 
   return (
     <div className="page">
-      <h2>Duyurular</h2>
+      <h2>Meclis Gündemleri</h2>
       {error && <p className="error-message">{error}</p>}
 
       {canManage && (
         <form className="inline-form" onSubmit={handleCreate}>
-          <h3>Yeni Duyuru</h3>
+          <h3>Yeni Meclis Gündemi</h3>
           <label>
             Başlık
             <input
@@ -108,35 +104,19 @@ function AnnouncementsPage({ canManage }: Props) {
             />
           </label>
           <label>
-            İçerik
-            <textarea
-              value={form.icerik}
-              onChange={(e) => setForm({ ...form, icerik: e.target.value })}
-              required
-            />
-          </label>
-          <label>
-            Resim URL
-            <MedyaSecici
-              value={form.resimUrl ?? ''}
-              onChange={(url) => setForm({ ...form, resimUrl: url })}
-            />
-          </label>
-          <label>
-            Yayın Tarihi
+            Tarih
             <input
               type="date"
-              value={form.yayinTarihi}
-              onChange={(e) => setForm({ ...form, yayinTarihi: e.target.value })}
+              value={form.tarih}
+              onChange={(e) => setForm({ ...form, tarih: e.target.value })}
               required
             />
           </label>
           <label>
-            Kategori
-            <input
-              value={form.kategori}
-              onChange={(e) => setForm({ ...form, kategori: e.target.value })}
-              required
+            Dosya URL
+            <MedyaSecici
+              value={form.dosyaUrl ?? ''}
+              onChange={(url) => setForm({ ...form, dosyaUrl: url })}
             />
           </label>
           <button type="submit">Kaydet</button>
@@ -150,8 +130,7 @@ function AnnouncementsPage({ canManage }: Props) {
           <thead>
             <tr>
               <th>Başlık</th>
-              <th>Kategori</th>
-              <th>Yayın Tarihi</th>
+              <th>Tarih</th>
               <th>Son Güncelleyen</th>
               {canManage && <th>İşlemler</th>}
             </tr>
@@ -160,7 +139,7 @@ function AnnouncementsPage({ canManage }: Props) {
             {items.map((item) =>
               editingId === item.id ? (
                 <tr key={item.id}>
-                  <td colSpan={canManage ? 5 : 4}>
+                  <td colSpan={canManage ? 4 : 3}>
                     <div className="edit-row">
                       <label>
                         Başlık
@@ -170,34 +149,20 @@ function AnnouncementsPage({ canManage }: Props) {
                         />
                       </label>
                       <label>
-                        İçerik
-                        <textarea
-                          value={editForm.icerik}
-                          onChange={(e) => setEditForm({ ...editForm, icerik: e.target.value })}
-                        />
-                      </label>
-                      <label>
-                        Resim URL
-                        <MedyaSecici
-                          value={editForm.resimUrl ?? ''}
-                          onChange={(url) => setEditForm({ ...editForm, resimUrl: url })}
-                        />
-                      </label>
-                      <label>
-                        Yayın Tarihi
+                        Tarih
                         <input
                           type="date"
-                          value={editForm.yayinTarihi}
-                          onChange={(e) =>
-                            setEditForm({ ...editForm, yayinTarihi: e.target.value })
-                          }
+                          value={editForm.tarih}
+                          onChange={(e) => setEditForm({ ...editForm, tarih: e.target.value })}
                         />
                       </label>
                       <label>
-                        Kategori
-                        <input
-                          value={editForm.kategori}
-                          onChange={(e) => setEditForm({ ...editForm, kategori: e.target.value })}
+                        Dosya URL
+                        <MedyaSecici
+                          value={editForm.dosyaUrl ?? ''}
+                          onChange={(url) =>
+                            setEditForm({ ...editForm, dosyaUrl: url })
+                          }
                         />
                       </label>
                       <div className="row-actions">
@@ -214,8 +179,7 @@ function AnnouncementsPage({ canManage }: Props) {
               ) : (
                 <tr key={item.id}>
                   <td>{item.baslik}</td>
-                  <td>{item.kategori}</td>
-                  <td>{item.yayinTarihi.slice(0, 10)}</td>
+                  <td>{item.tarih.slice(0, 10)}</td>
                   <td>{item.updatedBy ?? '-'}</td>
                   {canManage && (
                     <td className="row-actions">
@@ -237,4 +201,4 @@ function AnnouncementsPage({ canManage }: Props) {
   );
 }
 
-export default AnnouncementsPage;
+export default MeclisGundemleriPage;

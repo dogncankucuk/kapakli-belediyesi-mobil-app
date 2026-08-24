@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react';
 import { deleteUser, getUsers, setUserDisabled } from './api';
 import type { CitizenUser } from './types';
 
-function UsersPage() {
+interface Props {
+  canManage: boolean;
+}
+
+function UsersPage({ canManage }: Props) {
   const [items, setItems] = useState<CitizenUser[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -64,11 +68,12 @@ function UsersPage() {
 
   return (
     <div className="page">
-      <h2>Kullanıcılar</h2>
+      <h2>Mobil Uygulama Kullanıcıları</h2>
       <p className="hint">
-        Mobil uygulamaya kayıt olan vatandaşların hesapları. T.C. kimlik no ve telefon
-        gibi kişisel veriler içerdiği için bu sayfa yalnızca Süper Yönetici rolüne
-        açıktır.
+        Mobil uygulamaya kayıt olan vatandaşların hesap kayıtları - bu sayfa
+        onlar için değil, bu hesapları yöneten adminler içindir. T.C. kimlik
+        no ve telefon gibi kişisel veriler içerdiği için erişim rol bazlı
+        olarak kısıtlanabilir (bkz. Roller).
       </p>
 
       <form onSubmit={handleSearchSubmit} className="search-form">
@@ -95,7 +100,7 @@ function UsersPage() {
               <th>E-posta</th>
               <th>Hesap Türü</th>
               <th>Durum</th>
-              <th>İşlemler</th>
+              {canManage && <th>İşlemler</th>}
             </tr>
           </thead>
           <tbody>
@@ -109,22 +114,24 @@ function UsersPage() {
                 <td>{user.eposta ?? '—'}</td>
                 <td>{user.googleHesabi ? 'Google' : 'E-posta/Şifre'}</td>
                 <td>{user.disabled ? 'Donduruldu' : 'Aktif'}</td>
-                <td className="row-actions">
-                  <button
-                    disabled={busyId === user.id}
-                    onClick={() => handleToggleDisabled(user)}
-                  >
-                    {user.disabled ? 'Aktif Et' : 'Dondur'}
-                  </button>
-                  <button disabled={busyId === user.id} onClick={() => handleDelete(user)}>
-                    Sil
-                  </button>
-                </td>
+                {canManage && (
+                  <td className="row-actions">
+                    <button
+                      disabled={busyId === user.id}
+                      onClick={() => handleToggleDisabled(user)}
+                    >
+                      {user.disabled ? 'Aktif Et' : 'Dondur'}
+                    </button>
+                    <button disabled={busyId === user.id} onClick={() => handleDelete(user)}>
+                      Sil
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
             {items.length === 0 && (
               <tr>
-                <td colSpan={7}>Kayıt bulunamadı.</td>
+                <td colSpan={canManage ? 7 : 6}>Kayıt bulunamadı.</td>
               </tr>
             )}
           </tbody>
