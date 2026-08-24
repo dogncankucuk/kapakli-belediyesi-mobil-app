@@ -79,6 +79,10 @@ type Page =
 
 interface NavGroup {
   heading: string;
+  // Sadece tek bir sayfaya sahip gruplarda kullanilir: heading'in kendisi
+  // tiklanabilir bir link olur, ayrica alt sekme gostermeye gerek kalmaz
+  // (bkz. "Medya" grubu).
+  headingPage?: Page;
   items: { page: Page; label: string }[];
 }
 
@@ -93,7 +97,7 @@ interface NavGroup {
 // katmanlarini besleyen kaynaklar) ve harita editorunu bir arada toplar.
 const NAV_GROUPS: NavGroup[] = [
   {
-    heading: 'Duyurular',
+    heading: 'Güncel',
     items: [
       { page: 'haberler', label: 'Haberler' },
       { page: 'announcements', label: 'Duyurular' },
@@ -159,18 +163,14 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     heading: 'Medya',
-    items: [{ page: 'medya', label: 'Medya Kütüphanesi' }],
+    headingPage: 'medya',
+    items: [],
   },
   {
     heading: 'Ayarlar',
     items: [
       { page: 'panelTemasi', label: 'Panel Görünümü' },
       { page: 'temaAyarlari', label: 'Mobil Görünüm Ayarları' },
-    ],
-  },
-  {
-    heading: 'Panel Yönetimi',
-    items: [
       { page: 'roles', label: 'Roller' },
       { page: 'adminUsers', label: 'Yönetici Kullanıcılar' },
       { page: 'users', label: 'Mobil Uygulama Kullanıcıları' },
@@ -197,6 +197,20 @@ function App() {
   const [user, setUser] = useState<AdminUser | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [page, setPage] = useState<Page | null>(null);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [sidebarArama, setSidebarArama] = useState('');
+
+  function toggleGroup(heading: string) {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(heading)) {
+        next.delete(heading);
+      } else {
+        next.add(heading);
+      }
+      return next;
+    });
+  }
 
   useEffect(() => {
     me()
@@ -242,13 +256,43 @@ function App() {
     return NAV_GROUPS.map((group) => ({
       ...group,
       items: group.items.filter((item) => canViewPage(item.page)),
-    }));
+    })).filter(
+      (group) => !group.headingPage || canViewPage(group.headingPage),
+    );
   }, [canViewPage]);
+
+  // Arama bosken normal ac/kapa (collapsedGroups) durumu gecerli. Arama
+  // yapilirken eslesen gruplar - baslik eslesiyorsa tum alt sekmeleriyle,
+  // sadece bazi alt sekmeler eslesiyorsa yalnizca onlarla - her zaman acik
+  // gosterilir, eslesmeyen gruplar tamamen gizlenir.
+  const displayGroups = useMemo(() => {
+    const q = sidebarArama.trim().toLocaleLowerCase('tr-TR');
+    if (!q) {
+      return visibleGroups.map((group) => ({
+        ...group,
+        expanded: !collapsedGroups.has(group.heading),
+      }));
+    }
+    return visibleGroups
+      .map((group) => {
+        const headingMatch = group.heading.toLocaleLowerCase('tr-TR').includes(q);
+        const items = headingMatch
+          ? group.items
+          : group.items.filter((item) =>
+              item.label.toLocaleLowerCase('tr-TR').includes(q),
+            );
+        return { ...group, items, expanded: true, eslesiyor: headingMatch || items.length > 0 };
+      })
+      .filter((group) => group.eslesiyor);
+  }, [visibleGroups, sidebarArama, collapsedGroups]);
 
   useEffect(() => {
     if (!user) return;
     if (page && canViewPage(page)) return;
-    const firstVisible = visibleGroups[0]?.items[0]?.page ?? null;
+    const firstVisible =
+      visibleGroups.flatMap((g) =>
+        g.headingPage ? [g.headingPage] : g.items.map((i) => i.page),
+      )[0] ?? null;
     setPage(firstVisible);
   }, [user, page, canViewPage, visibleGroups]);
 
@@ -284,23 +328,62 @@ function App() {
           Kapaklı Belediyesi
         </div>
 
+        <div className="sidebar-search-row">
+          <input
+            type="search"
+            value={sidebarArama}
+            onChange={(e) => setSidebarArama(e.target.value)}
+            placeholder="Menüde ara..."
+            className="sidebar-search-input"
+          />
+        </div>
+
         <nav className="sidebar-nav">
-          {visibleGroups.map((group) => (
-            <div className="sidebar-group" key={group.heading}>
-              <div className="sidebar-group-heading">{group.heading}</div>
-              {group.items.map((item) => (
-                <button
-                  key={item.page}
-                  className={
-                    'sidebar-link' + (page === item.page ? ' active' : '')
-                  }
-                  onClick={() => setPage(item.page)}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          ))}
+          {displayGroups.length === 0 && (
+            <p className="sidebar-empty-note">Eşleşen bir menü bulunamadı.</p>
+          )}
+          {displayGroups.map((group) => {
+            const canToggle = !group.headingPage && group.items.length > 0;
+            return (
+              <div className="sidebar-group" key={group.heading}>
+                {group.headingPage ? (
+                  <button
+                    className={
+                      'sidebar-group-heading-link' +
+                      (page === group.headingPage ? ' active' : '')
+                    }
+                    onClick={() => setPage(group.headingPage!)}
+                  >
+                    {group.heading}
+                  </button>
+                ) : canToggle ? (
+                  <button
+                    className="sidebar-group-heading sidebar-group-heading-toggle"
+                    onClick={() => toggleGroup(group.heading)}
+                  >
+                    {group.heading}
+                    <span className="sidebar-group-chevron" aria-hidden="true">
+                      {group.expanded ? '▾' : '▸'}
+                    </span>
+                  </button>
+                ) : (
+                  <div className="sidebar-group-heading">{group.heading}</div>
+                )}
+                {group.expanded &&
+                  group.items.map((item) => (
+                    <button
+                      key={item.page}
+                      className={
+                        'sidebar-link' + (page === item.page ? ' active' : '')
+                      }
+                      onClick={() => setPage(item.page)}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+              </div>
+            );
+          })}
         </nav>
 
         <div className="sidebar-footer">

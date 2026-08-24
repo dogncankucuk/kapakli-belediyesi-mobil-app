@@ -83,7 +83,7 @@
 }
 
 .sidebar {
-  width: 264px;
+  width: 320px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -118,6 +118,20 @@
   flex-shrink: 0;
 }
 
+.sidebar-search-row {
+  padding: 12px 12px 0;
+}
+
+.sidebar-search-input {
+  width: 100%;
+}
+
+.sidebar-empty-note {
+  padding: 0 10px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
 .sidebar-nav {
   flex: 1;
   overflow-y: auto;
@@ -133,7 +147,7 @@
 }
 
 .sidebar-group-heading {
-  font-size: 13px;
+  font-size: 20px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -141,6 +155,56 @@
   padding: 0 10px 8px;
   margin-bottom: 8px;
   border-bottom: 2px solid var(--color-primary-light);
+}
+
+.sidebar-group-heading-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  border-bottom: 2px solid var(--color-primary-light);
+  cursor: pointer;
+  text-align: left;
+}
+
+.sidebar-group-heading-toggle:hover {
+  color: var(--color-primary-dark);
+}
+
+.sidebar-group-chevron {
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+/* Tek sayfali gruplarda (bkz. "Medya") heading'in kendisi tiklanabilir olur -
+   goruntusu duz heading ile ayni kalir, sadece etkilesim eklenir. */
+.sidebar-group-heading-link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-bottom: 2px solid var(--color-primary-light);
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-primary);
+  padding: 0 10px 8px;
+  margin-bottom: 8px;
+  border-radius: 0;
+}
+
+.sidebar-group-heading-link:hover {
+  color: var(--color-primary-dark);
+}
+
+.sidebar-group-heading-link.active {
+  color: var(--color-primary-dark);
+  border-bottom-color: var(--color-primary);
 }
 
 .sidebar-link {
@@ -152,7 +216,7 @@
   padding: 8px 10px;
   border-radius: var(--radius-sm);
   color: var(--color-text-muted);
-  font-size: 13.5px;
+  font-size: 16px;
   font-weight: 500;
   transition: background 0.15s ease, color 0.15s ease;
   margin-bottom: 2px;
@@ -471,6 +535,17 @@ td.row-actions button.btn-neutral:hover:not(:disabled) {
   flex: 1;
 }
 
+.medya-filtre-row {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 16px 14px;
+  max-width: 640px;
+}
+
+.medya-arama-input {
+  flex: 1;
+}
+
 .medya-secici-row {
   display: flex;
   gap: 8px;
@@ -694,6 +769,20 @@ td.row-actions button.btn-neutral:hover:not(:disabled) {
 .map-editor-canvas {
   width: 100%;
   height: 480px;
+}
+
+.konum-secici-canvas {
+  width: 100%;
+  height: 360px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.konum-secici-address {
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+  margin: 0;
 }
 
 .map-editor-footer {
