@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { createTarihiYer, deleteTarihiYer, getTarihiYerler, updateTarihiYer } from './api';
 import type { TarihiYerInput } from './api';
+import KonumSecici from './KonumSecici';
 import { tarihiYerTuruLabels } from './types';
 import type { TarihiYer } from './types';
 
@@ -120,6 +121,13 @@ function TarihiYerlerPage({ canManage }: Props) {
               required
             />
           </label>
+          <KonumSecici
+            lat={form.lat}
+            lng={form.lng}
+            onChange={(lat, lng, adres) =>
+              setForm({ ...form, lat, lng, adres: adres ?? form.adres })
+            }
+          />
           <button type="submit">Kaydet</button>
         </form>
       )}
@@ -187,6 +195,13 @@ function TarihiYerlerPage({ canManage }: Props) {
                           onChange={(e) => setEditForm({ ...editForm, lng: Number(e.target.value) })}
                         />
                       </label>
+                      <KonumSecici
+                        lat={editForm.lat}
+                        lng={editForm.lng}
+                        onChange={(lat, lng, adres) =>
+                          setEditForm({ ...editForm, lat, lng, adres: adres ?? editForm.adres })
+                        }
+                      />
                       <div className="row-actions">
                         <button type="button" onClick={() => handleUpdate(item.id)}>
                           Kaydet

@@ -7,6 +7,7 @@ import {
   updateAtikNoktasi,
 } from './api';
 import type { AtikNoktasiInput } from './api';
+import KonumSecici from './KonumSecici';
 import { atikTuruLabels } from './types';
 import type { AtikNoktasi } from './types';
 
@@ -131,6 +132,13 @@ function AtikNoktalariPage({ canManage }: Props) {
               required
             />
           </label>
+          <KonumSecici
+            lat={form.lat}
+            lng={form.lng}
+            onChange={(lat, lng, adres) =>
+              setForm({ ...form, lat, lng, adres: adres ?? form.adres })
+            }
+          />
           <button type="submit">Kaydet</button>
         </form>
       )}
@@ -198,6 +206,13 @@ function AtikNoktalariPage({ canManage }: Props) {
                           onChange={(e) => setEditForm({ ...editForm, lng: Number(e.target.value) })}
                         />
                       </label>
+                      <KonumSecici
+                        lat={editForm.lat}
+                        lng={editForm.lng}
+                        onChange={(lat, lng, adres) =>
+                          setEditForm({ ...editForm, lat, lng, adres: adres ?? editForm.adres })
+                        }
+                      />
                       <div className="row-actions">
                         <button type="button" onClick={() => handleUpdate(item.id)}>
                           Kaydet

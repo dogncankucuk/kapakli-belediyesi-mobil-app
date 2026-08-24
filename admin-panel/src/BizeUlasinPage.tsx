@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { getBizeUlasin, updateBizeUlasin } from './api';
 import type { BizeUlasinInput } from './api';
+import KonumSecici from './KonumSecici';
 
 interface Props {
   canManage: boolean;
@@ -127,6 +128,14 @@ function BizeUlasinPage({ canManage }: Props) {
             disabled={!canManage}
           />
         </label>
+        <KonumSecici
+          lat={form.lat}
+          lng={form.lng}
+          onChange={(lat, lng, adres) =>
+            setForm({ ...form, lat, lng, adres: adres ?? form.adres })
+          }
+          disabled={!canManage}
+        />
         {canManage && <button type="submit">Kaydet</button>}
         {updatedBy && <p className="map-editor-readonly-note">Son güncelleyen: {updatedBy}</p>}
       </form>

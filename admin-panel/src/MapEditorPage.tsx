@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import type L from 'leaflet';
+import LeafletLib, { KAPAKLI_CENTER } from './leafletSetup';
 import {
   getCamiler,
   updateCami,
@@ -18,16 +15,6 @@ import {
   getPharmacies,
   updatePharmacy,
 } from './api';
-
-// Vite ile Leaflet'in varsayilan marker ikonlari dogru cozumlenmiyor -
-// bilinen bir sorun, standart duzeltme budur.
-delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })
-  ._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconUrl: markerIcon,
-  iconRetinaUrl: markerIcon2x,
-  shadowUrl: markerShadow,
-});
 
 interface Props {
   canManage: boolean;
@@ -95,8 +82,6 @@ const CATEGORIES: {
   },
 ];
 
-const KAPAKLI_CENTER: L.LatLngExpression = [41.33, 27.975];
-
 function MapEditorPage({ canManage }: Props) {
   const [categoryIndex, setCategoryIndex] = useState(0);
   const [items, setItems] = useState<MapItem[]>([]);
@@ -117,13 +102,13 @@ function MapEditorPage({ canManage }: Props) {
   // Harita bir kez olusturulur, sonraki render'larda tekrar kurulmaz.
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
-    const map = L.map(mapContainerRef.current).setView(KAPAKLI_CENTER, 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const map = LeafletLib.map(mapContainerRef.current).setView(KAPAKLI_CENTER, 13);
+    LeafletLib.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap katkıda bulunanlar',
       maxZoom: 19,
     }).addTo(map);
 
-    const marker = L.marker(KAPAKLI_CENTER, { draggable: true }).addTo(map);
+    const marker = LeafletLib.marker(KAPAKLI_CENTER, { draggable: true }).addTo(map);
     marker.on('dragend', () => {
       const pos = marker.getLatLng();
       setMarkerPos({ lat: pos.lat, lng: pos.lng });
