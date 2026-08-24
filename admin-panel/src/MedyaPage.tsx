@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { deleteMedya, getMedyaDosyalari, uploadMedya } from './api';
+import { dosyaUzantisi } from './medyaUzanti';
 import type { MedyaDosyasi } from './types';
 
 interface Props {
@@ -27,6 +28,8 @@ function MedyaPage({ canManage }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [yukleniyor, setYukleniyor] = useState(false);
   const [kopyalananId, setKopyalananId] = useState<string | null>(null);
+  const [arama, setArama] = useState('');
+  const [uzantiFiltre, setUzantiFiltre] = useState('tumu');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -83,9 +86,32 @@ function MedyaPage({ canManage }: Props) {
     }
   }
 
+  // Dropdown sadece gercekten yuklenmis dosyalarda bulunan uzantilari
+  // listeler - hic yuklenmemis bir uzantiyi (ornegin .pdf) sececek bir
+  // secenek gostermez.
+  const mevcutUzantilar = useMemo(() => {
+    const uzantilar = new Set(
+      dosyalar.map((d) => dosyaUzantisi(d.orijinalAd)).filter(Boolean),
+    );
+    return Array.from(uzantilar).sort((a, b) => a.localeCompare(b, 'tr-TR'));
+  }, [dosyalar]);
+
+  const filtreliDosyalar = useMemo(() => {
+    const aramaKucuk = arama.trim().toLocaleLowerCase('tr-TR');
+    return dosyalar.filter((dosya) => {
+      if (uzantiFiltre !== 'tumu' && dosyaUzantisi(dosya.orijinalAd) !== uzantiFiltre) {
+        return false;
+      }
+      if (aramaKucuk && !dosya.orijinalAd.toLocaleLowerCase('tr-TR').includes(aramaKucuk)) {
+        return false;
+      }
+      return true;
+    });
+  }, [dosyalar, arama, uzantiFiltre]);
+
   return (
     <div className="page">
-      <h2>Medya Kütüphanesi</h2>
+      <h2>Medya</h2>
       <p>
         Bu siteye yüklenen tüm dosyalar burada saklanır. Bir dosyayı
         yükledikten sonra bağlantısını kopyalayıp herhangi bir "Resim URL" /
@@ -108,13 +134,35 @@ function MedyaPage({ canManage }: Props) {
         </div>
       )}
 
+      {!loading && dosyalar.length > 0 && (
+        <div className="medya-filtre-row">
+          <input
+            type="search"
+            value={arama}
+            onChange={(e) => setArama(e.target.value)}
+            placeholder="Dosya adına göre ara..."
+            className="medya-arama-input"
+          />
+          <select value={uzantiFiltre} onChange={(e) => setUzantiFiltre(e.target.value)}>
+            <option value="tumu">Tüm Uzantılar</option>
+            {mevcutUzantilar.map((uzanti) => (
+              <option key={uzanti} value={uzanti}>
+                .{uzanti}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {loading ? (
         <p>Yükleniyor...</p>
       ) : dosyalar.length === 0 ? (
         <p>Henüz dosya yüklenmemiş.</p>
+      ) : filtreliDosyalar.length === 0 ? (
+        <p>Aramanızla eşleşen dosya bulunamadı.</p>
       ) : (
         <div className="medya-grid">
-          {dosyalar.map((dosya) => (
+          {filtreliDosyalar.map((dosya) => (
             <div className="medya-card" key={dosya.id}>
               {dosya.mimeType.startsWith('image/') ? (
                 <img src={dosya.url} alt={dosya.orijinalAd} className="medya-thumb" />
