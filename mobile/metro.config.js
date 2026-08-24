@@ -12,6 +12,7 @@ config.watchFolders = [
   ...(config.watchFolders || []),
   "C:\\rnsac",
   "C:\\emc",
+  "C:\\rnscreens",
 ];
 config.resolver.unstable_enableSymlinks = true;
 // Windows'ta gercek symlink (mklink /D) icin admin/Developer Mode gerekiyor,

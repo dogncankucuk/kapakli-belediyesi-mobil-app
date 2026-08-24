@@ -7,6 +7,45 @@ export type Announcement = {
   kategori: string;
 };
 
+export type Haber = {
+  id: string;
+  baslik: string;
+  icerik: string;
+  resimUrl: string | null;
+  yayinTarihi: string;
+};
+
+export type Ilan = {
+  id: string;
+  baslik: string;
+  icerik: string;
+  resimUrl: string | null;
+  yayinTarihi: string;
+};
+
+export type Ihale = {
+  id: string;
+  baslik: string;
+  icerik: string;
+  resimUrl: string | null;
+  yayinTarihi: string;
+};
+
+export type Makale = {
+  id: string;
+  baslik: string;
+  icerik: string;
+  resimUrl: string | null;
+  yayinTarihi: string;
+};
+
+export type MeclisGundemi = {
+  id: string;
+  baslik: string;
+  tarih: string;
+  dosyaUrl: string | null;
+};
+
 export type AppointmentDurum = "beklemede";
 
 export type Appointment = {
@@ -79,6 +118,18 @@ export type Pharmacy = {
   nobetTarihi: string;
   lat: number;
   lng: number;
+};
+
+export type BasvuruHizmeti = {
+  id: string;
+  baslik: string;
+  ozet: string;
+  hizmetler: string[];
+  kosullar: string[];
+  calismaSaatleri: string | null;
+  sorumluBirim: string | null;
+  basvuruTuru: "telefon" | "link";
+  basvuruDegeri: string;
 };
 
 export type MeclisKarari = {

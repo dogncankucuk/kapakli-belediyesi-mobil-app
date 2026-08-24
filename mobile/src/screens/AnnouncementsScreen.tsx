@@ -4,8 +4,8 @@ import { ComponentProps, useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { GuncelIcerikKategori } from "../api/guncelIcerik";
 import { Card, TopBar } from "../components";
+import { GuncelIcerikKategori } from "./GuncelIcerikScreen";
 import { useTranslation } from "../i18n/LocaleContext";
 import { TranslationKey } from "../i18n/tr";
 import { Colors, spacing, typography, useThemeColors } from "../theme";

@@ -108,6 +108,8 @@ export const tr = {
   yardimMerkezi_q3: "Talep durumumu nasıl takip ederim?",
   yardimMerkezi_q4: "Nöbetçi eczaneye nasıl ulaşırım?",
   yardimMerkezi_q5: "Şifremi nasıl değiştiririm?",
+  yardimMerkezi_error: "Sorular yüklenemedi.",
+  yardimMerkezi_empty: "Henüz soru eklenmemiş.",
 
   bizeUlasin_title: "Bize Ulaşın",
   bizeUlasin_callCenter: "ÇAĞRI MERKEZİ",
@@ -116,11 +118,10 @@ export const tr = {
   bizeUlasin_townHall: "Belediye Binası",
   bizeUlasin_address: "İnönü Mah. Eski Cami Cad. No: 4-6 Kapaklı/Tekirdağ",
   bizeUlasin_viewOnMap: "Haritada Gör",
+  bizeUlasin_error: "İletişim bilgileri yüklenemedi.",
 
   hakkimizda_title: "Hakkımızda",
-  hakkimizda_mayorTitle: "Başkanımız — Mustafa Çetin",
-  hakkimizda_mayorBio:
-    "1968 Bulgaristan-Şumnu doğumlu, Yıldız Teknik Üniversitesi Endüstri Mühendisliği mezunu. 1994-1999 Kapaklı Belediye Meclis Üyeliği ve belde başkanlıklarının ardından 31 Mart 2019 yerel seçimlerinde Kapaklı Belediye Başkanı seçilmiştir.",
+  hakkimizda_mayorTitle: "Başkanımız",
   hakkimizda_historyTitle: "Kapaklı'nın Tarihçesi",
   hakkimizda_historyError: "Tarihçe yüklenemedi.",
   hakkimizda_stat1986: "Belediye",
@@ -140,27 +141,12 @@ export const tr = {
   engelliYasli_applyButton: "Başvur",
   engelliYasli_infoNote:
     "Başvuru için Çağrı Merkezi'ni (444 80 59) arayabilir veya belediyenin online başvuru sistemini kullanabilirsiniz.",
-  engelliYasli_evdeBakimTitle: "Evde Bakım Hizmeti",
-  engelliYasli_evdeBakimSummary:
-    "65 yaş üstü yaşlı, hasta, bakıma muhtaç veya engelleri nedeniyle gündelik ihtiyaçlarını yerine getiremeyen vatandaşlarımıza destek sunulur.",
   engelliYasli_servicesTitle: "Sağlanan Hizmetler",
-  engelliYasli_service1: "Sağlık ve kişisel temizlik bakımı",
-  engelliYasli_service2: "Psikolojik destek",
-  engelliYasli_service3: "Ev temizliği (süpürme, silme, toz alma)",
-  engelliYasli_hours: "Hizmet saatleri: Hafta içi 08:30 - 16:30",
   engelliYasli_conditionsTitle: "Başvuru Şartları",
-  engelliYasli_condition1: "Kapaklı ilçe sınırları içinde ikamet etme",
-  engelliYasli_condition2: "Yalnız yaşama veya eşiyle yaşama",
-  engelliYasli_condition3: "65 yaş ve üstü olma",
-  engelliYasli_condition4:
-    "65 yaş altındaki başvurucular için engelli olma ve yakın akrabası olmama şartı aranır",
-  engelliYasli_responsibleUnit:
-    "Sorumlu birim: Kapaklı Belediyesi Sosyal Destek Hizmetler Müdürlüğü",
   engelliYasli_legalBasis:
     "5393 sayılı Belediye Kanunu'nun 60. maddesinin (İ) fıkrası kapsamında sunulmaktadır.",
-  engelliYasli_sosyalHizmetlerTitle: "Sosyal Hizmetler Müdürlüğü",
-  engelliYasli_sosyalHizmetlerDesc:
-    "Sosyal yardım, Sevgi Eli Yardım Mağazaları ve psikolojik danışmanlık hizmetleri için başvuru kanalı.",
+  engelliYasli_error: "Başvuru hizmetleri yüklenemedi.",
+  engelliYasli_empty: "Henüz başvuru hizmeti eklenmemiş.",
 
   faturaOdeme_title: "Fatura Ödeme",
   faturaOdeme_sectionTitle: "Ödeme Yapılacak Kurum",
@@ -272,6 +258,13 @@ export const tr = {
   guncelIcerik_empty: "İçerik bulunamadı.",
 
   nobetciEczaneler_title: "Nöbetçi Eczaneler",
+  nobetciEczaneler_subtitle: "Bugün nöbetçi olan eczaneler",
+  nobetciEczaneler_error: "Nöbetçi eczaneler yüklenemedi.",
+  nobetciEczaneler_empty: "Bugün için nöbetçi eczane kaydı bulunamadı.",
+  nobetciEczaneler_officialLink: "Resmi sayfada gör",
+  nobetciEczaneler_colAd: "Eczane",
+  nobetciEczaneler_colTelefon: "Telefon",
+  nobetciEczaneler_colAdres: "Adres",
 
   otobusTakip_title: "Otobüs Takip",
 

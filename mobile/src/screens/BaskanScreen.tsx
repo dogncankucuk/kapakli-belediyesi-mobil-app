@@ -77,7 +77,7 @@ export default function BaskanScreen() {
                   </View>
                 </View>
               )}
-              <Text style={styles.name}>{bilgi.name}</Text>
+              <Text style={styles.name}>{bilgi.ad}</Text>
               <View style={styles.dividerRow}>
                 <View style={styles.dividerLine} />
                 <MaterialIcons

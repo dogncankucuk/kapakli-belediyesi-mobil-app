@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { getKapakliTarihcesi, KapakliTarihcesi } from "../api/kapakliTarihcesi";
+import { getHakkimizda, HakkimizdaBilgisi } from "../api/hakkimizda";
 import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
@@ -21,13 +21,13 @@ export default function HakkimizdaScreen() {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const [tarihce, setTarihce] = useState<KapakliTarihcesi | null>(null);
+  const [bilgi, setBilgi] = useState<HakkimizdaBilgisi | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    getKapakliTarihcesi()
-      .then(setTarihce)
+    getHakkimizda()
+      .then(setBilgi)
       .catch(() => setError(true))
       .finally(() => setIsLoading(false));
   }, []);
@@ -78,7 +78,9 @@ export default function HakkimizdaScreen() {
                 color={colors.outline}
               />
             </View>
-            <Text style={styles.paragraph}>{t("hakkimizda_mayorBio")}</Text>
+            {!isLoading && bilgi?.baskanOzetMetni ? (
+              <Text style={styles.paragraph}>{bilgi.baskanOzetMetni}</Text>
+            ) : null}
           </Card>
         </Pressable>
 
@@ -92,34 +94,36 @@ export default function HakkimizdaScreen() {
             <Text style={styles.cardTitle}>{t("hakkimizda_historyTitle")}</Text>
           </View>
           {isLoading && <ActivityIndicator color={colors.primaryContainer} />}
-          {!isLoading && (error || !tarihce) && (
+          {!isLoading && (error || !bilgi) && (
             <Text style={styles.errorText}>{t("hakkimizda_historyError")}</Text>
           )}
           {!isLoading &&
-            tarihce &&
-            tarihce.paragraflar.map((paragraf, index) => (
+            bilgi &&
+            bilgi.tarihceParagraflari.map((paragraf, index) => (
               <Text key={index} style={styles.paragraph}>
                 {paragraf}
               </Text>
             ))}
         </Card>
 
-        <View style={styles.statsRow}>
-          <View style={styles.statBadge}>
-            <Text style={styles.statValue}>1986</Text>
-            <Text style={styles.statLabel}>{t("hakkimizda_stat1986")}</Text>
+        {!isLoading && bilgi && (
+          <View style={styles.statsRow}>
+            <View style={styles.statBadge}>
+              <Text style={styles.statValue}>{bilgi.kurulusYili}</Text>
+              <Text style={styles.statLabel}>{t("hakkimizda_stat1986")}</Text>
+            </View>
+            <View style={styles.statBadge}>
+              <Text style={styles.statValue}>{bilgi.buyuksehirYili}</Text>
+              <Text style={styles.statLabel}>{t("hakkimizda_stat2012")}</Text>
+            </View>
+            <View style={styles.statBadge}>
+              <Text style={styles.statValue}>{bilgi.nufus}</Text>
+              <Text style={styles.statLabel}>
+                {t("hakkimizda_statPopulation")}
+              </Text>
+            </View>
           </View>
-          <View style={styles.statBadge}>
-            <Text style={styles.statValue}>2012</Text>
-            <Text style={styles.statLabel}>{t("hakkimizda_stat2012")}</Text>
-          </View>
-          <View style={styles.statBadge}>
-            <Text style={styles.statValue}>147.610</Text>
-            <Text style={styles.statLabel}>
-              {t("hakkimizda_statPopulation")}
-            </Text>
-          </View>
-        </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

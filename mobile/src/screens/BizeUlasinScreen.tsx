@@ -1,20 +1,26 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useMemo } from "react";
-import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Linking,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
 
+import { BizeUlasinBilgisi, getBizeUlasin } from "../api/bizeUlasin";
 import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
 
-// Belediye Binasi konumu (Inonu Mah. Eski Cami Cad. No: 4-6, Kapakli/Tekirdag).
-const BELEDIYE_LOCATION = { lat: 41.3276, lng: 27.9726 };
-
 // MapScreen.tsx'teki Leaflet WebView deseniyle ayni ancak sabit/etkilesimsiz:
 // zoom/surukleme kapali, tek marker - "konum sabit gozuksun" istegi icin.
-const BELEDIYE_MAP_HTML = `<!DOCTYPE html>
+function belediyeMapHtml(lat: number, lng: number): string {
+  return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8" />
@@ -37,12 +43,12 @@ const BELEDIYE_MAP_HTML = `<!DOCTYPE html>
       touchZoom: false,
       boxZoom: false,
       keyboard: false,
-    }).setView([${BELEDIYE_LOCATION.lat}, ${BELEDIYE_LOCATION.lng}], 16);
+    }).setView([${lat}, ${lng}], 16);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap',
       maxZoom: 19,
     }).addTo(map);
-    L.circleMarker([${BELEDIYE_LOCATION.lat}, ${BELEDIYE_LOCATION.lng}], {
+    L.circleMarker([${lat}, ${lng}], {
       radius: 10,
       color: '#FFFFFF',
       weight: 2,
@@ -52,6 +58,7 @@ const BELEDIYE_MAP_HTML = `<!DOCTYPE html>
   </script>
 </body>
 </html>`;
+}
 
 type Props = {
   onBack: () => void;
@@ -62,6 +69,16 @@ export function BizeUlasinContent({ onBack, onNavigateToMap }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const [bilgi, setBilgi] = useState<BizeUlasinBilgisi | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    getBizeUlasin()
+      .then(setBilgi)
+      .catch(() => setError(true))
+      .finally(() => setIsLoading(false));
+  }, []);
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -86,81 +103,95 @@ export function BizeUlasinContent({ onBack, onNavigateToMap }: Props) {
         />
       </View>
 
-      <View style={styles.content}>
-        <Pressable onPress={() => Linking.openURL("tel:4448059")}>
-          <Card style={styles.callCenterCard}>
-            <View style={styles.callCenterIcon}>
-              <MaterialIcons name="call" size={22} color={colors.onPrimary} />
-            </View>
-            <View>
-              <Text style={styles.callCenterLabel}>
-                {t("bizeUlasin_callCenter")}
-              </Text>
-              <Text style={styles.callCenterNumber}>444 80 59</Text>
-            </View>
-          </Card>
-        </Pressable>
-
-        <View style={styles.contactRow}>
-          <Pressable
-            style={styles.contactCardWrapper}
-            onPress={() => Linking.openURL("https://wa.me/905309556463")}
-            accessibilityRole="button"
-          >
-            <Card style={styles.contactCard}>
-              <MaterialIcons name="chat" size={22} color={colors.secondary} />
-              <Text style={styles.contactLabel}>
-                {t("bizeUlasin_whatsapp")}
-              </Text>
-            </Card>
-          </Pressable>
-          <Pressable
-            style={styles.contactCardWrapper}
-            onPress={() => Linking.openURL("mailto:kapakli@kapakli.bel.tr")}
-            accessibilityRole="button"
-          >
-            <Card style={styles.contactCard}>
-              <MaterialIcons name="mail" size={22} color={colors.secondary} />
-              <Text style={styles.contactLabel}>{t("bizeUlasin_email")}</Text>
-            </Card>
-          </Pressable>
+      {isLoading && (
+        <View style={styles.content}>
+          <ActivityIndicator color={colors.primaryContainer} />
         </View>
+      )}
+      {!isLoading && (error || !bilgi) && (
+        <View style={styles.content}>
+          <Text style={styles.errorText}>{t("bizeUlasin_error")}</Text>
+        </View>
+      )}
+      {!isLoading && bilgi && (
+        <View style={styles.content}>
+          <Pressable onPress={() => Linking.openURL(`tel:${bilgi.telefon}`)}>
+            <Card style={styles.callCenterCard}>
+              <View style={styles.callCenterIcon}>
+                <MaterialIcons name="call" size={22} color={colors.onPrimary} />
+              </View>
+              <View>
+                <Text style={styles.callCenterLabel}>
+                  {t("bizeUlasin_callCenter")}
+                </Text>
+                <Text style={styles.callCenterNumber}>{bilgi.telefon}</Text>
+              </View>
+            </Card>
+          </Pressable>
 
-        <Card style={styles.addressCard}>
-          <View style={styles.addressHeader}>
-            <MaterialIcons
-              name="location-on"
-              size={18}
-              color={colors.secondary}
-            />
-            <Text style={styles.addressTitle}>{t("bizeUlasin_townHall")}</Text>
-          </View>
-          <Text style={styles.addressText}>{t("bizeUlasin_address")}</Text>
-          {onNavigateToMap ? (
+          <View style={styles.contactRow}>
             <Pressable
-              style={styles.imagePlaceholder}
-              onPress={onNavigateToMap}
+              style={styles.contactCardWrapper}
+              onPress={() =>
+                Linking.openURL(`https://wa.me/${bilgi.whatsapp}`)
+              }
               accessibilityRole="button"
-              accessibilityLabel={t("bizeUlasin_viewOnMap")}
             >
-              <WebView
-                source={{ html: BELEDIYE_MAP_HTML }}
-                style={styles.map}
-                scrollEnabled={false}
-                pointerEvents="none"
-              />
+              <Card style={styles.contactCard}>
+                <MaterialIcons name="chat" size={22} color={colors.secondary} />
+                <Text style={styles.contactLabel}>
+                  {t("bizeUlasin_whatsapp")}
+                </Text>
+              </Card>
             </Pressable>
-          ) : (
-            <View style={styles.imagePlaceholder} pointerEvents="none">
-              <WebView
-                source={{ html: BELEDIYE_MAP_HTML }}
-                style={styles.map}
-                scrollEnabled={false}
+            <Pressable
+              style={styles.contactCardWrapper}
+              onPress={() => Linking.openURL(`mailto:${bilgi.eposta}`)}
+              accessibilityRole="button"
+            >
+              <Card style={styles.contactCard}>
+                <MaterialIcons name="mail" size={22} color={colors.secondary} />
+                <Text style={styles.contactLabel}>{t("bizeUlasin_email")}</Text>
+              </Card>
+            </Pressable>
+          </View>
+
+          <Card style={styles.addressCard}>
+            <View style={styles.addressHeader}>
+              <MaterialIcons
+                name="location-on"
+                size={18}
+                color={colors.secondary}
               />
+              <Text style={styles.addressTitle}>{t("bizeUlasin_townHall")}</Text>
             </View>
-          )}
-        </Card>
-      </View>
+            <Text style={styles.addressText}>{bilgi.adres}</Text>
+            {onNavigateToMap ? (
+              <Pressable
+                style={styles.imagePlaceholder}
+                onPress={onNavigateToMap}
+                accessibilityRole="button"
+                accessibilityLabel={t("bizeUlasin_viewOnMap")}
+              >
+                <WebView
+                  source={{ html: belediyeMapHtml(bilgi.lat, bilgi.lng) }}
+                  style={styles.map}
+                  scrollEnabled={false}
+                  pointerEvents="none"
+                />
+              </Pressable>
+            ) : (
+              <View style={styles.imagePlaceholder} pointerEvents="none">
+                <WebView
+                  source={{ html: belediyeMapHtml(bilgi.lat, bilgi.lng) }}
+                  style={styles.map}
+                  scrollEnabled={false}
+                />
+              </View>
+            )}
+          </Card>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -198,6 +229,10 @@ const createStyles = (colors: Colors) =>
       paddingHorizontal: spacing.containerMargin,
       paddingBottom: spacing.stackGap,
       gap: spacing.stackGap,
+    },
+    errorText: {
+      ...typography.bodyMd,
+      color: colors.error,
     },
     callCenterCard: {
       flexDirection: "row",

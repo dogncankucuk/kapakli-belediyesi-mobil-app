@@ -109,6 +109,8 @@ export const en: Record<TranslationKey, string> = {
   yardimMerkezi_q3: "How do I track my request status?",
   yardimMerkezi_q4: "How do I find the on-duty pharmacy?",
   yardimMerkezi_q5: "How do I change my password?",
+  yardimMerkezi_error: "Questions could not be loaded.",
+  yardimMerkezi_empty: "No questions added yet.",
 
   bizeUlasin_title: "Contact Us",
   bizeUlasin_callCenter: "CALL CENTER",
@@ -117,11 +119,10 @@ export const en: Record<TranslationKey, string> = {
   bizeUlasin_townHall: "Municipal Building",
   bizeUlasin_address: "İnönü Mah. Eski Cami Cad. No: 4-6 Kapaklı/Tekirdağ",
   bizeUlasin_viewOnMap: "View on Map",
+  bizeUlasin_error: "Contact information could not be loaded.",
 
   hakkimizda_title: "About Us",
-  hakkimizda_mayorTitle: "Our Mayor — Mustafa Çetin",
-  hakkimizda_mayorBio:
-    "Born in 1968 in Shumen, Bulgaria, graduate of Yıldız Technical University's Industrial Engineering department. After serving as a Kapaklı Municipal Council member and town head from 1994-1999, he was elected Mayor of Kapaklı in the local elections of March 31, 2019.",
+  hakkimizda_mayorTitle: "Our Mayor",
   hakkimizda_historyTitle: "History of Kapaklı",
   hakkimizda_historyError: "History could not be loaded.",
   hakkimizda_stat1986: "Municipality",
@@ -141,27 +142,12 @@ export const en: Record<TranslationKey, string> = {
   engelliYasli_applyButton: "Apply",
   engelliYasli_infoNote:
     "You can call the Call Center (444 80 59) to apply, or use the municipality's online application system.",
-  engelliYasli_evdeBakimTitle: "Home Care Service",
-  engelliYasli_evdeBakimSummary:
-    "Support for elderly, ill, care-dependent residents over 65, or those who cannot manage daily needs due to a disability.",
   engelliYasli_servicesTitle: "Services Provided",
-  engelliYasli_service1: "Health and personal hygiene care",
-  engelliYasli_service2: "Psychological support",
-  engelliYasli_service3: "Housekeeping (sweeping, wiping, dusting)",
-  engelliYasli_hours: "Service hours: Weekdays 08:30 - 16:30",
   engelliYasli_conditionsTitle: "Application Requirements",
-  engelliYasli_condition1: "Reside within Kapaklı district borders",
-  engelliYasli_condition2: "Live alone or with a spouse",
-  engelliYasli_condition3: "Be 65 years of age or older",
-  engelliYasli_condition4:
-    "Applicants under 65 must be disabled and have no close relative living with them",
-  engelliYasli_responsibleUnit:
-    "Responsible unit: Kapaklı Municipality Social Support Services Directorate",
   engelliYasli_legalBasis:
     "Provided under Article 60(İ) of Municipal Law No. 5393.",
-  engelliYasli_sosyalHizmetlerTitle: "Directorate of Social Services",
-  engelliYasli_sosyalHizmetlerDesc:
-    "Application channel for social assistance, Sevgi Eli Aid Stores, and psychological counseling services.",
+  engelliYasli_error: "Application services could not be loaded.",
+  engelliYasli_empty: "No application services added yet.",
 
   faturaOdeme_title: "Pay Bills",
   faturaOdeme_sectionTitle: "Institution to Pay",
@@ -274,6 +260,13 @@ export const en: Record<TranslationKey, string> = {
   guncelIcerik_empty: "No content found.",
 
   nobetciEczaneler_title: "On-Duty Pharmacies",
+  nobetciEczaneler_subtitle: "Pharmacies on duty today",
+  nobetciEczaneler_error: "On-duty pharmacies could not be loaded.",
+  nobetciEczaneler_empty: "No on-duty pharmacy found for today.",
+  nobetciEczaneler_officialLink: "View on official page",
+  nobetciEczaneler_colAd: "Pharmacy",
+  nobetciEczaneler_colTelefon: "Phone",
+  nobetciEczaneler_colAdres: "Address",
 
   otobusTakip_title: "Bus Tracking",
 

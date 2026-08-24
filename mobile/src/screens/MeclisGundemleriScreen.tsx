@@ -11,30 +11,32 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import {
-  getMeclisGundemleriWeb,
-  MeclisGundemiKaydi,
-} from "../api/meclisGundemleriWeb";
+import { getMeclisGundemleri } from "../api/meclisGundemleri";
+import { MeclisGundemi } from "../api/types";
 import { Card, SegmentedControl } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { Colors, spacing, typography, useThemeColors } from "../theme";
+
+function yilFromTarih(tarih: string): string {
+  return new Date(tarih).getFullYear().toString();
+}
 
 export default function MeclisGundemleriScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const [gundemler, setGundemler] = useState<MeclisGundemiKaydi[]>([]);
+  const [gundemler, setGundemler] = useState<MeclisGundemi[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [year, setYear] = useState<string | null>(null);
 
   useEffect(() => {
-    getMeclisGundemleriWeb()
+    getMeclisGundemleri()
       .then((data) => {
         setGundemler(data);
         if (data.length > 0) {
-          setYear(data[0].year);
+          setYear(yilFromTarih(data[0].tarih));
         }
       })
       .catch(() => setError(true))
@@ -42,12 +44,12 @@ export default function MeclisGundemleriScreen() {
   }, []);
 
   const years = useMemo(() => {
-    const uniqueYears = new Set(gundemler.map((k) => k.year));
+    const uniqueYears = new Set(gundemler.map((k) => yilFromTarih(k.tarih)));
     return Array.from(uniqueYears).sort((a, b) => Number(b) - Number(a));
   }, [gundemler]);
 
   const visibleGundemler = useMemo(
-    () => gundemler.filter((k) => k.year === year),
+    () => gundemler.filter((k) => yilFromTarih(k.tarih) === year),
     [gundemler, year],
   );
 
@@ -86,19 +88,24 @@ export default function MeclisGundemleriScreen() {
             <View style={styles.list}>
               {visibleGundemler.map((item) => (
                 <Pressable
-                  key={item.url}
-                  onPress={() => Linking.openURL(item.url)}
+                  key={item.id}
+                  onPress={() =>
+                    item.dosyaUrl && Linking.openURL(item.dosyaUrl)
+                  }
+                  disabled={!item.dosyaUrl}
                   accessibilityRole="button"
                 >
                   <Card style={styles.card}>
                     <Text style={styles.itemTitle} numberOfLines={2}>
-                      {item.title}
+                      {item.baslik}
                     </Text>
-                    <MaterialIcons
-                      name="open-in-new"
-                      size={20}
-                      color={colors.secondary}
-                    />
+                    {item.dosyaUrl && (
+                      <MaterialIcons
+                        name="open-in-new"
+                        size={20}
+                        color={colors.secondary}
+                      />
+                    )}
                   </Card>
                 </Pressable>
               ))}

@@ -1,92 +1,40 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useMemo } from "react";
-import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Linking,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { WebView, type WebViewNavigation } from "react-native-webview";
 
+import { getNobetciEczaneler } from "../api/pharmacies";
+import { Pharmacy } from "../api/types";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
 
-// Belediyenin kendi nobetci eczane sayfasi zaten sadece Kapakli'yi
-// listeliyor (ilce filtresi gerekmiyor), ama telefon numaralari duz metin
-// <td> hucreleri - tiklanabilir degil. Numaralari kendimiz <a href="tel:...">
-// linkine ceviriyoruz ki alttaki onShouldStartLoadWithRequest yakalayip
-// isletim sisteminin arama ekranina yonlendirebilsin.
-// Tablo (Tarih/Eczane/Telefon/Adres/Yol Tarifi) genis masaustu duzeninde -
-// dar ekranda yatay kaydirma gerektiriyordu. thead/tbody yapisini kullanip
-// her hucreye kendi sutun basligini data-label olarak veriyoruz, sonra CSS
-// ile satirlari dikey kart gorunumune ceviriyoruz (klasik "responsive
-// table" tekniği).
-const LINKIFY_PHONES_JS = `
-(function () {
-  function dismissCookieBanner() {
-    var close = document.querySelector('.cookie-close');
-    if (close) close.click();
-  }
-  function makeTableResponsive() {
-    var table = document.querySelector('table');
-    if (!table || table.dataset.kapakliResponsive) return;
-    var headerCells = table.querySelectorAll('thead th');
-    if (!headerCells.length) return;
-    var headers = Array.prototype.map.call(headerCells, function (h) { return h.textContent.trim(); });
-    var rows = table.querySelectorAll('tbody tr');
-    for (var r = 0; r < rows.length; r += 1) {
-      var cells = rows[r].querySelectorAll('td, th');
-      for (var c = 0; c < cells.length && c < headers.length; c += 1) {
-        cells[c].setAttribute('data-label', headers[c]);
-      }
-    }
-    table.dataset.kapakliResponsive = '1';
-    var style = document.createElement('style');
-    style.textContent =
-      '@media (max-width: 700px) {' +
-      'table thead { display: none !important; }' +
-      'table, table tbody, table tr, table td, table th { width: auto !important; }' +
-      'table tr { display: block !important; margin-bottom: 14px !important; border: 1px solid #ddd !important; border-radius: 8px !important; }' +
-      'table td, table th { display: block !important; text-align: left !important; border: none !important; border-bottom: 1px solid #eee !important; padding: 6px 10px !important; white-space: normal !important; }' +
-      'table td:before, table th:before { content: attr(data-label); font-weight: bold; display: block; font-size: 12px; color: #888; }' +
-      '}';
-    document.head.appendChild(style);
-  }
-  function linkifyPhones() {
-    var cells = document.querySelectorAll('td');
-    for (var i = 0; i < cells.length; i += 1) {
-      var cell = cells[i];
-      var text = (cell.textContent || '').trim();
-      var digits = text.replace(/\\s/g, '');
-      if (cell.dataset.kapakliLinked || !/^0\\d{10}$/.test(digits)) continue;
-      cell.dataset.kapakliLinked = '1';
-      var link = document.createElement('a');
-      link.href = 'tel:' + digits;
-      link.textContent = text;
-      cell.textContent = '';
-      cell.appendChild(link);
-    }
-  }
-  var tries = 0;
-  var timer = setInterval(function () {
-    tries += 1;
-    dismissCookieBanner();
-    makeTableResponsive();
-    linkifyPhones();
-    if (tries > 20) clearInterval(timer);
-  }, 250);
-  true;
-})();
-true;
-`;
+const RESMI_SAYFA_URL = "https://www.kapakli.bel.tr/kapakli-nobetci-eczaneler";
 
-// Sitedeki telefon numaralari duzgun bir sekilde <a href="tel:..."> olarak
-// isaretlenmis, ama WebView bu tel: navigasyonunu kendi icinde acamadigi
-// icin sessizce yutuyor - isletim sisteminin arama ekranina yonlendirmek
-// icin burada yakalayip Linking ile aciyoruz.
-function handleShouldStartLoad(request: WebViewNavigation) {
-  if (request.url.startsWith("tel:") || request.url.startsWith("mailto:")) {
-    Linking.openURL(request.url);
-    return false;
+// Bazi eczanelerin kendi hatti OSM'de kayitli degil - bu durumda telefon
+// alaninda uzun bir aciklama cumlesi tutuluyor (bkz. seed script). Tabloda
+// tek bir uzun satirin diger satirlarin dizilimini bozmamasi ve gecersiz bir
+// tel: linki olusmamasi icin kisa bir goruntu metnine ve temiz bir arama
+// numarasina indirgeniyor.
+const CAGRI_MERKEZI_MARKER = "Cagri Merkezi";
+const CAGRI_MERKEZI_NUMARASI = "4448059";
+
+function formatTelefon(raw: string): { display: string; dial: string } {
+  if (raw.includes(CAGRI_MERKEZI_MARKER)) {
+    return {
+      display: "444 80 59 (Çağrı Merkezi)",
+      dial: CAGRI_MERKEZI_NUMARASI,
+    };
   }
-  return true;
+  return { display: raw, dial: raw };
 }
 
 export default function NobetciEczanelerScreen() {
@@ -94,6 +42,16 @@ export default function NobetciEczanelerScreen() {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const [eczaneler, setEczaneler] = useState<Pharmacy[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    getNobetciEczaneler()
+      .then(setEczaneler)
+      .catch(() => setError(true))
+      .finally(() => setIsLoading(false));
+  }, []);
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -110,12 +68,85 @@ export default function NobetciEczanelerScreen() {
         <Text style={styles.headerTitle}>{t("nobetciEczaneler_title")}</Text>
       </View>
 
-      <WebView
-        source={{ uri: "https://www.kapakli.bel.tr/kapakli-nobetci-eczaneler" }}
-        injectedJavaScript={LINKIFY_PHONES_JS}
-        onShouldStartLoadWithRequest={handleShouldStartLoad}
-        style={styles.webview}
-      />
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.subtitle}>{t("nobetciEczaneler_subtitle")}</Text>
+
+        {isLoading && <ActivityIndicator color={colors.primaryContainer} />}
+        {!isLoading && error && (
+          <Text style={styles.errorText}>{t("nobetciEczaneler_error")}</Text>
+        )}
+        {!isLoading && !error && eczaneler.length === 0 && (
+          <Text style={styles.emptyText}>{t("nobetciEczaneler_empty")}</Text>
+        )}
+
+        {!isLoading && !error && eczaneler.length > 0 && (
+          <View style={styles.table}>
+            <View style={[styles.tableRow, styles.tableHeaderRow]}>
+              <Text style={[styles.tableHeaderCell, styles.colAd]}>
+                {t("nobetciEczaneler_colAd")}
+              </Text>
+              <Text style={[styles.tableHeaderCell, styles.colTelefon]}>
+                {t("nobetciEczaneler_colTelefon")}
+              </Text>
+              <Text style={[styles.tableHeaderCell, styles.colAdres]}>
+                {t("nobetciEczaneler_colAdres")}
+              </Text>
+            </View>
+            {eczaneler.map((eczane, index) => {
+              const telefon = formatTelefon(eczane.telefon);
+              return (
+                <View
+                  key={eczane.id}
+                  style={[
+                    styles.tableRow,
+                    index % 2 === 1 && styles.tableRowAlt,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      styles.colAd,
+                      styles.tableCellStrong,
+                    ]}
+                  >
+                    {eczane.ad}
+                  </Text>
+                  <Pressable
+                    style={styles.colTelefon}
+                    onPress={() => Linking.openURL(`tel:${telefon.dial}`)}
+                    accessibilityRole="button"
+                  >
+                    <Text style={[styles.tableCell, styles.telefonCellText]}>
+                      {telefon.display}
+                    </Text>
+                  </Pressable>
+                  <Text style={[styles.tableCell, styles.colAdres]}>
+                    {eczane.adres}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        )}
+
+        <Pressable
+          onPress={() => Linking.openURL(RESMI_SAYFA_URL)}
+          accessibilityRole="button"
+          style={styles.officialLinkRow}
+        >
+          <MaterialIcons
+            name="open-in-new"
+            size={16}
+            color={colors.secondary}
+          />
+          <Text style={styles.officialLinkText}>
+            {t("nobetciEczaneler_officialLink")}
+          </Text>
+        </Pressable>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -145,7 +176,83 @@ const createStyles = (colors: Colors) =>
       ...typography.titleLg,
       color: colors.onPrimary,
     },
-    webview: {
-      flex: 1,
+    content: {
+      padding: spacing.containerMargin,
+      gap: spacing.stackGap,
+    },
+    subtitle: {
+      ...typography.bodyMd,
+      color: colors.outline,
+    },
+    errorText: {
+      ...typography.bodyMd,
+      color: colors.error,
+    },
+    emptyText: {
+      ...typography.bodyMd,
+      color: colors.outline,
+    },
+    table: {
+      borderRadius: shape.rounded,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      overflow: "hidden",
+    },
+    tableRow: {
+      flexDirection: "row",
+      borderBottomWidth: 1,
+      borderBottomColor: colors.outlineVariant,
+      backgroundColor: colors.surfaceContainerLowest,
+    },
+    tableRowAlt: {
+      backgroundColor: colors.background,
+    },
+    tableHeaderRow: {
+      backgroundColor: colors.primaryContainer,
+      borderBottomWidth: 0,
+    },
+    tableHeaderCell: {
+      ...typography.labelSm,
+      color: colors.onPrimary,
+      fontWeight: "700",
+      textTransform: "uppercase",
+      letterSpacing: 0.4,
+      paddingVertical: 10,
+      paddingHorizontal: 8,
+    },
+    tableCell: {
+      ...typography.bodyMd,
+      color: colors.onBackground,
+      paddingVertical: 10,
+      paddingHorizontal: 8,
+    },
+    tableCellStrong: {
+      fontWeight: "700",
+    },
+    telefonCellText: {
+      color: colors.secondary,
+      fontWeight: "600",
+      textDecorationLine: "underline",
+    },
+    colAd: {
+      flex: 1.1,
+    },
+    colTelefon: {
+      flex: 1.2,
+      justifyContent: "center",
+    },
+    colAdres: {
+      flex: 1.4,
+    },
+    officialLinkRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 4,
+      paddingVertical: spacing.stackGap,
+    },
+    officialLinkText: {
+      ...typography.bodyMd,
+      color: colors.secondary,
     },
   });
