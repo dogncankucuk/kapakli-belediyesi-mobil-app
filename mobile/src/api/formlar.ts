@@ -1,4 +1,4 @@
-import { BASE_URL } from "./client";
+import { BASE_URL, resolveMediaUrl } from "./client";
 
 export type FormBelgesi = {
   id: string;
@@ -29,7 +29,7 @@ export async function getFormBelgeleri(): Promise<FormBelgesi[]> {
   return data.map((doc) => ({
     id: doc.id,
     title: doc.baslik,
-    url: doc.url,
+    url: resolveMediaUrl(doc.url),
     kind: doc.tur === "form" ? "form" : "belge",
   }));
 }

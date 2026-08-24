@@ -3,6 +3,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -19,7 +20,7 @@ import { getMakaleler } from "../api/makaleler";
 import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { TranslationKey } from "../i18n/tr";
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
 
 export type GuncelIcerikKategori =
   "haberler" | "duyurular" | "ilanlar" | "ihaleler" | "makaleler";
@@ -29,6 +30,7 @@ type IcerikKaydi = {
   baslik: string;
   icerik: string;
   tarih: string;
+  resimUrl: string | null;
 };
 
 const TITLE_KEYS: Record<GuncelIcerikKategori, TranslationKey> = {
@@ -41,7 +43,8 @@ const TITLE_KEYS: Record<GuncelIcerikKategori, TranslationKey> = {
 
 // Her kategori admin panelde ayri yonetilen kendi backend kaynagina sahip -
 // bu yuzden ekran, kategoriye gore dogru fetch fonksiyonunu secip ortak bir
-// {id, baslik, icerik, tarih} sekline indirgeniyor.
+// {id, baslik, icerik, tarih, resimUrl} sekline indirgeniyor. resimUrl ilgili
+// api/*.ts dosyasinda zaten mutlak URL'e cevrilmis olarak geliyor.
 const FETCHERS: Record<GuncelIcerikKategori, () => Promise<IcerikKaydi[]>> = {
   haberler: async () =>
     (await getHaberler()).map((h) => ({
@@ -49,6 +52,7 @@ const FETCHERS: Record<GuncelIcerikKategori, () => Promise<IcerikKaydi[]>> = {
       baslik: h.baslik,
       icerik: h.icerik,
       tarih: h.yayinTarihi,
+      resimUrl: h.resimUrl,
     })),
   duyurular: async () =>
     (await getAnnouncements()).map((a) => ({
@@ -56,6 +60,7 @@ const FETCHERS: Record<GuncelIcerikKategori, () => Promise<IcerikKaydi[]>> = {
       baslik: a.baslik,
       icerik: a.icerik,
       tarih: a.yayinTarihi,
+      resimUrl: a.resimUrl,
     })),
   ilanlar: async () =>
     (await getIlanlar()).map((i) => ({
@@ -63,6 +68,7 @@ const FETCHERS: Record<GuncelIcerikKategori, () => Promise<IcerikKaydi[]>> = {
       baslik: i.baslik,
       icerik: i.icerik,
       tarih: i.yayinTarihi,
+      resimUrl: i.resimUrl,
     })),
   ihaleler: async () =>
     (await getIhaleler()).map((i) => ({
@@ -70,6 +76,7 @@ const FETCHERS: Record<GuncelIcerikKategori, () => Promise<IcerikKaydi[]>> = {
       baslik: i.baslik,
       icerik: i.icerik,
       tarih: i.yayinTarihi,
+      resimUrl: i.resimUrl,
     })),
   makaleler: async () =>
     (await getMakaleler()).map((m) => ({
@@ -77,6 +84,7 @@ const FETCHERS: Record<GuncelIcerikKategori, () => Promise<IcerikKaydi[]>> = {
       baslik: m.baslik,
       icerik: m.icerik,
       tarih: m.yayinTarihi,
+      resimUrl: m.resimUrl,
     })),
 };
 
@@ -142,6 +150,13 @@ export default function GuncelIcerikScreen() {
                 accessibilityRole="button"
               >
                 <Card style={styles.card}>
+                  {item.resimUrl && (
+                    <Image
+                      source={{ uri: item.resimUrl }}
+                      style={styles.itemImage}
+                      resizeMode="cover"
+                    />
+                  )}
                   <Text
                     style={styles.itemTitle}
                     numberOfLines={expanded ? undefined : 2}
@@ -216,6 +231,13 @@ const createStyles = (colors: Colors) =>
     card: {
       padding: spacing.stackGap,
       gap: 4,
+    },
+    itemImage: {
+      width: "100%",
+      aspectRatio: 16 / 9,
+      borderRadius: shape.rounded,
+      marginBottom: 4,
+      backgroundColor: colors.outlineVariant,
     },
     itemTitle: {
       ...typography.labelLg,

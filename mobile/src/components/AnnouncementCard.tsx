@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import Card from "./Card";
 import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
@@ -7,12 +7,14 @@ import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
 type AnnouncementCardProps = {
   title: string;
   date: string;
+  imageUrl?: string | null;
   onPress?: () => void;
 };
 
 export default function AnnouncementCard({
   title,
   date,
+  imageUrl,
   onPress,
 }: AnnouncementCardProps) {
   const colors = useThemeColors();
@@ -22,7 +24,15 @@ export default function AnnouncementCard({
     <Pressable onPress={onPress} accessibilityRole="button">
       {({ pressed }) => (
         <Card style={[styles.card, pressed && styles.cardPressed]}>
-          <View style={styles.thumbnail} />
+          {imageUrl ? (
+            <Image
+              source={{ uri: imageUrl }}
+              style={styles.thumbnail}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.thumbnail} />
+          )}
           <View style={styles.content}>
             <Text style={styles.title} numberOfLines={2}>
               {title}

@@ -1,4 +1,4 @@
-import { BASE_URL } from "./client";
+import { BASE_URL, resolveMediaUrl } from "./client";
 import { Haber } from "./types";
 
 export async function getHaberler(): Promise<Haber[]> {
@@ -8,5 +8,10 @@ export async function getHaberler(): Promise<Haber[]> {
     throw new Error("Haberler alınamadı");
   }
 
-  return response.json();
+  const data: Haber[] = await response.json();
+
+  return data.map((item) => ({
+    ...item,
+    resimUrl: item.resimUrl ? resolveMediaUrl(item.resimUrl) : null,
+  }));
 }

@@ -7,6 +7,7 @@ import {
   updateFormBelgesi,
 } from './api';
 import type { FormBelgesiInput } from './api';
+import MedyaSecici from './MedyaSecici';
 import type { FormBelgesi } from './types';
 import { formBelgesiTuruLabels } from './types';
 
@@ -101,10 +102,9 @@ function FormlarPage({ canManage }: Props) {
           </label>
           <label>
             Bağlantı (URL)
-            <input
+            <MedyaSecici
               value={form.url}
-              onChange={(e) => setForm({ ...form, url: e.target.value })}
-              required
+              onChange={(url) => setForm({ ...form, url })}
             />
           </label>
           <label>
@@ -148,9 +148,9 @@ function FormlarPage({ canManage }: Props) {
                       </label>
                       <label>
                         Bağlantı (URL)
-                        <input
+                        <MedyaSecici
                           value={editForm.url}
-                          onChange={(e) => setEditForm({ ...editForm, url: e.target.value })}
+                          onChange={(url) => setEditForm({ ...editForm, url })}
                         />
                       </label>
                       <label>

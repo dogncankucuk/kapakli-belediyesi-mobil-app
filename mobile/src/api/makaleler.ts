@@ -1,4 +1,4 @@
-import { BASE_URL } from "./client";
+import { BASE_URL, resolveMediaUrl } from "./client";
 import { Makale } from "./types";
 
 export async function getMakaleler(): Promise<Makale[]> {
@@ -8,5 +8,10 @@ export async function getMakaleler(): Promise<Makale[]> {
     throw new Error("Makaleler alınamadı");
   }
 
-  return response.json();
+  const data: Makale[] = await response.json();
+
+  return data.map((item) => ({
+    ...item,
+    resimUrl: item.resimUrl ? resolveMediaUrl(item.resimUrl) : null,
+  }));
 }

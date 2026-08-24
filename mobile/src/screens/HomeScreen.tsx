@@ -226,6 +226,7 @@ export default function HomeScreen() {
                 key={item.id}
                 title={item.baslik}
                 date={formatAnnouncementDate(item)}
+                imageUrl={item.resimUrl}
               />
             ))}
         </View>

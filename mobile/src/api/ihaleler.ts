@@ -1,4 +1,4 @@
-import { BASE_URL } from "./client";
+import { BASE_URL, resolveMediaUrl } from "./client";
 import { Ihale } from "./types";
 
 export async function getIhaleler(): Promise<Ihale[]> {
@@ -8,5 +8,10 @@ export async function getIhaleler(): Promise<Ihale[]> {
     throw new Error("İhaleler alınamadı");
   }
 
-  return response.json();
+  const data: Ihale[] = await response.json();
+
+  return data.map((item) => ({
+    ...item,
+    resimUrl: item.resimUrl ? resolveMediaUrl(item.resimUrl) : null,
+  }));
 }

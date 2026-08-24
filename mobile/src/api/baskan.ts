@@ -1,4 +1,4 @@
-import { BASE_URL } from "./client";
+import { BASE_URL, resolveMediaUrl } from "./client";
 
 export type BaskanBilgisi = {
   ad: string;
@@ -15,5 +15,10 @@ export async function getBaskanBilgisi(): Promise<BaskanBilgisi> {
     throw new Error("Başkan bilgileri alınamadı");
   }
 
-  return response.json();
+  const data: BaskanBilgisi = await response.json();
+
+  return {
+    ...data,
+    photoUrl: data.photoUrl ? resolveMediaUrl(data.photoUrl) : null,
+  };
 }

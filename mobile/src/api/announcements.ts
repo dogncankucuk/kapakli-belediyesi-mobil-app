@@ -1,4 +1,4 @@
-import { BASE_URL } from "./client";
+import { BASE_URL, resolveMediaUrl } from "./client";
 import { Announcement } from "./types";
 
 export async function getAnnouncements(): Promise<Announcement[]> {
@@ -8,5 +8,10 @@ export async function getAnnouncements(): Promise<Announcement[]> {
     throw new Error("Duyurular alınamadı");
   }
 
-  return response.json();
+  const data: Announcement[] = await response.json();
+
+  return data.map((item) => ({
+    ...item,
+    resimUrl: item.resimUrl ? resolveMediaUrl(item.resimUrl) : null,
+  }));
 }

@@ -19,3 +19,13 @@ export const BASE_URL =
   Platform.OS === "android"
     ? `http://${ANDROID_HOST}:3000`
     : "http://localhost:3000";
+
+// Admin panelin Medya Kutuphanesi'nden secilen dosyalar backend'den
+// "/uploads/xxx.pdf" gibi goreceli bir yol olarak doner (admin panel ayni
+// origin'den servis edildigi icin sorun degil) - mobil uygulama ayri bir
+// origin'den calistigi icin Linking.openURL bu goreceli yolu acamaz. Mutlak
+// (http/https) URL'lere dokunmadan sadece goreceli yollari BASE_URL ile
+// tamamlar.
+export function resolveMediaUrl(url: string): string {
+  return url.startsWith("/") ? `${BASE_URL}${url}` : url;
+}

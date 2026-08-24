@@ -1,4 +1,4 @@
-import { BASE_URL } from "./client";
+import { BASE_URL, resolveMediaUrl } from "./client";
 import { MeclisGundemi } from "./types";
 
 export async function getMeclisGundemleri(): Promise<MeclisGundemi[]> {
@@ -8,5 +8,10 @@ export async function getMeclisGundemleri(): Promise<MeclisGundemi[]> {
     throw new Error("Meclis gündemleri alınamadı");
   }
 
-  return response.json();
+  const data: MeclisGundemi[] = await response.json();
+
+  return data.map((doc) => ({
+    ...doc,
+    dosyaUrl: doc.dosyaUrl ? resolveMediaUrl(doc.dosyaUrl) : null,
+  }));
 }
