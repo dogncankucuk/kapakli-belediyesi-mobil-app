@@ -15,6 +15,7 @@ import YardimMerkeziPage from './YardimMerkeziPage';
 import BizeUlasinPage from './BizeUlasinPage';
 import FaturaOdemePage from './FaturaOdemePage';
 import UlasimHizmetleriPage from './UlasimHizmetleriPage';
+import UlasimHatlariPage from './UlasimHatlariPage';
 import TemaAyarlariPage from './TemaAyarlariPage';
 import PanelTemasiPage from './PanelTemasiPage';
 import MedyaPage from './MedyaPage';
@@ -52,6 +53,7 @@ type Page =
   | 'bizeUlasin'
   | 'faturaOdeme'
   | 'ulasimHizmetleri'
+  | 'ulasimHatlari'
   | 'temaAyarlari'
   | 'panelTemasi'
   | 'medya'
@@ -124,6 +126,7 @@ const NAV_GROUPS: NavGroup[] = [
       { page: 'formlar', label: 'Formlar ve Dilekçeler' },
       { page: 'basvuruHizmetleri', label: 'Engelli / Yaşlı Hizmetleri' },
       { page: 'ulasimHizmetleri', label: 'Ulaşım Hizmetleri' },
+      { page: 'ulasimHatlari', label: 'Ulaşım Hatları' },
       { page: 'pharmacies', label: 'Nöbetçi Eczaneler' },
       { page: 'atikNoktalari', label: 'Atık Noktaları' },
       { page: 'asevi', label: 'Aşevi' },
@@ -325,6 +328,9 @@ function App() {
         {page === 'faturaOdeme' && <FaturaOdemePage canManage={canManage('faturaOdeme')} />}
         {page === 'ulasimHizmetleri' && (
           <UlasimHizmetleriPage canManage={canManage('ulasimHizmetleri')} />
+        )}
+        {page === 'ulasimHatlari' && (
+          <UlasimHatlariPage canManage={canManage('ulasimHatlari')} />
         )}
         {page === 'temaAyarlari' && (
           <TemaAyarlariPage canManage={canManage('temaAyarlari')} />

@@ -306,3 +306,34 @@ export type HavaDurumu = {
   olcumZamani: string;
   gunlukTahmin: GunlukTahmin[];
 };
+
+export type FaturaOdemeKurumu = {
+  id: string;
+  ad: string;
+  aciklama: string;
+  url: string;
+};
+
+export type UlasimSecenegi = {
+  id: string;
+  baslik: string;
+  aciklama: string;
+  url: string;
+};
+
+export type UlasimHatti = {
+  id: string;
+  hatAdi: string;
+  guzergah: string;
+  durum: string;
+  canli: boolean;
+};
+
+export type CanliOtobus = {
+  plaka: string;
+  hiz: number;
+  lat: number;
+  lng: number;
+  hatAdi: string;
+  sonVeriSaati: string;
+};

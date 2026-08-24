@@ -151,12 +151,8 @@ export const tr = {
   faturaOdeme_title: "Fatura Ödeme",
   faturaOdeme_sectionTitle: "Ödeme Yapılacak Kurum",
   faturaOdeme_subtitle: "Hızlı ve güvenli ödeme için kurum seçiniz.",
-  faturaOdeme_otherInstitutions: "Diğer Kurumlar",
-  faturaOdeme_teskiDesc: "Su ve Kanalizasyon",
-  faturaOdeme_gazdasDesc: "Doğal Gaz",
-  faturaOdeme_vergiName: "Belediye Vergileri",
-  faturaOdeme_vergiDesc: "Vergi Ödeme",
-  faturaOdeme_trepasDesc: "Elektrik Dağıtım",
+  faturaOdeme_error: "Kurumlar yüklenirken bir hata oluştu.",
+  faturaOdeme_empty: "Henüz kurum eklenmemiş.",
 
   formlar_title: "Formlar ve Dilekçeler",
   formlar_subtitle:
@@ -267,6 +263,12 @@ export const tr = {
   nobetciEczaneler_colAdres: "Adres",
 
   otobusTakip_title: "Otobüs Takip",
+  otobusTakip_error: "Hatlar yüklenirken bir hata oluştu.",
+  otobusTakip_empty: "Henüz hat eklenmemiş.",
+  otobusTakip_liveShow: "Canlı Konumları Gör",
+  otobusTakip_liveHide: "Canlı Konumları Gizle",
+  otobusTakip_liveEmpty: "Şu anda canlı konum verisi yok.",
+  otobusTakip_speed: "Hız",
 
   randevuAl_title: "Başvurular",
   randevuAl_subtitle: "Kapaklı Dijital Belediye",
@@ -327,8 +329,7 @@ export const tr = {
   taleplerim_statusPending: "Beklemede",
 
   ulasim_title: "Ulaşım Hizmetleri",
-  ulasim_cardTitle: "Tekirdağ Kart Bakiye Yükleme",
-  ulasim_cardSubtitle: "Ulaşım kartınıza online bakiye yükleyin",
+  ulasim_error: "Ulaşım hizmetleri yüklenirken bir hata oluştu.",
   ulasim_busTitle: "Otobüs Takip, Fiyat ve Güzergah Bilgileri",
   ulasim_busSubtitle: "Kapaklı hatlarını canlı görüntüleyin",
 

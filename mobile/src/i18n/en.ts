@@ -152,12 +152,8 @@ export const en: Record<TranslationKey, string> = {
   faturaOdeme_title: "Pay Bills",
   faturaOdeme_sectionTitle: "Institution to Pay",
   faturaOdeme_subtitle: "Select an institution for fast and secure payment.",
-  faturaOdeme_otherInstitutions: "Other Institutions",
-  faturaOdeme_teskiDesc: "Water and Sewerage",
-  faturaOdeme_gazdasDesc: "Natural Gas",
-  faturaOdeme_vergiName: "Municipal Taxes",
-  faturaOdeme_vergiDesc: "Tax Payment",
-  faturaOdeme_trepasDesc: "Electricity Distribution",
+  faturaOdeme_error: "An error occurred while loading institutions.",
+  faturaOdeme_empty: "No institutions added yet.",
 
   formlar_title: "Forms and Petitions",
   formlar_subtitle:
@@ -269,6 +265,12 @@ export const en: Record<TranslationKey, string> = {
   nobetciEczaneler_colAdres: "Address",
 
   otobusTakip_title: "Bus Tracking",
+  otobusTakip_error: "An error occurred while loading routes.",
+  otobusTakip_empty: "No routes added yet.",
+  otobusTakip_liveShow: "Show Live Locations",
+  otobusTakip_liveHide: "Hide Live Locations",
+  otobusTakip_liveEmpty: "No live location data right now.",
+  otobusTakip_speed: "Speed",
 
   randevuAl_title: "Applications",
   randevuAl_subtitle: "Kapaklı Digital Municipality",
@@ -329,8 +331,7 @@ export const en: Record<TranslationKey, string> = {
   taleplerim_statusPending: "Pending",
 
   ulasim_title: "Transportation Services",
-  ulasim_cardTitle: "Tekirdağ Card Balance Top-Up",
-  ulasim_cardSubtitle: "Top up your transportation card online",
+  ulasim_error: "An error occurred while loading transportation services.",
   ulasim_busTitle: "Bus Tracking, Fares and Route Information",
   ulasim_busSubtitle: "View Kapaklı routes live",
 

@@ -214,6 +214,18 @@ export interface UlasimSecenegi {
   updatedAt: string;
 }
 
+export interface UlasimHatti {
+  id: string;
+  hatAdi: string;
+  guzergah: string;
+  durum: string;
+  canli: boolean;
+  hatKodu: string | null;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface MedyaDosyasi {
   id: string;
   dosyaAdi: string;

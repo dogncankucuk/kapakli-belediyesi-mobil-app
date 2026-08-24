@@ -1,9 +1,19 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useMemo } from "react";
-import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Linking,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { getUlasimHizmetleri } from "../api/ulasimHizmetleri";
+import { UlasimSecenegi } from "../api/types";
 import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { Colors, spacing, typography, useThemeColors } from "../theme";
@@ -13,6 +23,16 @@ export default function UlasimHizmetleriScreen() {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const [secenekler, setSecenekler] = useState<UlasimSecenegi[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    getUlasimHizmetleri()
+      .then(setSecenekler)
+      .catch(() => setError(true))
+      .finally(() => setIsLoading(false));
+  }, []);
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -29,36 +49,45 @@ export default function UlasimHizmetleriScreen() {
         <Text style={styles.headerTitle}>{t("ulasim_title")}</Text>
       </View>
 
-      <View style={styles.content}>
-        <Pressable
-          onPress={() =>
-            Linking.openURL(
-              "https://www.tekulas.com.tr/tekirdag-kart-bakiye-yukleme-islemi/",
-            )
-          }
-          accessibilityRole="button"
-        >
-          <Card style={styles.optionCard}>
-            <View style={styles.iconCircle}>
-              <MaterialIcons
-                name="account-balance-wallet"
-                size={26}
-                color={colors.onPrimary}
-              />
-            </View>
-            <View style={styles.optionTextGroup}>
-              <Text style={styles.optionTitle}>{t("ulasim_cardTitle")}</Text>
-              <Text style={styles.optionSubtitle}>
-                {t("ulasim_cardSubtitle")}
-              </Text>
-            </View>
-            <MaterialIcons
-              name="chevron-right"
-              size={24}
-              color={colors.outline}
-            />
-          </Card>
-        </Pressable>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {isLoading && <ActivityIndicator color={colors.primaryContainer} />}
+        {!isLoading && error && (
+          <Text style={styles.errorText}>{t("ulasim_error")}</Text>
+        )}
+
+        {!isLoading &&
+          !error &&
+          secenekler.map((secenek) => (
+            <Pressable
+              key={secenek.id}
+              onPress={() => Linking.openURL(secenek.url)}
+              accessibilityRole="button"
+            >
+              <Card style={styles.optionCard}>
+                <View style={styles.iconCircle}>
+                  <MaterialIcons
+                    name="account-balance-wallet"
+                    size={26}
+                    color={colors.onPrimary}
+                  />
+                </View>
+                <View style={styles.optionTextGroup}>
+                  <Text style={styles.optionTitle}>{secenek.baslik}</Text>
+                  <Text style={styles.optionSubtitle}>
+                    {secenek.aciklama}
+                  </Text>
+                </View>
+                <MaterialIcons
+                  name="chevron-right"
+                  size={24}
+                  color={colors.outline}
+                />
+              </Card>
+            </Pressable>
+          ))}
 
         <Pressable
           onPress={() => navigation.navigate("OtobusTakip" as never)}
@@ -85,7 +114,7 @@ export default function UlasimHizmetleriScreen() {
             />
           </Card>
         </Pressable>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -116,9 +145,12 @@ const createStyles = (colors: Colors) =>
       color: colors.onPrimary,
     },
     content: {
-      flex: 1,
       padding: spacing.containerMargin,
       gap: spacing.stackGap,
+    },
+    errorText: {
+      ...typography.bodyMd,
+      color: colors.error,
     },
     optionCard: {
       flexDirection: "row",

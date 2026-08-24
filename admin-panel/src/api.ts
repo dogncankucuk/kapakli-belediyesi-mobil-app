@@ -34,6 +34,7 @@ import type {
   PanelTemasi,
   TarihiYer,
   TemaAyarlari,
+  UlasimHatti,
   UlasimSecenegi,
   VefatIlani,
   WifiNoktasi,
@@ -356,6 +357,36 @@ export function updateUlasimSecenegi(
 
 export function deleteUlasimSecenegi(id: string) {
   return request<{ success: boolean }>(`/ulasim-hizmetleri/${id}`, { method: 'DELETE' });
+}
+
+export type UlasimHattiInput = {
+  hatAdi: string;
+  guzergah: string;
+  durum: string;
+  canli: boolean;
+  hatKodu?: string;
+};
+
+export function getUlasimHatlari() {
+  return request<UlasimHatti[]>('/ulasim-hatlari');
+}
+
+export function createUlasimHatti(data: UlasimHattiInput) {
+  return request<UlasimHatti>('/ulasim-hatlari', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateUlasimHatti(id: string, data: Partial<UlasimHattiInput>) {
+  return request<UlasimHatti>(`/ulasim-hatlari/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteUlasimHatti(id: string) {
+  return request<{ success: boolean }>(`/ulasim-hatlari/${id}`, { method: 'DELETE' });
 }
 
 export function getTemaAyarlari() {

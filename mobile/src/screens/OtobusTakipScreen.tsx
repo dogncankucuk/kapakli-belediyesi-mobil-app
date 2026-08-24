@@ -1,55 +1,80 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useMemo } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { WebView } from "react-native-webview";
 
+import { getCanliOtobusler, getUlasimHatlari } from "../api/ulasimHatlari";
+import { CanliOtobus, UlasimHatti } from "../api/types";
+import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { Colors, spacing, typography, useThemeColors } from "../theme";
 
-// Tekulaş'ın arama kutusu sadece bir oneri (autocomplete) acar, ana hat
-// listesini kendiliginden filtrelemez - bu yuzden "Kapakli" ile eslesmeyen
-// .tekulas-line kartlarini kendimiz gizliyoruz (sitenin kendi filtre
-// mantigina guvenmek yerine dogrudan DOM uzerinde).
-const FILTER_KAPAKLI_JS = `
-(function () {
-  function applyFilter() {
-    var input = document.getElementById('tekulas-line-search');
-    var lines = document.querySelectorAll('.tekulas-line');
-    if (!input || !lines.length) return false;
-    var setter = Object.getOwnPropertyDescriptor(
-      window.HTMLInputElement.prototype,
-      'value',
-    ).set;
-    setter.call(input, 'Kapaklı');
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    lines.forEach(function (el) {
-      var titleEl = el.querySelector('.line-title');
-      var title = (titleEl ? titleEl.innerText : '').toLocaleUpperCase('tr');
-      if (title.indexOf('KAPAKLI') !== -1 || title.indexOf('KAPAKLİ') !== -1) {
-        el.style.display = '';
-      } else {
-        el.style.display = 'none';
-      }
-    });
-    return true;
-  }
-  var tries = 0;
-  var timer = setInterval(function () {
-    tries += 1;
-    if (applyFilter() || tries > 20) clearInterval(timer);
-  }, 250);
-  true;
-})();
-true;
-`;
+const CANLI_POLL_MS = 15_000;
 
 export default function OtobusTakipScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const [hatlar, setHatlar] = useState<UlasimHatti[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [canliOtobusler, setCanliOtobusler] = useState<CanliOtobus[]>([]);
+  const [canliLoading, setCanliLoading] = useState(false);
+
+  useEffect(() => {
+    getUlasimHatlari()
+      .then(setHatlar)
+      .catch(() => setError(true))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (!expandedId) return;
+
+    let cancelled = false;
+
+    function fetchCanli() {
+      setCanliLoading(true);
+      getCanliOtobusler(expandedId!)
+        .then((items) => {
+          if (!cancelled) setCanliOtobusler(items);
+        })
+        .catch(() => {
+          if (!cancelled) setCanliOtobusler([]);
+        })
+        .finally(() => {
+          if (!cancelled) setCanliLoading(false);
+        });
+    }
+
+    fetchCanli();
+    const interval = setInterval(fetchCanli, CANLI_POLL_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [expandedId]);
+
+  function toggleExpanded(hatId: string) {
+    if (expandedId === hatId) {
+      setExpandedId(null);
+      setCanliOtobusler([]);
+    } else {
+      setExpandedId(hatId);
+      setCanliOtobusler([]);
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -66,11 +91,90 @@ export default function OtobusTakipScreen() {
         <Text style={styles.headerTitle}>{t("otobusTakip_title")}</Text>
       </View>
 
-      <WebView
-        source={{ uri: "https://www.tekulas.com.tr/ulasim/" }}
-        injectedJavaScript={FILTER_KAPAKLI_JS}
-        style={styles.webview}
-      />
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {isLoading && <ActivityIndicator color={colors.primaryContainer} />}
+        {!isLoading && error && (
+          <Text style={styles.errorText}>{t("otobusTakip_error")}</Text>
+        )}
+        {!isLoading && !error && hatlar.length === 0 && (
+          <Text style={styles.emptyText}>{t("otobusTakip_empty")}</Text>
+        )}
+
+        {!isLoading &&
+          !error &&
+          hatlar.map((hat) => (
+            <Card key={hat.id} style={styles.hatCard}>
+              <View style={styles.hatHeader}>
+                <View style={styles.hatIcon}>
+                  <MaterialIcons
+                    name="directions-bus"
+                    size={22}
+                    color={colors.onPrimary}
+                  />
+                </View>
+                <View style={styles.hatTextGroup}>
+                  <Text style={styles.hatAdi}>{hat.hatAdi}</Text>
+                  <Text style={styles.hatGuzergah}>{hat.guzergah}</Text>
+                </View>
+              </View>
+
+              <Text style={styles.hatDurum}>{hat.durum}</Text>
+
+              {hat.canli && (
+                <>
+                  <Pressable
+                    onPress={() => toggleExpanded(hat.id)}
+                    accessibilityRole="button"
+                    style={styles.liveButton}
+                  >
+                    <MaterialIcons
+                      name="my-location"
+                      size={18}
+                      color={colors.primaryContainer}
+                    />
+                    <Text style={styles.liveButtonText}>
+                      {expandedId === hat.id
+                        ? t("otobusTakip_liveHide")
+                        : t("otobusTakip_liveShow")}
+                    </Text>
+                  </Pressable>
+
+                  {expandedId === hat.id && (
+                    <View style={styles.liveList}>
+                      {canliLoading && canliOtobusler.length === 0 && (
+                        <ActivityIndicator color={colors.primaryContainer} />
+                      )}
+                      {!canliLoading && canliOtobusler.length === 0 && (
+                        <Text style={styles.liveEmptyText}>
+                          {t("otobusTakip_liveEmpty")}
+                        </Text>
+                      )}
+                      {canliOtobusler.map((otobus) => (
+                        <View key={otobus.plaka} style={styles.busRow}>
+                          <MaterialIcons
+                            name="directions-bus-filled"
+                            size={18}
+                            color={colors.outline}
+                          />
+                          <View style={styles.busTextGroup}>
+                            <Text style={styles.busPlaka}>{otobus.plaka}</Text>
+                            <Text style={styles.busMeta}>
+                              {t("otobusTakip_speed")}: {Math.round(otobus.hiz)}{" "}
+                              km/sa
+                            </Text>
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </>
+              )}
+            </Card>
+          ))}
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -100,7 +204,87 @@ const createStyles = (colors: Colors) =>
       ...typography.titleLg,
       color: colors.onPrimary,
     },
-    webview: {
+    content: {
+      padding: spacing.containerMargin,
+      gap: spacing.stackGap,
+    },
+    errorText: {
+      ...typography.bodyMd,
+      color: colors.error,
+    },
+    emptyText: {
+      ...typography.bodyMd,
+      color: colors.outline,
+    },
+    hatCard: {
+      padding: spacing.stackGap,
+      gap: spacing.stackGap / 2,
+    },
+    hatHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.stackGap,
+    },
+    hatIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: colors.primaryContainer,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    hatTextGroup: {
       flex: 1,
+      gap: 2,
+    },
+    hatAdi: {
+      ...typography.titleMd,
+      color: colors.onBackground,
+    },
+    hatGuzergah: {
+      ...typography.bodyMd,
+      color: colors.outline,
+    },
+    hatDurum: {
+      ...typography.labelSm,
+      color: colors.secondary,
+    },
+    liveButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.stackGap / 2,
+      alignSelf: "flex-start",
+      marginTop: spacing.stackGap / 2,
+    },
+    liveButtonText: {
+      ...typography.labelLg,
+      color: colors.primaryContainer,
+    },
+    liveList: {
+      gap: spacing.stackGap / 2,
+      marginTop: spacing.stackGap / 2,
+      paddingTop: spacing.stackGap / 2,
+      borderTopWidth: 1,
+      borderTopColor: colors.outlineVariant,
+    },
+    liveEmptyText: {
+      ...typography.bodyMd,
+      color: colors.outline,
+    },
+    busRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.stackGap / 2,
+    },
+    busTextGroup: {
+      gap: 2,
+    },
+    busPlaka: {
+      ...typography.labelLg,
+      color: colors.onBackground,
+    },
+    busMeta: {
+      ...typography.labelSm,
+      color: colors.outline,
     },
   });
