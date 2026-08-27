@@ -81,6 +81,15 @@ Eskiden "Randevu Al" ekranı sadece belediyenin dış sayfalarına yönlendiren 
 - **Mobilde** vatandaş "Randevu Al" ekranından admin tanımlı türlerden birini seçer, T.C. Kimlik No (gerçek checksum doğrulamalı), Ad Soyad, Doğum Tarihi (native tarih seçici) ve Adres ile türe özel ek alanları/belgeleri (fotoğraf veya PDF) doldurup gönderir. "Başvurularım" ekranından, cihazda anonim olarak tutulan başvuru kimlikleriyle durumunu takip edebilir — bu uç nokta kimlik doğrulama gerektirmez ve kasıtlı olarak yalnızca başvuru türü/durum/red sebebi/tarih döner, T.C. kimlik no/doğum tarihi/adres gibi kişisel veriyi **döndürmez**.
 - Yeni backend modülü: `backend/src/modules/basvurular/` (başvuru türleri + başvurular için ayrı admin ve public controller/service çiftleri, DTO doğrulaması, orphan dosya temizliği).
 
+### Başvurular Sistemi — notlar, tür görseli, detay-sonra-başvur akışı
+
+Yukarıdaki başvuru sistemi üzerine ek:
+
+- Adminler her başvuruya, durumundan bağımsız olarak iki not ekleyebilir: **Dahili Not** (sadece admin panelinde görünür) ve **Kullanıcıya Gösterilecek Not** (mobilde "Başvurularım" ekranında vatandaşa gösterilir).
+- Başvuru türlerine, admin panelindeki paylaşılan Medya Seçici bileşeniyle seçilen opsiyonel bir görsel eklenebilir; bu görsel hem admin panelindeki tür listesinde hem mobildeki tür kartında/detay ekranında gösterilir.
+- Mobilde bir başvuru türüne dokunmak artık doğrudan forma değil, yeni bir **detay ekranına** (görsel, açıklama, gerekli belgeler listesi, istenen bilgiler listesi ve "Başvur" butonu) götürür; forma geçiş bu ekrandaki butonla yapılır.
+- "Başvurularım" giriş noktası, "Randevu Al" ekranındaki küçük bir ikon buton yerine tam genişlikte, etiketli bir karta dönüştürüldü.
+
 ### v3 — Vatandaş kimlik doğrulama, gerçek harita verisi, admin kullanıcı yönetimi, güvenlik sıkılaştırması
 
 **Kimlik doğrulama**
