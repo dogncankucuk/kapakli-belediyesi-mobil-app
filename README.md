@@ -31,7 +31,7 @@ Kod yazılmadan önce projenin dört temel dokümanı hazırlandı; her biri far
 
 **Kapsanan hizmet alanları (5 sekmelik tab bar):**
 - **Ana Sayfa** — duyuru özeti, gerçek zamanlı hava durumu widget'ı, hızlı erişim
-- **Hizmetler** — su hizmetleri, randevu sistemi, talep/dilekçe oluşturma, engelli ve yaşlı hizmetleri, nöbetçi eczaneler, Aşevi, ulaşım hatları (fatura ödeme hâlâ mock — bkz. Açık Noktalar)
+- **Hizmetler** — su hizmetleri, başvuru sistemi (admin tanımlı başvuru türleri, kimlik/belge doğrulamalı vatandaş başvurusu), talep/dilekçe oluşturma, engelli ve yaşlı hizmetleri, nöbetçi eczaneler, Aşevi, ulaşım hatları (fatura ödeme hâlâ mock — bkz. Açık Noktalar)
 - **Harita** — 6 gerçek veri katmanı: Parklar, Tarihi Yerler, Nöbetçi Eczaneler, Wi-Fi Noktaları, Camiler, Önemli Kurumlar (belediye, kaymakamlık, emniyet, itfaiye, PTT vb.), her biri kendi ikonuyla filtrelenebilir
 - **Duyurular** — haberler, etkinlikler, meclis kararları
 - **Profil** — T.C. kimlik/telefon/e-posta + şifre veya Google ile giriş (misafir kullanım da destekleniyor), şifremi unuttum akışı, hesap bilgileri, ayarlar, kurumsal bilgiler
@@ -72,6 +72,14 @@ Detaylı gerekçeler için [`architecture.md`](./architecture.md) ve [`tech.md`]
 - **Açık risk:** Kamu kurumu verisi için yurt içi barındırma zorunluluğu olup olmadığı belediye ile teyit edilme aşamasındadır (bkz. `architecture.md` §9)
 
 ## Sürüm Notları
+
+### Başvurular Sistemi — vatandaş başvuru/dilekçe akışı ve admin yönetimi
+
+Eskiden "Randevu Al" ekranı sadece belediyenin dış sayfalarına yönlendiren sabit bir bilgilendirme listesiydi (veteriner, nikah, psikolojik danışmanlık, Sevgi Eli). Artık gerçek bir başvuru sistemi:
+
+- **Admin panelde** yeni **Başvuru Türleri** ve **Başvurular** sayfaları: adminler başvuru türü tanımlar (başlık, açıklama, aktif/pasif, türe özel ek bilgi alanları, gerekli belgeler), gelen başvuruları görüntüler, durumunu (Beklemede/Onaylandı/Reddedildi) günceller — reddederken bir red sebebi girmek zorunludur, bu sebep vatandaşa gösterilir.
+- **Mobilde** vatandaş "Randevu Al" ekranından admin tanımlı türlerden birini seçer, T.C. Kimlik No (gerçek checksum doğrulamalı), Ad Soyad, Doğum Tarihi (native tarih seçici) ve Adres ile türe özel ek alanları/belgeleri (fotoğraf veya PDF) doldurup gönderir. "Başvurularım" ekranından, cihazda anonim olarak tutulan başvuru kimlikleriyle durumunu takip edebilir — bu uç nokta kimlik doğrulama gerektirmez ve kasıtlı olarak yalnızca başvuru türü/durum/red sebebi/tarih döner, T.C. kimlik no/doğum tarihi/adres gibi kişisel veriyi **döndürmez**.
+- Yeni backend modülü: `backend/src/modules/basvurular/` (başvuru türleri + başvurular için ayrı admin ve public controller/service çiftleri, DTO doğrulaması, orphan dosya temizliği).
 
 ### v3 — Vatandaş kimlik doğrulama, gerçek harita verisi, admin kullanıcı yönetimi, güvenlik sıkılaştırması
 

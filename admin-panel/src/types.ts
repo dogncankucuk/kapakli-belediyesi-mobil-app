@@ -69,6 +69,8 @@ export const RESOURCE_LABELS: Record<string, string> = {
   medya: 'Medya Kütüphanesi',
   formlar: 'Formlar ve Dilekçeler',
   basvuruHizmetleri: 'Başvuru Hizmetleri',
+  basvuruTurleri: 'Başvuru Türleri',
+  basvurular: 'Başvurular',
   appointments: 'Randevular',
   requests: 'Talepler',
   asevi: 'Aşevi',
@@ -547,6 +549,66 @@ export interface BasvuruHizmeti {
   sorumluBirim: string | null;
   basvuruTuru: string;
   basvuruDegeri: string;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EkBilgiAlani {
+  etiket: string;
+  zorunlu: boolean;
+}
+
+export interface GerekliBelge {
+  etiket: string;
+  aciklama: string | null;
+  zorunlu: boolean;
+}
+
+export interface AdminBasvuruTuru {
+  id: string;
+  baslik: string;
+  aciklama: string | null;
+  aktif: boolean;
+  ekBilgiAlanlari: EkBilgiAlani[];
+  gerekliBelgeler: GerekliBelge[];
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EkBilgiDegeri {
+  etiket: string;
+  deger: string;
+}
+
+export interface BasvuruBelgesi {
+  etiket: string;
+  url: string;
+  mimeType: string;
+}
+
+export type BasvuruDurumu = 'beklemede' | 'onaylandi' | 'reddedildi';
+
+export const basvuruDurumLabels: Record<BasvuruDurumu, string> = {
+  beklemede: 'Beklemede',
+  onaylandi: 'Onaylandı',
+  reddedildi: 'Reddedildi',
+};
+
+export interface AdminBasvuru {
+  id: string;
+  basvuruTuruId: string;
+  basvuruTuruAdi: string;
+  kimlikNo: string;
+  adSoyad: string;
+  dogumTarihi: string;
+  adres: string;
+  ekBilgiler: EkBilgiDegeri[];
+  belgeler: BasvuruBelgesi[];
+  durum: BasvuruDurumu;
+  redSebebi: string | null;
+  userId: string | null;
   updatedBy: string | null;
   createdAt: string;
   updatedAt: string;

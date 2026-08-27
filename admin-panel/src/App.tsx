@@ -34,6 +34,8 @@ import ParklarPage from './ParklarPage';
 import TarihiYerlerPage from './TarihiYerlerPage';
 import FormlarPage from './FormlarPage';
 import BasvuruHizmetleriPage from './BasvuruHizmetleriPage';
+import BasvuruTurleriPage from './BasvuruTurleriPage';
+import BasvurularPage from './BasvurularPage';
 import MapEditorPage from './MapEditorPage';
 import UsersPage from './UsersPage';
 import RolesPage from './RolesPage';
@@ -72,6 +74,8 @@ type Page =
   | 'tarihiYerler'
   | 'formlar'
   | 'basvuruHizmetleri'
+  | 'basvuruTurleri'
+  | 'basvurular'
   | 'mapEditor'
   | 'users'
   | 'roles'
@@ -147,7 +151,10 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     heading: 'Başvurular',
-    items: [],
+    items: [
+      { page: 'basvuruTurleri', label: 'Başvuru Türleri' },
+      { page: 'basvurular', label: 'Başvurular' },
+    ],
   },
   {
     heading: 'Harita Konumları',
@@ -442,6 +449,12 @@ function App() {
         {page === 'formlar' && <FormlarPage canManage={canManage('formlar')} />}
         {page === 'basvuruHizmetleri' && (
           <BasvuruHizmetleriPage canManage={canManage('basvuruHizmetleri')} />
+        )}
+        {page === 'basvuruTurleri' && (
+          <BasvuruTurleriPage canManage={canManage('basvuruTurleri')} />
+        )}
+        {page === 'basvurular' && (
+          <BasvurularPage canManage={canManage('basvurular')} />
         )}
         {page === 'mapEditor' && (
           <MapEditorPage canManage={MAP_EDITOR_RESOURCES.some((r) => canManage(r))} />

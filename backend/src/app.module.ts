@@ -44,6 +44,7 @@ import { TarihiYerlerModule } from './modules/tarihi-yerler/tarihi-yerler.module
 import { UsersModule } from './modules/users/users.module';
 import { FormlarModule } from './modules/formlar/formlar.module';
 import { BasvuruHizmetleriModule } from './modules/basvuru-hizmetleri/basvuru-hizmetleri.module';
+import { BasvurularModule } from './modules/basvurular/basvurular.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { MedyaModule } from './modules/medya/medya.module';
 import { AdminModule } from './admin/admin.module';
@@ -112,6 +113,7 @@ import { UPLOADS_DIR } from './uploads-dir';
     UsersModule,
     FormlarModule,
     BasvuruHizmetleriModule,
+    BasvurularModule,
     RolesModule,
     MedyaModule,
     AdminModule,

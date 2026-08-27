@@ -32,6 +32,8 @@ export type AdminResource =
   | 'tarihiYerler'
   | 'formlar'
   | 'basvuruHizmetleri'
+  | 'basvuruTurleri'
+  | 'basvurular'
   | 'users'
   | 'roles'
   | 'adminUsers';
@@ -70,6 +72,8 @@ export const ALL_ADMIN_RESOURCES: AdminResource[] = [
   'tarihiYerler',
   'formlar',
   'basvuruHizmetleri',
+  'basvuruTurleri',
+  'basvurular',
   'users',
   'roles',
   'adminUsers',

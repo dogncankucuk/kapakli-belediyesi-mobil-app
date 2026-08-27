@@ -1,0 +1,281 @@
+import { MaterialIcons } from "@expo/vector-icons";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { ComponentProps, useCallback, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import { getBasvuruDurumu } from "../api/basvurular";
+import { Basvuru, BasvuruDurumu } from "../api/types";
+import { Card, PrimaryButton } from "../components";
+import { useTranslation } from "../i18n/LocaleContext";
+import { TranslationKey } from "../i18n/tr";
+import { getBasvuruIdleri } from "../storage/basvuruStorage";
+import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+
+type IconName = ComponentProps<typeof MaterialIcons>["name"];
+
+function buildDurumMeta(
+  colors: Colors,
+  t: (key: TranslationKey) => string,
+): Record<BasvuruDurumu, { icon: IconName; label: string; color: string }> {
+  return {
+    onaylandi: {
+      icon: "check-circle",
+      label: t("basvurularim_statusApproved"),
+      color: colors.secondary,
+    },
+    beklemede: {
+      icon: "schedule",
+      label: t("basvurularim_statusPending"),
+      color: colors.outline,
+    },
+    reddedildi: {
+      icon: "cancel",
+      label: t("basvurularim_statusRejected"),
+      color: colors.error,
+    },
+  };
+}
+
+function formatTarih(iso: string): string {
+  return new Date(iso).toLocaleDateString("tr-TR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+export default function BasvurularimScreen() {
+  const navigation = useNavigation();
+  const { t } = useTranslation();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const durumMeta = useMemo(() => buildDurumMeta(colors, t), [colors, t]);
+  const [basvurular, setBasvurular] = useState<Basvuru[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      let iptalEdildi = false;
+
+      async function yukle() {
+        setIsLoading(true);
+        setError(false);
+        try {
+          const idler = await getBasvuruIdleri();
+          const sonuclar = await Promise.allSettled(
+            idler.map((id) => getBasvuruDurumu(id)),
+          );
+          if (iptalEdildi) return;
+
+          const basarili = sonuclar
+            .filter(
+              (sonuc): sonuc is PromiseFulfilledResult<Basvuru> =>
+                sonuc.status === "fulfilled",
+            )
+            .map((sonuc) => sonuc.value);
+          setBasvurular(basarili);
+        } catch {
+          if (!iptalEdildi) setError(true);
+        } finally {
+          if (!iptalEdildi) setIsLoading(false);
+        }
+      }
+
+      yukle();
+      return () => {
+        iptalEdildi = true;
+      };
+    }, []),
+  );
+
+  return (
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <View style={styles.header}>
+        <Pressable
+          onPress={() => navigation.goBack()}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t("common_back")}
+        >
+          <MaterialIcons name="arrow-back" size={24} color={colors.onPrimary} />
+        </Pressable>
+        <Text style={styles.headerTitle}>{t("basvurularim_title")}</Text>
+      </View>
+
+      <View style={styles.content}>
+        <PrimaryButton
+          label={t("basvurularim_newApplication")}
+          onPress={() => navigation.navigate("RandevuAl" as never)}
+        />
+
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>
+            {t("basvurularim_currentApplications")}
+          </Text>
+          <Text style={styles.sectionCount}>
+            {t("basvurularim_recordCount").replace(
+              "{count}",
+              String(basvurular.length),
+            )}
+          </Text>
+        </View>
+
+        {isLoading && <ActivityIndicator color={colors.primaryContainer} />}
+        {!isLoading && error && (
+          <Text style={styles.errorText}>{t("basvurularim_error")}</Text>
+        )}
+        {!isLoading && !error && basvurular.length === 0 && (
+          <Text style={styles.emptyText}>{t("basvurularim_empty")}</Text>
+        )}
+
+        {!isLoading &&
+          !error &&
+          basvurular.map((basvuru) => {
+            const meta = durumMeta[basvuru.durum];
+            return (
+              <Card key={basvuru.id} style={styles.basvuruCard}>
+                <View style={styles.basvuruRow}>
+                  <Text style={styles.basvuruTitle} numberOfLines={1}>
+                    {basvuru.basvuruTuruAdi}
+                  </Text>
+                  <View style={styles.durumBadge}>
+                    <MaterialIcons
+                      name={meta.icon}
+                      size={14}
+                      color={meta.color}
+                    />
+                    <Text style={[styles.durumLabel, { color: meta.color }]}>
+                      {meta.label}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.basvuruDateRow}>
+                  <MaterialIcons
+                    name="calendar-today"
+                    size={14}
+                    color={colors.outline}
+                  />
+                  <Text style={styles.basvuruDate}>
+                    {formatTarih(basvuru.createdAt)}
+                  </Text>
+                </View>
+                {basvuru.durum === "reddedildi" && basvuru.redSebebi ? (
+                  <View style={styles.redSebebiBox}>
+                    <Text style={styles.redSebebiLabel}>
+                      {t("basvurularim_redSebebiLabel")}
+                    </Text>
+                    <Text style={styles.redSebebiText}>
+                      {basvuru.redSebebi}
+                    </Text>
+                  </View>
+                ) : null}
+              </Card>
+            );
+          })}
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.stackGap,
+      paddingHorizontal: spacing.containerMargin,
+      paddingVertical: spacing.stackGap,
+      backgroundColor: colors.primaryContainer,
+    },
+    headerTitle: {
+      ...typography.titleLg,
+      color: colors.onPrimary,
+      flex: 1,
+    },
+    content: {
+      flex: 1,
+      padding: spacing.containerMargin,
+      gap: spacing.stackGap,
+    },
+    sectionHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    sectionTitle: {
+      ...typography.titleMd,
+      color: colors.onBackground,
+    },
+    sectionCount: {
+      ...typography.labelSm,
+      color: colors.outline,
+    },
+    errorText: {
+      ...typography.bodyMd,
+      color: colors.error,
+    },
+    emptyText: {
+      ...typography.bodyMd,
+      color: colors.outline,
+    },
+    basvuruCard: {
+      padding: spacing.stackGap,
+      gap: 4,
+    },
+    basvuruRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: spacing.stackGap / 2,
+    },
+    basvuruTitle: {
+      ...typography.labelLg,
+      color: colors.onBackground,
+      flex: 1,
+    },
+    durumBadge: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+    },
+    durumLabel: {
+      ...typography.labelSm,
+      fontWeight: "600",
+    },
+    basvuruDateRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+    },
+    basvuruDate: {
+      ...typography.bodyMd,
+      color: colors.outline,
+    },
+    redSebebiBox: {
+      marginTop: 4,
+      padding: spacing.stackGap / 2,
+      borderRadius: shape.rounded,
+      backgroundColor: colors.errorContainer,
+    },
+    redSebebiLabel: {
+      ...typography.labelSm,
+      color: colors.error,
+      fontWeight: "600",
+    },
+    redSebebiText: {
+      ...typography.bodyMd,
+      color: colors.onBackground,
+    },
+  });

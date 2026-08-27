@@ -1,8 +1,8 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { ComponentProps, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  Linking,
+  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,65 +11,28 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { Card, PrimaryButton } from "../components";
+import { getBasvuruTurleri } from "../api/basvurular";
+import { BasvuruTuru } from "../api/types";
+import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { TranslationKey } from "../i18n/tr";
 import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
-
-type IconName = ComponentProps<typeof MaterialIcons>["name"];
-
-type RandevuBirimi = {
-  id: string;
-  icon: IconName;
-  badgeKey: TranslationKey;
-  titleKey: TranslationKey;
-  descriptionKey: TranslationKey;
-  url: string;
-};
-
-// kapakli.bel.tr/hizmetlerimiz sayfalarindaki gercek birimlerden alinmistir
-// (2026-07-28 itibariyle). Bu ekran bilgilendirme amaclidir - uygulama
-// icinde randevu alinmaz, "Başvur" butonu ilgili belediye sayfasina yonlendirir.
-const birimler: RandevuBirimi[] = [
-  {
-    id: "veteriner",
-    icon: "pets",
-    badgeKey: "randevuAl_veterinerBadge",
-    titleKey: "randevuAl_veterinerTitle",
-    descriptionKey: "randevuAl_veterinerDesc",
-    url: "https://www.kapakli.bel.tr/hizmetlerimiz/veteriner-hizmetleri",
-  },
-  {
-    id: "nikah-hizmetleri",
-    icon: "favorite",
-    badgeKey: "randevuAl_nikahBadge",
-    titleKey: "randevuAl_nikahTitle",
-    descriptionKey: "randevuAl_nikahDesc",
-    url: "https://www.kapakli.bel.tr/hizmetlerimiz/nikah-hizmetlerimiz",
-  },
-  {
-    id: "psikolojik-danismanlik",
-    icon: "psychology",
-    badgeKey: "randevuAl_psikolojikBadge",
-    titleKey: "randevuAl_psikolojikTitle",
-    descriptionKey: "randevuAl_psikolojikDesc",
-    url: "https://www.kapakli.bel.tr/hizmetlerimiz/psikolojik-danismanlik-hizmeti",
-  },
-  {
-    id: "sevgi-eli",
-    icon: "volunteer-activism",
-    badgeKey: "randevuAl_sevgiEliBadge",
-    titleKey: "randevuAl_sevgiEliTitle",
-    descriptionKey: "randevuAl_sevgiEliDesc",
-    url: "https://www.kapakli.bel.tr/hizmetlerimiz/sevgi-eli-yardim-magazasi-hizmeti",
-  },
-];
 
 export default function RandevuAlScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+
+  const [turler, setTurler] = useState<BasvuruTuru[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    getBasvuruTurleri()
+      .then(setTurler)
+      .catch(() => setError(true))
+      .finally(() => setIsLoading(false));
+  }, []);
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -83,6 +46,15 @@ export default function RandevuAlScreen() {
           <MaterialIcons name="arrow-back" size={24} color={colors.onPrimary} />
         </Pressable>
         <Text style={styles.headerTitle}>{t("randevuAl_title")}</Text>
+        <Pressable
+          onPress={() => navigation.navigate("Basvurularim" as never)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t("randevuAl_myApplications")}
+          style={styles.myApplicationsButton}
+        >
+          <MaterialIcons name="list-alt" size={24} color={colors.onPrimary} />
+        </Pressable>
       </View>
 
       <ScrollView
@@ -91,26 +63,53 @@ export default function RandevuAlScreen() {
       >
         <Text style={styles.subtitle}>{t("randevuAl_subtitle")}</Text>
 
-        {birimler.map((birim) => (
-          <Card key={birim.id} style={styles.card}>
-            <View style={styles.imagePlaceholder}>
-              <MaterialIcons
-                name={birim.icon}
-                size={32}
-                color={colors.onPrimary}
-              />
-            </View>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{t(birim.badgeKey)}</Text>
-            </View>
-            <Text style={styles.title}>{t(birim.titleKey)}</Text>
-            <Text style={styles.description}>{t(birim.descriptionKey)}</Text>
-            <PrimaryButton
-              label={t("randevuAl_selectButton")}
-              onPress={() => Linking.openURL(birim.url)}
-            />
-          </Card>
-        ))}
+        {isLoading && (
+          <ActivityIndicator color={colors.primaryContainer} />
+        )}
+        {!isLoading && error && (
+          <Text style={styles.errorText}>{t("randevuAl_error")}</Text>
+        )}
+        {!isLoading && !error && turler.length === 0 && (
+          <Text style={styles.emptyText}>{t("randevuAl_empty")}</Text>
+        )}
+
+        {!isLoading &&
+          !error &&
+          turler.map((tur) => (
+            <Pressable
+              key={tur.id}
+              onPress={() =>
+                navigation.navigate("BasvuruForm", { basvuruTuru: tur } as never)
+              }
+              accessibilityRole="button"
+              accessibilityLabel={tur.baslik}
+            >
+              <Card style={styles.card}>
+                <View style={styles.cardRow}>
+                  <View style={styles.iconBox}>
+                    <MaterialIcons
+                      name="description"
+                      size={20}
+                      color={colors.onPrimary}
+                    />
+                  </View>
+                  <View style={styles.cardText}>
+                    <Text style={styles.title}>{tur.baslik}</Text>
+                    {tur.aciklama ? (
+                      <Text style={styles.description} numberOfLines={2}>
+                        {tur.aciklama}
+                      </Text>
+                    ) : null}
+                  </View>
+                  <MaterialIcons
+                    name="chevron-right"
+                    size={22}
+                    color={colors.outline}
+                  />
+                </View>
+              </Card>
+            </Pressable>
+          ))}
       </ScrollView>
     </SafeAreaView>
   );
@@ -133,6 +132,10 @@ const createStyles = (colors: Colors) =>
     headerTitle: {
       ...typography.titleLg,
       color: colors.onPrimary,
+      flex: 1,
+    },
+    myApplicationsButton: {
+      marginLeft: "auto",
     },
     content: {
       padding: spacing.containerMargin,
@@ -142,30 +145,36 @@ const createStyles = (colors: Colors) =>
       ...typography.bodyMd,
       color: colors.outline,
     },
+    errorText: {
+      ...typography.bodyMd,
+      color: colors.error,
+    },
+    emptyText: {
+      ...typography.bodyMd,
+      color: colors.outline,
+    },
     card: {
       padding: spacing.stackGap,
-      gap: spacing.stackGap / 2,
     },
-    imagePlaceholder: {
-      height: 72,
+    cardRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.stackGap,
+    },
+    iconBox: {
+      width: 36,
+      height: 36,
       borderRadius: shape.rounded,
       backgroundColor: colors.primaryContainer,
       alignItems: "center",
       justifyContent: "center",
     },
-    badge: {
-      alignSelf: "flex-start",
-      paddingHorizontal: spacing.stackGap / 2,
-      paddingVertical: 4,
-      borderRadius: shape.rounded,
-      backgroundColor: colors.secondaryContainer,
-    },
-    badgeText: {
-      ...typography.labelSm,
-      color: colors.primaryContainer,
+    cardText: {
+      flex: 1,
+      gap: 2,
     },
     title: {
-      ...typography.titleMd,
+      ...typography.labelLg,
       color: colors.onBackground,
     },
     description: {

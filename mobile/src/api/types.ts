@@ -266,6 +266,34 @@ export type AseviBasvuruBody = {
   adres: string;
 };
 
+export type BasvuruTuru = {
+  id: string;
+  baslik: string;
+  aciklama: string | null;
+  ekBilgiAlanlari: { etiket: string; zorunlu: boolean }[];
+  gerekliBelgeler: { etiket: string; aciklama: string | null; zorunlu: boolean }[];
+};
+
+export type BasvuruDurumu = "beklemede" | "onaylandi" | "reddedildi";
+
+export type Basvuru = {
+  id: string;
+  basvuruTuruAdi: string;
+  durum: BasvuruDurumu;
+  redSebebi: string | null;
+  createdAt: string;
+};
+
+export type CreateBasvuruBody = {
+  basvuruTuruId: string;
+  kimlikNo: string;
+  adSoyad: string;
+  dogumTarihi: string;
+  adres: string;
+  ekBilgiler?: { etiket: string; deger: string }[];
+  belgeler?: { etiket: string; base64: string; mimeType: string }[];
+};
+
 export type HavaKalitesiDurum = {
   key: number;
   ad: string;

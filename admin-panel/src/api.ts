@@ -1,11 +1,14 @@
 import type {
   AdminAccount,
+  AdminBasvuru,
+  AdminBasvuruTuru,
   AdminRole,
   AdminUser,
   Announcement,
   Appointment,
   AtikNoktasi,
   Baraj,
+  BasvuruDurumu,
   BasvuruHizmeti,
   Cami,
   CitizenUser,
@@ -13,8 +16,10 @@ import type {
   AseviBasvuruDurumu,
   Baskan,
   BizeUlasinBilgisi,
+  EkBilgiAlani,
   FaturaOdemeKurumu,
   FormBelgesi,
+  GerekliBelge,
   Haber,
   Hakkimizda,
   Ihale,
@@ -917,6 +922,54 @@ export function deleteBasvuruHizmeti(id: string) {
   return request<{ success: boolean }>(`/basvuru-hizmetleri/${id}`, {
     method: 'DELETE',
   });
+}
+
+export type BasvuruTuruInput = {
+  baslik: string;
+  aciklama?: string;
+  aktif: boolean;
+  ekBilgiAlanlari: EkBilgiAlani[];
+  gerekliBelgeler: GerekliBelge[];
+};
+
+export function getBasvuruTurleri() {
+  return request<AdminBasvuruTuru[]>('/basvuru-turleri');
+}
+
+export function createBasvuruTuru(data: BasvuruTuruInput) {
+  return request<AdminBasvuruTuru>('/basvuru-turleri', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateBasvuruTuru(id: string, data: Partial<BasvuruTuruInput>) {
+  return request<AdminBasvuruTuru>(`/basvuru-turleri/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteBasvuruTuru(id: string) {
+  return request<{ success: boolean }>(`/basvuru-turleri/${id}`, { method: 'DELETE' });
+}
+
+export function getBasvurular() {
+  return request<AdminBasvuru[]>('/basvurular');
+}
+
+export function updateBasvuruDurum(
+  id: string,
+  data: { durum: BasvuruDurumu; redSebebi?: string },
+) {
+  return request<AdminBasvuru>(`/basvurular/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteBasvuru(id: string) {
+  return request<{ success: boolean }>(`/basvurular/${id}`, { method: 'DELETE' });
 }
 
 export function getUsers(search?: string) {
