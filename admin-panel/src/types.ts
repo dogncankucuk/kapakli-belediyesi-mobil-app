@@ -569,6 +569,7 @@ export interface AdminBasvuruTuru {
   id: string;
   baslik: string;
   aciklama: string | null;
+  gorselUrl: string | null;
   aktif: boolean;
   ekBilgiAlanlari: EkBilgiAlani[];
   gerekliBelgeler: GerekliBelge[];
@@ -608,6 +609,8 @@ export interface AdminBasvuru {
   belgeler: BasvuruBelgesi[];
   durum: BasvuruDurumu;
   redSebebi: string | null;
+  adminNotu: string | null;
+  kullaniciNotu: string | null;
   userId: string | null;
   updatedBy: string | null;
   createdAt: string;

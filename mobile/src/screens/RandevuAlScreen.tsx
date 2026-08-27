@@ -3,6 +3,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -46,15 +47,6 @@ export default function RandevuAlScreen() {
           <MaterialIcons name="arrow-back" size={24} color={colors.onPrimary} />
         </Pressable>
         <Text style={styles.headerTitle}>{t("randevuAl_title")}</Text>
-        <Pressable
-          onPress={() => navigation.navigate("Basvurularim" as never)}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel={t("randevuAl_myApplications")}
-          style={styles.myApplicationsButton}
-        >
-          <MaterialIcons name="list-alt" size={24} color={colors.onPrimary} />
-        </Pressable>
       </View>
 
       <ScrollView
@@ -62,6 +54,34 @@ export default function RandevuAlScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.subtitle}>{t("randevuAl_subtitle")}</Text>
+
+        <Pressable
+          onPress={() => navigation.navigate("Basvurularim" as never)}
+          accessibilityRole="button"
+          accessibilityLabel={t("randevuAl_myApplications")}
+        >
+          <Card style={styles.card}>
+            <View style={styles.cardRow}>
+              <View style={styles.iconBox}>
+                <MaterialIcons
+                  name="list-alt"
+                  size={20}
+                  color={colors.onPrimary}
+                />
+              </View>
+              <View style={styles.cardText}>
+                <Text style={styles.title}>
+                  {t("randevuAl_myApplications")}
+                </Text>
+              </View>
+              <MaterialIcons
+                name="chevron-right"
+                size={22}
+                color={colors.outline}
+              />
+            </View>
+          </Card>
+        </Pressable>
 
         {isLoading && (
           <ActivityIndicator color={colors.primaryContainer} />
@@ -79,20 +99,31 @@ export default function RandevuAlScreen() {
             <Pressable
               key={tur.id}
               onPress={() =>
-                navigation.navigate("BasvuruForm", { basvuruTuru: tur } as never)
+                navigation.navigate(
+                  "BasvuruTuruDetay",
+                  { basvuruTuru: tur } as never,
+                )
               }
               accessibilityRole="button"
               accessibilityLabel={tur.baslik}
             >
               <Card style={styles.card}>
                 <View style={styles.cardRow}>
-                  <View style={styles.iconBox}>
-                    <MaterialIcons
-                      name="description"
-                      size={20}
-                      color={colors.onPrimary}
+                  {tur.gorselUrl ? (
+                    <Image
+                      source={{ uri: tur.gorselUrl }}
+                      style={styles.iconBox}
+                      resizeMode="cover"
                     />
-                  </View>
+                  ) : (
+                    <View style={styles.iconBox}>
+                      <MaterialIcons
+                        name="description"
+                        size={20}
+                        color={colors.onPrimary}
+                      />
+                    </View>
+                  )}
                   <View style={styles.cardText}>
                     <Text style={styles.title}>{tur.baslik}</Text>
                     {tur.aciklama ? (
@@ -133,9 +164,6 @@ const createStyles = (colors: Colors) =>
       ...typography.titleLg,
       color: colors.onPrimary,
       flex: 1,
-    },
-    myApplicationsButton: {
-      marginLeft: "auto",
     },
     content: {
       padding: spacing.containerMargin,

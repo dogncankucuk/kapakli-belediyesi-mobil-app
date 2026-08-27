@@ -177,6 +177,14 @@ export default function BasvurularimScreen() {
                     </Text>
                   </View>
                 ) : null}
+                {basvuru.kullaniciNotu ? (
+                  <View style={styles.notBox}>
+                    <Text style={styles.notLabel}>
+                      {t("basvurularim_notLabel")}
+                    </Text>
+                    <Text style={styles.notText}>{basvuru.kullaniciNotu}</Text>
+                  </View>
+                ) : null}
               </Card>
             );
           })}
@@ -277,5 +285,20 @@ const createStyles = (colors: Colors) =>
     redSebebiText: {
       ...typography.bodyMd,
       color: colors.onBackground,
+    },
+    notBox: {
+      marginTop: 4,
+      padding: spacing.stackGap / 2,
+      borderRadius: shape.rounded,
+      backgroundColor: colors.primaryContainer,
+    },
+    notLabel: {
+      ...typography.labelSm,
+      color: colors.onPrimary,
+      fontWeight: "600",
+    },
+    notText: {
+      ...typography.bodyMd,
+      color: colors.onPrimary,
     },
   });

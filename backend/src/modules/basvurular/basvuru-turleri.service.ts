@@ -13,6 +13,7 @@ export interface PublicBasvuruTuru {
   id: string;
   baslik: string;
   aciklama: string | null;
+  gorselUrl: string | null;
   ekBilgiAlanlari: EkBilgiAlani[];
   gerekliBelgeler: GerekliBelge[];
 }
@@ -33,6 +34,7 @@ export class BasvuruTurleriService {
       id: doc._id.toString(),
       baslik: doc.baslik,
       aciklama: doc.aciklama ?? null,
+      gorselUrl: doc.gorselUrl ?? null,
       ekBilgiAlanlari: doc.ekBilgiAlanlari ?? [],
       gerekliBelgeler: doc.gerekliBelgeler ?? [],
     }));

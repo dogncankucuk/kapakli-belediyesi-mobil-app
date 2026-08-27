@@ -38,6 +38,10 @@ export class CreateBasvuruTuruDto {
   @IsString()
   aciklama?: string;
 
+  @IsOptional()
+  @IsString()
+  gorselUrl?: string;
+
   @IsBoolean()
   aktif: boolean;
 

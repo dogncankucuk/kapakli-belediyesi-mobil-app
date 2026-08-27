@@ -315,6 +315,7 @@ export const tr = {
   basvurularim_statusApproved: "Onaylandı",
   basvurularim_statusRejected: "Reddedildi",
   basvurularim_redSebebiLabel: "Red Sebebi:",
+  basvurularim_notLabel: "Not:",
 
   randevuAl_veterinerBadge: "Hayvan Sağlığı",
   randevuAl_veterinerTitle: "Veteriner Hizmetleri",
@@ -332,6 +333,9 @@ export const tr = {
   randevuAl_sevgiEliTitle: "Sevgi Eli Yardım Mağazası",
   randevuAl_sevgiEliDesc:
     "Giysi bağışı teslimi veya ihtiyaç sahibi olarak başvuru için randevu.",
+  basvuruTuruDetay_gerekliBelgeler: "Gerekli Belgeler",
+  basvuruTuruDetay_istenenBilgiler: "İstenen Bilgiler",
+  basvuruTuruDetay_basvurButton: "Başvur",
 
   services_title: "Belediye Hizmetleri",
   services_subtitle: "Size nasıl yardımcı olabiliriz?",

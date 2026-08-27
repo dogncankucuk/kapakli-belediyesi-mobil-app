@@ -27,6 +27,7 @@ export interface PublicBasvuru {
   basvuruTuruAdi: string;
   durum: BasvuruDurumu;
   redSebebi: string | null;
+  kullaniciNotu: string | null;
   createdAt: string;
 }
 
@@ -179,6 +180,7 @@ export class BasvurularService {
       basvuruTuruAdi: doc.basvuruTuruAdi,
       durum: doc.durum,
       redSebebi: doc.redSebebi ?? null,
+      kullaniciNotu: doc.kullaniciNotu ?? null,
       createdAt: doc.createdAt.toISOString(),
     };
   }

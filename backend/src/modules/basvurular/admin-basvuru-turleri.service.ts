@@ -15,6 +15,7 @@ export interface AdminBasvuruTuru {
   id: string;
   baslik: string;
   aciklama: string | null;
+  gorselUrl: string | null;
   aktif: boolean;
   ekBilgiAlanlari: EkBilgiAlani[];
   gerekliBelgeler: GerekliBelge[];
@@ -85,6 +86,7 @@ export class AdminBasvuruTurleriService {
       id: doc._id.toString(),
       baslik: doc.baslik,
       aciklama: doc.aciklama ?? null,
+      gorselUrl: doc.gorselUrl ?? null,
       aktif: doc.aktif,
       ekBilgiAlanlari: doc.ekBilgiAlanlari ?? [],
       gerekliBelgeler: doc.gerekliBelgeler ?? [],

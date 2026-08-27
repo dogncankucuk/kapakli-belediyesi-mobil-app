@@ -4,11 +4,22 @@ import { BASVURU_DURUMLARI } from '../schemas/basvuru.schema';
 import type { BasvuruDurumu } from '../schemas/basvuru.schema';
 
 export class UpdateBasvuruDto {
+  @IsOptional()
   @IsIn(BASVURU_DURUMLARI)
-  durum: BasvuruDurumu;
+  durum?: BasvuruDurumu;
 
   @IsOptional()
   @IsString()
   @MaxLength(1000)
   redSebebi?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  adminNotu?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  kullaniciNotu?: string;
 }

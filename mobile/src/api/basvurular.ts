@@ -1,4 +1,4 @@
-import { BASE_URL } from "./client";
+import { BASE_URL, resolveMediaUrl } from "./client";
 import { Basvuru, BasvuruTuru, CreateBasvuruBody } from "./types";
 
 async function readErrorMessage(response: Response): Promise<string> {
@@ -19,7 +19,12 @@ export async function getBasvuruTurleri(): Promise<BasvuruTuru[]> {
     throw new Error(await readErrorMessage(response));
   }
 
-  return response.json();
+  const data: BasvuruTuru[] = await response.json();
+
+  return data.map((tur) => ({
+    ...tur,
+    gorselUrl: tur.gorselUrl ? resolveMediaUrl(tur.gorselUrl) : null,
+  }));
 }
 
 export async function createBasvuru(

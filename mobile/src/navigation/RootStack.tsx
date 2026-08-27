@@ -9,6 +9,7 @@ import AtikSiniflandirmaScreen from "../screens/AtikSiniflandirmaScreen";
 import AyarlarScreen from "../screens/AyarlarScreen";
 import BaskanScreen from "../screens/BaskanScreen";
 import BasvuruFormScreen from "../screens/BasvuruFormScreen";
+import BasvuruTuruDetayScreen from "../screens/BasvuruTuruDetayScreen";
 import BasvurularimScreen from "../screens/BasvurularimScreen";
 import BizeUlasinScreen from "../screens/BizeUlasinScreen";
 import EngelliYasliHizmetleriScreen from "../screens/EngelliYasliHizmetleriScreen";
@@ -55,6 +56,7 @@ const RootStack = createNativeStackNavigator({
     SuHizmetleri: SuHizmetleriScreen,
     RandevuAl: RandevuAlScreen,
     BasvuruForm: BasvuruFormScreen,
+    BasvuruTuruDetay: BasvuruTuruDetayScreen,
     Basvurularim: BasvurularimScreen,
     YeniTalepOlustur: YeniTalepOlusturScreen,
     Taleplerim: TaleplerimScreen,

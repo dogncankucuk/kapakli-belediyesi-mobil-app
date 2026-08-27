@@ -36,6 +36,9 @@ export class BasvuruTuru {
   @Prop({ trim: true })
   aciklama?: string;
 
+  @Prop({ trim: true })
+  gorselUrl?: string;
+
   @Prop({ required: true, default: true })
   aktif: boolean;
 

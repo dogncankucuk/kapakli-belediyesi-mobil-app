@@ -38,6 +38,11 @@ function BasvurularPage({ canManage }: Props) {
   // satir bazinda taslak red sebebini burada tutuyoruz, onaylanana kadar
   // PATCH atilmiyor.
   const [redTaslaklari, setRedTaslaklari] = useState<Record<string, string>>({});
+  // Dahili not ve kullaniciya gosterilecek not - durum degisikliginden bagimsiz,
+  // ayri bir "Notlari Kaydet" aksiyonuyla PATCH atilir.
+  const [notTaslaklari, setNotTaslaklari] = useState<
+    Record<string, { adminNotu: string; kullaniciNotu: string }>
+  >({});
 
   useEffect(() => {
     load();
@@ -94,6 +99,26 @@ function BasvurularPage({ canManage }: Props) {
   function handleRedVazgec(id: string) {
     const { [id]: _silinen, ...kalanlar } = redTaslaklari;
     setRedTaslaklari(kalanlar);
+  }
+
+  async function handleNotKaydet(item: AdminBasvuru) {
+    const taslak = notTaslaklari[item.id] ?? {
+      adminNotu: item.adminNotu ?? '',
+      kullaniciNotu: item.kullaniciNotu ?? '',
+    };
+    setBusyId(item.id);
+    setError(null);
+    try {
+      await updateBasvuruDurum(item.id, {
+        adminNotu: taslak.adminNotu,
+        kullaniciNotu: taslak.kullaniciNotu,
+      } as Parameters<typeof updateBasvuruDurum>[1]);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Notlar kaydedilemedi');
+    } finally {
+      setBusyId(null);
+    }
   }
 
   async function handleDelete(id: string) {
@@ -258,6 +283,75 @@ function BasvurularPage({ canManage }: Props) {
                                 )}
                               </div>
                             </div>
+                          )}
+                          {canManage ? (
+                            <div className="edit-row">
+                              <label>
+                                Dahili Not (sadece panelde görünür)
+                                <textarea
+                                  maxLength={2000}
+                                  value={
+                                    (notTaslaklari[item.id] ?? {
+                                      adminNotu: item.adminNotu ?? '',
+                                      kullaniciNotu: item.kullaniciNotu ?? '',
+                                    }).adminNotu
+                                  }
+                                  onChange={(e) =>
+                                    setNotTaslaklari({
+                                      ...notTaslaklari,
+                                      [item.id]: {
+                                        adminNotu: e.target.value,
+                                        kullaniciNotu: (notTaslaklari[item.id] ?? {
+                                          adminNotu: item.adminNotu ?? '',
+                                          kullaniciNotu: item.kullaniciNotu ?? '',
+                                        }).kullaniciNotu,
+                                      },
+                                    })
+                                  }
+                                />
+                              </label>
+                              <label>
+                                Kullanıcıya Gösterilecek Not
+                                <textarea
+                                  maxLength={2000}
+                                  value={
+                                    (notTaslaklari[item.id] ?? {
+                                      adminNotu: item.adminNotu ?? '',
+                                      kullaniciNotu: item.kullaniciNotu ?? '',
+                                    }).kullaniciNotu
+                                  }
+                                  onChange={(e) =>
+                                    setNotTaslaklari({
+                                      ...notTaslaklari,
+                                      [item.id]: {
+                                        adminNotu: (notTaslaklari[item.id] ?? {
+                                          adminNotu: item.adminNotu ?? '',
+                                          kullaniciNotu: item.kullaniciNotu ?? '',
+                                        }).adminNotu,
+                                        kullaniciNotu: e.target.value,
+                                      },
+                                    })
+                                  }
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                disabled={busyId === item.id}
+                                onClick={() => handleNotKaydet(item)}
+                              >
+                                Notları Kaydet
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <p>
+                                <strong>Dahili Not:</strong> {item.adminNotu || '—'}
+                              </p>
+                              <p>
+                                <strong>Kullanıcıya Gösterilecek Not:</strong>{' '}
+                                {item.kullaniciNotu || '—'}
+                              </p>
+                            </>
                           )}
                         </div>
                       </td>

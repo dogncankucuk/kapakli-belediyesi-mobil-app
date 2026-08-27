@@ -317,6 +317,7 @@ export const en: Record<TranslationKey, string> = {
   basvurularim_statusApproved: "Approved",
   basvurularim_statusRejected: "Rejected",
   basvurularim_redSebebiLabel: "Rejection Reason:",
+  basvurularim_notLabel: "Note:",
 
   randevuAl_veterinerBadge: "Animal Health",
   randevuAl_veterinerTitle: "Veterinary Services",
@@ -334,6 +335,9 @@ export const en: Record<TranslationKey, string> = {
   randevuAl_sevgiEliTitle: "Sevgi Eli Aid Store",
   randevuAl_sevgiEliDesc:
     "Appointment for clothing donation drop-off or applying as a person in need.",
+  basvuruTuruDetay_gerekliBelgeler: "Required Documents",
+  basvuruTuruDetay_istenenBilgiler: "Requested Information",
+  basvuruTuruDetay_basvurButton: "Apply",
 
   services_title: "Municipal Services",
   services_subtitle: "How can we help you?",

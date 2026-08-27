@@ -78,6 +78,12 @@ export class Basvuru {
   @Prop()
   redSebebi?: string;
 
+  @Prop({ trim: true })
+  adminNotu?: string;
+
+  @Prop({ trim: true })
+  kullaniciNotu?: string;
+
   @Prop({ type: String, default: null })
   userId?: string | null;
 

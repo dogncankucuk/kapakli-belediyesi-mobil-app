@@ -7,6 +7,8 @@ import {
   updateBasvuruTuru,
 } from './api';
 import type { BasvuruTuruInput } from './api';
+import MedyaSecici from './MedyaSecici';
+import TelefonOnizleme from './TelefonOnizleme';
 import type { AdminBasvuruTuru, EkBilgiAlani, GerekliBelge } from './types';
 
 interface Props {
@@ -16,6 +18,7 @@ interface Props {
 const emptyForm: BasvuruTuruInput = {
   baslik: '',
   aciklama: '',
+  gorselUrl: '',
   aktif: true,
   ekBilgiAlanlari: [],
   gerekliBelgeler: [],
@@ -207,6 +210,7 @@ function BasvuruTurleriPage({ canManage }: Props) {
     setEditForm({
       baslik: item.baslik,
       aciklama: item.aciklama ?? '',
+      gorselUrl: item.gorselUrl ?? '',
       aktif: item.aktif,
       ekBilgiAlanlari: item.ekBilgiAlanlari,
       gerekliBelgeler: item.gerekliBelgeler,
@@ -245,48 +249,90 @@ function BasvuruTurleriPage({ canManage }: Props) {
       {error && <p className="error-message">{error}</p>}
 
       {canManage && (
-        <form className="inline-form" onSubmit={handleCreate}>
-          <h3>Yeni Başvuru Türü</h3>
-          <label>
-            Başlık
-            <input
-              value={form.baslik}
-              onChange={(e) => setForm({ ...form, baslik: e.target.value })}
-              placeholder="Lütfen veri girişi yapınız"
-              required
-            />
-          </label>
-          <label>
-            Açıklama (opsiyonel)
-            <input
-              value={form.aciklama}
-              onChange={(e) => setForm({ ...form, aciklama: e.target.value })}
-            />
-          </label>
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={form.aktif}
-              onChange={(e) => setForm({ ...form, aktif: e.target.checked })}
-            />
-            Aktif
-          </label>
-          <label className="kalkis-label">
-            Ek Bilgi Alanları (opsiyonel)
-            <EkBilgiAlanlariEditor
-              value={form.ekBilgiAlanlari}
-              onChange={(ekBilgiAlanlari) => setForm({ ...form, ekBilgiAlanlari })}
-            />
-          </label>
-          <label className="kalkis-label">
-            Gerekli Belgeler (opsiyonel)
-            <GerekliBelgelerEditor
-              value={form.gerekliBelgeler}
-              onChange={(gerekliBelgeler) => setForm({ ...form, gerekliBelgeler })}
-            />
-          </label>
-          <button type="submit">Kaydet</button>
-        </form>
+        <div className="form-onizleme-satir">
+          <form className="inline-form" onSubmit={handleCreate}>
+            <h3>Yeni Başvuru Türü</h3>
+            <label>
+              Başlık
+              <input
+                value={form.baslik}
+                onChange={(e) => setForm({ ...form, baslik: e.target.value })}
+                placeholder="Lütfen veri girişi yapınız"
+                required
+              />
+            </label>
+            <label>
+              Açıklama (opsiyonel)
+              <input
+                value={form.aciklama}
+                onChange={(e) => setForm({ ...form, aciklama: e.target.value })}
+              />
+            </label>
+            <label>
+              Görsel (opsiyonel)
+              <MedyaSecici
+                value={form.gorselUrl ?? ''}
+                onChange={(url) => setForm({ ...form, gorselUrl: url })}
+                placeholder="https://..."
+              />
+            </label>
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={form.aktif}
+                onChange={(e) => setForm({ ...form, aktif: e.target.checked })}
+              />
+              Aktif
+            </label>
+            <label className="kalkis-label">
+              Ek Bilgi Alanları (opsiyonel)
+              <EkBilgiAlanlariEditor
+                value={form.ekBilgiAlanlari}
+                onChange={(ekBilgiAlanlari) => setForm({ ...form, ekBilgiAlanlari })}
+              />
+            </label>
+            <label className="kalkis-label">
+              Gerekli Belgeler (opsiyonel)
+              <GerekliBelgelerEditor
+                value={form.gerekliBelgeler}
+                onChange={(gerekliBelgeler) => setForm({ ...form, gerekliBelgeler })}
+              />
+            </label>
+            <button type="submit">Kaydet</button>
+          </form>
+
+          <TelefonOnizleme baslik={form.baslik || 'Başvuru Türü'}>
+            {form.gorselUrl ? <img src={form.gorselUrl} alt="" /> : null}
+            {form.aciklama ? <p>{form.aciklama}</p> : null}
+            {form.gerekliBelgeler.length > 0 && (
+              <div className="telefon-onizleme-bolum">
+                <span className="telefon-onizleme-bolum-baslik">Gerekli Belgeler</span>
+                {form.gerekliBelgeler.map((belge, i) => (
+                  <div className="telefon-onizleme-satir" key={i}>
+                    <span className="telefon-onizleme-satir-etiket">{belge.etiket}</span>
+                    {belge.aciklama && (
+                      <span className="telefon-onizleme-satir-ipucu">{belge.aciklama}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            {form.ekBilgiAlanlari.length > 0 && (
+              <div className="telefon-onizleme-bolum">
+                <span className="telefon-onizleme-bolum-baslik">İstenen Bilgiler</span>
+                {form.ekBilgiAlanlari.map((alan, i) => (
+                  <div className="telefon-onizleme-satir" key={i}>
+                    <span className="telefon-onizleme-satir-etiket">
+                      {alan.etiket}
+                      {alan.zorunlu ? ' *' : ''}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <span className="telefon-onizleme-buton">Başvur</span>
+          </TelefonOnizleme>
+        </div>
       )}
 
       {loading ? (
@@ -295,6 +341,7 @@ function BasvuruTurleriPage({ canManage }: Props) {
         <table>
           <thead>
             <tr>
+              <th>Görsel</th>
               <th>Başlık</th>
               <th>Aktif</th>
               <th>Ek Bilgi Alanları</th>
@@ -306,7 +353,7 @@ function BasvuruTurleriPage({ canManage }: Props) {
             {items.map((item) =>
               editingId === item.id ? (
                 <tr key={item.id}>
-                  <td colSpan={canManage ? 5 : 4}>
+                  <td colSpan={canManage ? 6 : 5}>
                     <div className="edit-row">
                       <label>
                         Başlık
@@ -324,6 +371,14 @@ function BasvuruTurleriPage({ canManage }: Props) {
                           onChange={(e) =>
                             setEditForm({ ...editForm, aciklama: e.target.value })
                           }
+                        />
+                      </label>
+                      <label>
+                        Görsel (opsiyonel)
+                        <MedyaSecici
+                          value={editForm.gorselUrl ?? ''}
+                          onChange={(url) => setEditForm({ ...editForm, gorselUrl: url })}
+                          placeholder="https://..."
                         />
                       </label>
                       <label className="checkbox-label">
@@ -367,6 +422,15 @@ function BasvuruTurleriPage({ canManage }: Props) {
                 </tr>
               ) : (
                 <tr key={item.id}>
+                  <td>
+                    {item.gorselUrl && (
+                      <img
+                        src={item.gorselUrl}
+                        alt=""
+                        style={{ width: 40, height: 40, objectFit: 'cover' }}
+                      />
+                    )}
+                  </td>
                   <td>{item.baslik}</td>
                   <td>{item.aktif ? 'Evet' : 'Hayır'}</td>
                   <td>{item.ekBilgiAlanlari.length} alan</td>

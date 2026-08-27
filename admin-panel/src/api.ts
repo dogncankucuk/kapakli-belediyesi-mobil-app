@@ -927,6 +927,7 @@ export function deleteBasvuruHizmeti(id: string) {
 export type BasvuruTuruInput = {
   baslik: string;
   aciklama?: string;
+  gorselUrl?: string;
   aktif: boolean;
   ekBilgiAlanlari: EkBilgiAlani[];
   gerekliBelgeler: GerekliBelge[];
@@ -960,7 +961,7 @@ export function getBasvurular() {
 
 export function updateBasvuruDurum(
   id: string,
-  data: { durum: BasvuruDurumu; redSebebi?: string },
+  data: { durum: BasvuruDurumu; redSebebi?: string; adminNotu?: string; kullaniciNotu?: string },
 ) {
   return request<AdminBasvuru>(`/basvurular/${id}`, {
     method: 'PATCH',

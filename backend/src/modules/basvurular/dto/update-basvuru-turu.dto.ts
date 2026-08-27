@@ -20,6 +20,10 @@ export class UpdateBasvuruTuruDto {
   aciklama?: string;
 
   @IsOptional()
+  @IsString()
+  gorselUrl?: string;
+
+  @IsOptional()
   @IsBoolean()
   aktif?: boolean;
 

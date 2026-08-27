@@ -272,6 +272,7 @@ export type BasvuruTuru = {
   aciklama: string | null;
   ekBilgiAlanlari: { etiket: string; zorunlu: boolean }[];
   gerekliBelgeler: { etiket: string; aciklama: string | null; zorunlu: boolean }[];
+  gorselUrl: string | null;
 };
 
 export type BasvuruDurumu = "beklemede" | "onaylandi" | "reddedildi";
@@ -281,6 +282,7 @@ export type Basvuru = {
   basvuruTuruAdi: string;
   durum: BasvuruDurumu;
   redSebebi: string | null;
+  kullaniciNotu: string | null;
   createdAt: string;
 };
 

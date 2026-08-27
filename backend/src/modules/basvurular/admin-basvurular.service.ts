@@ -26,6 +26,8 @@ export interface AdminBasvuru {
   belgeler: BasvuruBelgesi[];
   durum: BasvuruDurumu;
   redSebebi: string | null;
+  adminNotu: string | null;
+  kullaniciNotu: string | null;
   userId: string | null;
   updatedBy: string | null;
   createdAt: string;
@@ -67,19 +69,27 @@ export class AdminBasvurularService {
   ): Promise<AdminBasvuru | null> {
     if (!Types.ObjectId.isValid(id)) return null;
 
-    if (dto.durum === 'reddedildi' && !dto.redSebebi?.trim()) {
-      throw new BadRequestException(
-        'Reddedilen basvurular icin red sebebi zorunludur',
-      );
+    const updatePayload: Record<string, unknown> = { updatedBy };
+
+    if (dto.durum !== undefined) {
+      if (dto.durum === 'reddedildi' && !dto.redSebebi?.trim()) {
+        throw new BadRequestException(
+          'Reddedilen basvurular icin red sebebi zorunludur',
+        );
+      }
+      updatePayload.durum = dto.durum;
+      updatePayload.redSebebi =
+        dto.durum === 'reddedildi' ? dto.redSebebi!.trim() : null;
     }
-    const redSebebi = dto.durum === 'reddedildi' ? dto.redSebebi!.trim() : null;
+    if (dto.adminNotu !== undefined) {
+      updatePayload.adminNotu = dto.adminNotu.trim() || null;
+    }
+    if (dto.kullaniciNotu !== undefined) {
+      updatePayload.kullaniciNotu = dto.kullaniciNotu.trim() || null;
+    }
 
     const doc = await this.basvuruModel
-      .findByIdAndUpdate(
-        id,
-        { durum: dto.durum, redSebebi, updatedBy },
-        { new: true },
-      )
+      .findByIdAndUpdate(id, updatePayload, { new: true })
       .exec();
     return doc ? this.toAdmin(doc as unknown as TimestampedBasvuru) : null;
   }
@@ -108,6 +118,8 @@ export class AdminBasvurularService {
       belgeler: doc.belgeler ?? [],
       durum: doc.durum,
       redSebebi: doc.redSebebi ?? null,
+      adminNotu: doc.adminNotu ?? null,
+      kullaniciNotu: doc.kullaniciNotu ?? null,
       userId: doc.userId ?? null,
       updatedBy: doc.updatedBy ?? null,
       createdAt: doc.createdAt.toISOString(),
