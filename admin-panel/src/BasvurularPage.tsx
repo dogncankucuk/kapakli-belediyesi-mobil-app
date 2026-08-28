@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useState } from 'react';
 import { deleteBasvuru, getBasvurular, updateBasvuruDurum } from './api';
+import { csvIndir } from './csvExport';
 import type { AdminBasvuru, BasvuruDurumu } from './types';
 import { basvuruDurumLabels } from './types';
 
@@ -121,6 +122,21 @@ function BasvurularPage({ canManage }: Props) {
     }
   }
 
+  function handleDisaAktar() {
+    csvIndir(
+      `basvurular-${new Date().toISOString().slice(0, 10)}.csv`,
+      ['Başvuru Türü', 'Ad Soyad', 'Kimlik No', 'Durum', 'Tarih', 'Adres'],
+      items.map((item) => [
+        item.basvuruTuruAdi,
+        item.adSoyad,
+        item.kimlikNo,
+        basvuruDurumLabels[item.durum],
+        formatTarih(item.createdAt),
+        item.adres,
+      ]),
+    );
+  }
+
   async function handleDelete(id: string) {
     if (!confirm('Bu başvuru silinsin mi?')) return;
     setBusyId(id);
@@ -143,6 +159,12 @@ function BasvurularPage({ canManage }: Props) {
         güncelleyebilir, detaylarını inceleyebilirsiniz.
       </p>
       {error && <p className="error-message">{error}</p>}
+
+      {!loading && items.length > 0 && (
+        <button type="button" onClick={handleDisaAktar}>
+          Excel'e Aktar
+        </button>
+      )}
 
       {loading ? (
         <p>Yükleniyor...</p>

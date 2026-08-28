@@ -248,8 +248,10 @@ function BasvuruTurleriPage({ canManage }: Props) {
       </p>
       {error && <p className="error-message">{error}</p>}
 
+      <div className="guncel-sayfa-govde">
+      <div className="guncel-sol">
+      {canManage && <h3 className="bolum-baslik">1. Bölüm: Ekleme</h3>}
       {canManage && (
-        <div className="form-onizleme-satir">
           <form className="inline-form" onSubmit={handleCreate}>
             <h3>Yeni Başvuru Türü</h3>
             <label>
@@ -300,41 +302,9 @@ function BasvuruTurleriPage({ canManage }: Props) {
             </label>
             <button type="submit">Kaydet</button>
           </form>
-
-          <TelefonOnizleme baslik={form.baslik || 'Başvuru Türü'}>
-            {form.gorselUrl ? <img src={form.gorselUrl} alt="" /> : null}
-            {form.aciklama ? <p>{form.aciklama}</p> : null}
-            {form.gerekliBelgeler.length > 0 && (
-              <div className="telefon-onizleme-bolum">
-                <span className="telefon-onizleme-bolum-baslik">Gerekli Belgeler</span>
-                {form.gerekliBelgeler.map((belge, i) => (
-                  <div className="telefon-onizleme-satir" key={i}>
-                    <span className="telefon-onizleme-satir-etiket">{belge.etiket}</span>
-                    {belge.aciklama && (
-                      <span className="telefon-onizleme-satir-ipucu">{belge.aciklama}</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-            {form.ekBilgiAlanlari.length > 0 && (
-              <div className="telefon-onizleme-bolum">
-                <span className="telefon-onizleme-bolum-baslik">İstenen Bilgiler</span>
-                {form.ekBilgiAlanlari.map((alan, i) => (
-                  <div className="telefon-onizleme-satir" key={i}>
-                    <span className="telefon-onizleme-satir-etiket">
-                      {alan.etiket}
-                      {alan.zorunlu ? ' *' : ''}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-            <span className="telefon-onizleme-buton">Başvur</span>
-          </TelefonOnizleme>
-        </div>
       )}
 
+      <h3 className="bolum-baslik">2. Bölüm: Eklenmiş Kayıtlar</h3>
       {loading ? (
         <p>Yükleniyor...</p>
       ) : (
@@ -451,6 +421,43 @@ function BasvuruTurleriPage({ canManage }: Props) {
           </tbody>
         </table>
       )}
+      </div>
+
+      <div className="guncel-sag">
+        <h3 className="bolum-baslik">3. Bölüm: Mobil Uygulamadaki Görüntüsü</h3>
+        <TelefonOnizleme baslik={form.baslik || 'Başvuru Türü'}>
+          {form.gorselUrl ? <img src={form.gorselUrl} alt="" /> : null}
+          {form.aciklama ? <p>{form.aciklama}</p> : null}
+          {form.gerekliBelgeler.length > 0 && (
+            <div className="genel-onizleme-bolum">
+              <span className="genel-onizleme-bolum-baslik">Gerekli Belgeler</span>
+              {form.gerekliBelgeler.map((belge, i) => (
+                <div className="genel-onizleme-satir" key={i}>
+                  <span className="genel-onizleme-satir-etiket">{belge.etiket}</span>
+                  {belge.aciklama && (
+                    <span className="genel-onizleme-satir-ipucu">{belge.aciklama}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          {form.ekBilgiAlanlari.length > 0 && (
+            <div className="genel-onizleme-bolum">
+              <span className="genel-onizleme-bolum-baslik">İstenen Bilgiler</span>
+              {form.ekBilgiAlanlari.map((alan, i) => (
+                <div className="genel-onizleme-satir" key={i}>
+                  <span className="genel-onizleme-satir-etiket">
+                    {alan.etiket}
+                    {alan.zorunlu ? ' *' : ''}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+          <span className="genel-onizleme-buton">Başvur</span>
+        </TelefonOnizleme>
+      </div>
+      </div>
     </div>
   );
 }

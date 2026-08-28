@@ -88,7 +88,11 @@ function AtikNoktalariPage({ canManage }: Props) {
 
   return (
     <div className="page">
-      <h2>Atık Noktaları</h2>
+      <h2>Atık Konumları</h2>
+      <p>
+        Mobil uygulamadaki "Atık Rehberi" ekranında atık türü seçildiğinde
+        listelenen noktaları buradan yönetin.
+      </p>
       {error && <p className="error-message">{error}</p>}
 
       {canManage && (
@@ -96,7 +100,7 @@ function AtikNoktalariPage({ canManage }: Props) {
           <h3>Yeni Atık Noktası</h3>
           <label>
             Ad
-            <input value={form.ad} onChange={(e) => setForm({ ...form, ad: e.target.value })} required />
+            <input value={form.ad} onChange={(e) => setForm({ ...form, ad: e.target.value })} required placeholder="Lütfen veri girişi yapınız" />
           </label>
           <label>
             Tür
@@ -119,6 +123,7 @@ function AtikNoktalariPage({ canManage }: Props) {
               step="any"
               value={form.lat}
               onChange={(e) => setForm({ ...form, lat: Number(e.target.value) })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -129,6 +134,7 @@ function AtikNoktalariPage({ canManage }: Props) {
               step="any"
               value={form.lng}
               onChange={(e) => setForm({ ...form, lng: Number(e.target.value) })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>

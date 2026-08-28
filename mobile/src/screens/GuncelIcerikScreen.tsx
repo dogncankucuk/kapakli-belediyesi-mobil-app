@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import WebView from "react-native-webview";
 
 import { getAnnouncements } from "../api/announcements";
 import { getHaberler } from "../api/haberler";
@@ -21,6 +23,7 @@ import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { TranslationKey } from "../i18n/tr";
 import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { extractYoutubeId } from "../utils/youtube";
 
 export type GuncelIcerikKategori =
   "haberler" | "duyurular" | "ilanlar" | "ihaleler" | "makaleler";
@@ -30,7 +33,9 @@ type IcerikKaydi = {
   baslik: string;
   icerik: string;
   tarih: string;
-  resimUrl: string | null;
+  resimUrlleri: string[];
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
 };
 
 const TITLE_KEYS: Record<GuncelIcerikKategori, TranslationKey> = {
@@ -43,8 +48,8 @@ const TITLE_KEYS: Record<GuncelIcerikKategori, TranslationKey> = {
 
 // Her kategori admin panelde ayri yonetilen kendi backend kaynagina sahip -
 // bu yuzden ekran, kategoriye gore dogru fetch fonksiyonunu secip ortak bir
-// {id, baslik, icerik, tarih, resimUrl} sekline indirgeniyor. resimUrl ilgili
-// api/*.ts dosyasinda zaten mutlak URL'e cevrilmis olarak geliyor.
+// {id, baslik, icerik, tarih, resimUrlleri, dosyaUrlleri} sekline indirgeniyor.
+// URL'ler ilgili api/*.ts dosyasinda zaten mutlak URL'e cevrilmis olarak geliyor.
 const FETCHERS: Record<GuncelIcerikKategori, () => Promise<IcerikKaydi[]>> = {
   haberler: async () =>
     (await getHaberler()).map((h) => ({
@@ -52,7 +57,9 @@ const FETCHERS: Record<GuncelIcerikKategori, () => Promise<IcerikKaydi[]>> = {
       baslik: h.baslik,
       icerik: h.icerik,
       tarih: h.yayinTarihi,
-      resimUrl: h.resimUrl,
+      resimUrlleri: h.resimUrlleri,
+      dosyaUrlleri: h.dosyaUrlleri,
+      youtubeUrl: h.youtubeUrl,
     })),
   duyurular: async () =>
     (await getAnnouncements()).map((a) => ({
@@ -60,7 +67,9 @@ const FETCHERS: Record<GuncelIcerikKategori, () => Promise<IcerikKaydi[]>> = {
       baslik: a.baslik,
       icerik: a.icerik,
       tarih: a.yayinTarihi,
-      resimUrl: a.resimUrl,
+      resimUrlleri: a.resimUrlleri,
+      dosyaUrlleri: a.dosyaUrlleri,
+      youtubeUrl: a.youtubeUrl,
     })),
   ilanlar: async () =>
     (await getIlanlar()).map((i) => ({
@@ -68,7 +77,9 @@ const FETCHERS: Record<GuncelIcerikKategori, () => Promise<IcerikKaydi[]>> = {
       baslik: i.baslik,
       icerik: i.icerik,
       tarih: i.yayinTarihi,
-      resimUrl: i.resimUrl,
+      resimUrlleri: i.resimUrlleri,
+      dosyaUrlleri: i.dosyaUrlleri,
+      youtubeUrl: i.youtubeUrl,
     })),
   ihaleler: async () =>
     (await getIhaleler()).map((i) => ({
@@ -76,7 +87,9 @@ const FETCHERS: Record<GuncelIcerikKategori, () => Promise<IcerikKaydi[]>> = {
       baslik: i.baslik,
       icerik: i.icerik,
       tarih: i.yayinTarihi,
-      resimUrl: i.resimUrl,
+      resimUrlleri: i.resimUrlleri,
+      dosyaUrlleri: i.dosyaUrlleri,
+      youtubeUrl: i.youtubeUrl,
     })),
   makaleler: async () =>
     (await getMakaleler()).map((m) => ({
@@ -84,7 +97,9 @@ const FETCHERS: Record<GuncelIcerikKategori, () => Promise<IcerikKaydi[]>> = {
       baslik: m.baslik,
       icerik: m.icerik,
       tarih: m.yayinTarihi,
-      resimUrl: m.resimUrl,
+      resimUrlleri: m.resimUrlleri,
+      dosyaUrlleri: m.dosyaUrlleri,
+      youtubeUrl: m.youtubeUrl,
     })),
 };
 
@@ -150,9 +165,9 @@ export default function GuncelIcerikScreen() {
                 accessibilityRole="button"
               >
                 <Card style={styles.card}>
-                  {item.resimUrl && (
+                  {item.resimUrlleri.length > 0 && (
                     <Image
-                      source={{ uri: item.resimUrl }}
+                      source={{ uri: item.resimUrlleri[0] }}
                       style={styles.itemImage}
                       resizeMode="cover"
                     />
@@ -171,6 +186,19 @@ export default function GuncelIcerikScreen() {
                       {item.icerik}
                     </Text>
                   ) : null}
+                  {expanded &&
+                    item.youtubeUrl &&
+                    extractYoutubeId(item.youtubeUrl) && (
+                      <View style={styles.videoContainer}>
+                        <WebView
+                          source={{
+                            uri: `https://www.youtube.com/embed/${extractYoutubeId(item.youtubeUrl)}`,
+                          }}
+                          style={styles.video}
+                          allowsFullscreenVideo
+                        />
+                      </View>
+                    )}
                   <View style={styles.itemFooter}>
                     <Text style={styles.itemDate}>
                       {new Date(item.tarih).toLocaleDateString("tr-TR", {
@@ -185,6 +213,27 @@ export default function GuncelIcerikScreen() {
                       color={colors.secondary}
                     />
                   </View>
+                  {item.dosyaUrlleri.map((dosyaUrl, index) => (
+                    <Pressable
+                      key={dosyaUrl}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        Linking.openURL(dosyaUrl);
+                      }}
+                      accessibilityRole="button"
+                      style={styles.dosyaRow}
+                    >
+                      <MaterialIcons
+                        name="picture-as-pdf"
+                        size={18}
+                        color={colors.secondary}
+                      />
+                      <Text style={styles.dosyaText}>
+                        {t("guncelIcerik_dosyaIndir")}
+                        {item.dosyaUrlleri.length > 1 ? ` ${index + 1}` : ''}
+                      </Text>
+                    </Pressable>
+                  ))}
                 </Card>
               </Pressable>
             );
@@ -247,6 +296,15 @@ const createStyles = (colors: Colors) =>
       ...typography.bodyMd,
       color: colors.outline,
     },
+    videoContainer: {
+      aspectRatio: 16 / 9,
+      borderRadius: shape.rounded,
+      overflow: "hidden",
+      marginTop: 4,
+    },
+    video: {
+      flex: 1,
+    },
     itemFooter: {
       flexDirection: "row",
       alignItems: "center",
@@ -256,5 +314,19 @@ const createStyles = (colors: Colors) =>
     itemDate: {
       ...typography.labelSm,
       color: colors.secondary,
+    },
+    dosyaRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      marginTop: 8,
+      paddingTop: 8,
+      borderTopWidth: 1,
+      borderTopColor: colors.outlineVariant,
+    },
+    dosyaText: {
+      ...typography.labelSm,
+      color: colors.secondary,
+      fontWeight: "600",
     },
   });

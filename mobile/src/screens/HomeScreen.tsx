@@ -11,18 +11,16 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { getAnnouncements } from "../api/announcements";
-import { getHavaDurumu } from "../api/havaDurumu";
-import { Announcement, HavaDurumu } from "../api/types";
+import { getHaberler } from "../api/haberler";
+import { Haber } from "../api/types";
 import {
   AnnouncementCard,
-  Card,
+  HavaVeAramaSag,
   HizliIslemlerModal,
   PrimaryButton,
   ServiceGridCard,
   TopBar,
 } from "../components";
-import { havaDurumuIkonu } from "../constants/havaDurumu";
 import {
   navigateToServiceTarget,
   SERVICE_CATALOG,
@@ -34,15 +32,14 @@ import {
   getSeciliHizliIslemler,
   seciliHizliIslemleriKaydet,
 } from "../storage/quickActionsStorage";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, spacing, typography, useThemeColors } from "../theme";
 
-function formatAnnouncementDate(item: Announcement): string {
-  const date = new Date(item.yayinTarihi).toLocaleDateString("tr-TR", {
+function formatHaberDate(item: Haber): string {
+  return new Date(item.yayinTarihi).toLocaleDateString("tr-TR", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
-  return `${item.kategori} • ${date}`;
 }
 
 export default function HomeScreen() {
@@ -51,25 +48,18 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [haberler, setHaberler] = useState<Haber[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [havaDurumu, setHavaDurumu] = useState<HavaDurumu | null>(null);
   const [hizliIslemIdleri, setHizliIslemIdleri] = useState<ServiceId[]>([]);
   const [isHizliIslemlerModalVisible, setIsHizliIslemlerModalVisible] =
     useState(false);
 
   useEffect(() => {
-    getAnnouncements()
-      .then((data) => setAnnouncements(data.slice(0, 2)))
+    getHaberler()
+      .then((data) => setHaberler(data.slice(0, 2)))
       .catch(() => setError(true))
       .finally(() => setIsLoading(false));
-    getHavaDurumu()
-      .then(setHavaDurumu)
-      .catch(() => {
-        // Ana sayfa widget'i icin sessiz basarisizlik kabul edilebilir -
-        // detay ekrani (HavaDurumuDetayScreen) kendi hata durumunu gosterir.
-      });
     getSeciliHizliIslemler().then(setHizliIslemIdleri);
   }, []);
 
@@ -95,21 +85,16 @@ export default function HomeScreen() {
         title={t("common_appName")}
         onMenuPress={openMenu}
         rightSlot={
-          havaDurumu && (
-            <View style={styles.weather}>
-              <View style={styles.weatherRow}>
-                <MaterialIcons
-                  name={havaDurumuIkonu(havaDurumu.durumKodu)}
-                  size={18}
-                  color={colors.onPrimary}
-                />
-                <Text style={styles.weatherTemp}>
-                  {Math.round(havaDurumu.sicaklik)}°C
-                </Text>
-              </View>
-              <Text style={styles.weatherCondition}>{havaDurumu.durumAdi}</Text>
-            </View>
-          )
+          <HavaVeAramaSag
+            onSearchPress={() =>
+              (
+                navigation.navigate as (
+                  screen: string,
+                  params?: object,
+                ) => void
+              )("Services", { screen: "ServicesMain", params: { acSearch: true } })
+            }
+          />
         }
       />
       <ScrollView
@@ -166,67 +151,24 @@ export default function HomeScreen() {
           onPress={() => navigation.navigate("Taleplerim" as never)}
         />
 
-        <View style={styles.shortcutsRow}>
-          <Pressable
-            onPress={() => navigation.navigate("Map" as never)}
-            accessibilityRole="button"
-            style={styles.shortcutItem}
-          >
-            <Card style={styles.shortcutCard}>
-              <MaterialIcons name="map" size={26} color={colors.onPrimary} />
-              <Text style={styles.shortcutLabel}>{t("tabs_map")}</Text>
-            </Card>
-          </Pressable>
-          <Pressable
-            onPress={() => navigation.navigate("Announcements" as never)}
-            accessibilityRole="button"
-            style={styles.shortcutItem}
-          >
-            <Card style={styles.shortcutCard}>
-              <MaterialIcons
-                name="campaign"
-                size={26}
-                color={colors.onPrimary}
-              />
-              <Text style={styles.shortcutLabel}>
-                {t("tabs_announcements")}
-              </Text>
-            </Card>
-          </Pressable>
-        </View>
-
-        <Pressable
-          onPress={() => navigation.navigate("Projelerimiz" as never)}
-          accessibilityRole="button"
-        >
-          <Card style={styles.projelerButton}>
-            <MaterialIcons
-              name="architecture"
-              size={28}
-              color={colors.onPrimary}
-            />
-            <Text style={styles.projelerButtonLabel}>{t("home_projects")}</Text>
-            <MaterialIcons
-              name="chevron-right"
-              size={26}
-              color={colors.onPrimary}
-            />
-          </Card>
-        </Pressable>
+        <PrimaryButton
+          label={t("tabs_map")}
+          onPress={() => navigation.navigate("Map" as never)}
+        />
 
         <View style={styles.announcements}>
           {isLoading && <ActivityIndicator color={colors.primaryContainer} />}
           {!isLoading && error && (
-            <Text style={styles.errorText}>{t("announcements_error")}</Text>
+            <Text style={styles.errorText}>{t("home_haberlerError")}</Text>
           )}
           {!isLoading &&
             !error &&
-            announcements.map((item) => (
+            haberler.map((item) => (
               <AnnouncementCard
                 key={item.id}
                 title={item.baslik}
-                date={formatAnnouncementDate(item)}
-                imageUrl={item.resimUrl}
+                date={formatHaberDate(item)}
+                imageUrl={item.resimUrlleri[0] ?? null}
               />
             ))}
         </View>
@@ -244,23 +186,6 @@ const createStyles = (colors: Colors) =>
     content: {
       padding: spacing.containerMargin,
       gap: spacing.stackGap,
-    },
-    weather: {
-      alignItems: "flex-end",
-      gap: 2,
-    },
-    weatherRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 4,
-    },
-    weatherTemp: {
-      ...typography.labelLg,
-      color: colors.onPrimary,
-    },
-    weatherCondition: {
-      ...typography.labelSm,
-      color: colors.onPrimaryContainer,
     },
     welcomeTitle: {
       ...typography.headlineMdMobile,
@@ -289,41 +214,6 @@ const createStyles = (colors: Colors) =>
     },
     quickActionItem: {
       width: "31%",
-    },
-    shortcutsRow: {
-      flexDirection: "row",
-      gap: spacing.gridGutter,
-    },
-    shortcutItem: {
-      flex: 1,
-    },
-    shortcutCard: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing.stackGap / 2,
-      minHeight: 56,
-      padding: spacing.stackGap,
-      borderRadius: shape.roundedLg,
-      backgroundColor: colors.primaryContainer,
-    },
-    shortcutLabel: {
-      ...typography.labelLg,
-      color: colors.onPrimary,
-      flexShrink: 1,
-    },
-    projelerButton: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing.stackGap,
-      minHeight: 72,
-      padding: spacing.containerMargin,
-      borderRadius: shape.roundedLg,
-      backgroundColor: colors.primaryContainer,
-    },
-    projelerButtonLabel: {
-      ...typography.titleMd,
-      color: colors.onPrimary,
-      flex: 1,
     },
     announcements: {
       gap: spacing.stackGap,

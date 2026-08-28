@@ -11,8 +11,14 @@ export class Makale {
   @Prop({ required: true })
   icerik: string;
 
+  @Prop({ type: [String], default: [] })
+  resimUrlleri: string[];
+
+  @Prop({ type: [String], default: [] })
+  dosyaUrlleri: string[];
+
   @Prop()
-  resimUrl?: string;
+  youtubeUrl?: string;
 
   @Prop({ required: true })
   yayinTarihi: Date;

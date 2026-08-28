@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { getBaskan, updateBaskan } from './api';
 import type { BaskanInput } from './api';
 import MedyaSecici from './MedyaSecici';
+import { BaskanOnizleme, TelefonOnizleme } from './MobilOnizleme';
 
 interface Props {
   canManage: boolean;
@@ -68,6 +69,8 @@ function BaskanPage({ canManage }: Props) {
 
   if (loading) return <div className="page"><p>Yükleniyor...</p></div>;
 
+  const maddelerOnizleme = maddelerText.split('\n').map((line) => line.trim()).filter(Boolean);
+
   return (
     <div className="page">
       <h2>Başkanımız</h2>
@@ -75,6 +78,8 @@ function BaskanPage({ canManage }: Props) {
       {error && <p className="error-message">{error}</p>}
       {saved && !error && <p className="success-message">Kaydedildi.</p>}
 
+      <div className="guncel-sayfa-govde">
+      <div className="guncel-sol">
       <form className="inline-form" onSubmit={handleSubmit}>
         <label>
           Ad Soyad
@@ -82,6 +87,7 @@ function BaskanPage({ canManage }: Props) {
             value={form.ad}
             onChange={(e) => setForm({ ...form, ad: e.target.value })}
             disabled={!canManage}
+            placeholder="Lütfen veri girişi yapınız"
             required
           />
         </label>
@@ -121,6 +127,21 @@ function BaskanPage({ canManage }: Props) {
         {canManage && <button type="submit">Kaydet</button>}
         {updatedBy && <p className="map-editor-readonly-note">Son güncelleyen: {updatedBy}</p>}
       </form>
+      </div>
+
+      <div className="guncel-sag">
+        <h3 className="bolum-baslik">Mobil Uygulamadaki Görüntüsü</h3>
+        <TelefonOnizleme baslik="Başkanımız">
+          <BaskanOnizleme
+            ad={form.ad}
+            photoUrl={form.photoUrl}
+            introText={form.introText}
+            maddeler={maddelerOnizleme}
+            kapanisText={form.kapanisText}
+          />
+        </TelefonOnizleme>
+      </div>
+      </div>
     </div>
   );
 }

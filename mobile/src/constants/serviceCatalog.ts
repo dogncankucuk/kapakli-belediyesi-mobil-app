@@ -17,11 +17,9 @@ export type ServiceId =
   | "yeni-talep"
   | "taleplerim"
   | "formlar"
-  | "engelli-yasli"
   | "ulasim"
   | "nobetci-eczane"
   | "atik-noktalari"
-  | "asevi"
   | "hava-durumu"
   | "hava-kalitesi"
   | "etkinlik-tarihleri"
@@ -76,12 +74,6 @@ export const SERVICE_CATALOG: ServiceDefinition[] = [
     target: { tab: "Services", screen: "FormlarVeDilekceler" },
   },
   {
-    id: "engelli-yasli",
-    icon: "accessible",
-    labelKey: "services_engelliYasli",
-    target: { tab: "Services", screen: "EngelliYasliHizmetleri" },
-  },
-  {
     id: "ulasim",
     icon: "directions-bus",
     labelKey: "services_ulasim",
@@ -98,12 +90,6 @@ export const SERVICE_CATALOG: ServiceDefinition[] = [
     icon: "recycling",
     labelKey: "services_atikNoktalari",
     target: { tab: "Services", screen: "AtikRehberi" },
-  },
-  {
-    id: "asevi",
-    icon: "restaurant",
-    labelKey: "services_asevi",
-    target: { tab: "Map", screen: "Asevi" },
   },
   {
     id: "hava-durumu",

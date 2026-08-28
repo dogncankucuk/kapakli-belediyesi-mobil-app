@@ -1,4 +1,10 @@
-import { IsDateString, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsDateString,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class UpdateMakaleDto {
   @IsOptional()
@@ -12,8 +18,18 @@ export class UpdateMakaleDto {
   icerik?: string;
 
   @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  resimUrlleri?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  dosyaUrlleri?: string[];
+
+  @IsOptional()
   @IsString()
-  resimUrl?: string;
+  youtubeUrl?: string;
 
   @IsOptional()
   @IsDateString()

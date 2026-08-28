@@ -121,8 +121,6 @@ export default function OtobusTakipScreen() {
                 </View>
               </View>
 
-              <Text style={styles.hatDurum}>{hat.durum}</Text>
-
               {hat.canli && (
                 <>
                   <Pressable

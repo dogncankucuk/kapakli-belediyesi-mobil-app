@@ -8,6 +8,7 @@ import {
 } from './api';
 import type { FormBelgesiInput } from './api';
 import MedyaSecici from './MedyaSecici';
+import { BelgeKartiOnizleme, OnizlemeBosMetin, TelefonOnizleme } from './MobilOnizleme';
 import type { FormBelgesi } from './types';
 import { formBelgesiTuruLabels } from './types';
 
@@ -89,6 +90,9 @@ function FormlarPage({ canManage }: Props) {
       <h2>Formlar ve Dilekçeler</h2>
       {error && <p className="error-message">{error}</p>}
 
+      <div className="guncel-sayfa-govde">
+      <div className="guncel-sol">
+      {canManage && <h3 className="bolum-baslik">1. Bölüm: Ekleme</h3>}
       {canManage && (
         <form className="inline-form" onSubmit={handleCreate}>
           <h3>Yeni Kayıt</h3>
@@ -97,6 +101,7 @@ function FormlarPage({ canManage }: Props) {
             <input
               value={form.baslik}
               onChange={(e) => setForm({ ...form, baslik: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -121,6 +126,7 @@ function FormlarPage({ canManage }: Props) {
         </form>
       )}
 
+      <h3 className="bolum-baslik">2. Bölüm: Eklenmiş Kayıtlar</h3>
       {loading ? (
         <p>Yükleniyor...</p>
       ) : (
@@ -202,6 +208,18 @@ function FormlarPage({ canManage }: Props) {
           </tbody>
         </table>
       )}
+      </div>
+
+      <div className="guncel-sag">
+        <h3 className="bolum-baslik">3. Bölüm: Mobil Uygulamadaki Görüntüsü</h3>
+        <TelefonOnizleme baslik="Formlar ve Dilekçeler">
+          {items.length === 0 && <OnizlemeBosMetin>İçerik bulunamadı.</OnizlemeBosMetin>}
+          {items.map((item) => (
+            <BelgeKartiOnizleme key={item.id} baslik={item.baslik} dosyaVarMi={!!item.url} />
+          ))}
+        </TelefonOnizleme>
+      </div>
+      </div>
     </div>
   );
 }

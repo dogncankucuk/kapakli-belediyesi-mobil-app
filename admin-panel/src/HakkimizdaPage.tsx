@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { getHakkimizda, updateHakkimizda } from './api';
 import type { HakkimizdaInput } from './api';
 import MedyaSecici from './MedyaSecici';
+import { HakkimizdaOnizleme, TelefonOnizleme } from './MobilOnizleme';
 
 interface Props {
   canManage: boolean;
@@ -81,6 +82,8 @@ function HakkimizdaPage({ canManage }: Props) {
       {error && <p className="error-message">{error}</p>}
       {saved && !error && <p className="success-message">Kaydedildi.</p>}
 
+      <div className="guncel-sayfa-govde">
+      <div className="guncel-sol">
       <form className="inline-form" onSubmit={handleSubmit}>
         <label>
           Başkan Özet Metni (Hakkımızda kartında görünür)
@@ -137,6 +140,24 @@ function HakkimizdaPage({ canManage }: Props) {
         {canManage && <button type="submit">Kaydet</button>}
         {updatedBy && <p className="map-editor-readonly-note">Son güncelleyen: {updatedBy}</p>}
       </form>
+      </div>
+
+      <div className="guncel-sag">
+        <h3 className="bolum-baslik">Mobil Uygulamadaki Görüntüsü</h3>
+        <TelefonOnizleme baslik="Kapaklı Belediyesi" varyant="duz" sagIkon="search">
+          <HakkimizdaOnizleme
+            baskanOzetMetni={form.baskanOzetMetni}
+            tarihceParagraflari={paragraflarText
+              .split(/\n{2,}/)
+              .map((p) => p.trim())
+              .filter(Boolean)}
+            kurulusYili={form.kurulusYili}
+            buyuksehirYili={form.buyuksehirYili}
+            nufus={form.nufus}
+          />
+        </TelefonOnizleme>
+      </div>
+      </div>
     </div>
   );
 }

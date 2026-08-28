@@ -12,6 +12,7 @@ export async function getIhaleler(): Promise<Ihale[]> {
 
   return data.map((item) => ({
     ...item,
-    resimUrl: item.resimUrl ? resolveMediaUrl(item.resimUrl) : null,
+    resimUrlleri: (item.resimUrlleri ?? []).map(resolveMediaUrl),
+    dosyaUrlleri: (item.dosyaUrlleri ?? []).map(resolveMediaUrl),
   }));
 }

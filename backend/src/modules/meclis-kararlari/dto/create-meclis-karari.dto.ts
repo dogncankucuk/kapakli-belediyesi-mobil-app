@@ -1,4 +1,10 @@
-import { IsDateString, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsDateString,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateMeclisKarariDto {
   @IsString()
@@ -15,4 +21,13 @@ export class CreateMeclisKarariDto {
   @IsString()
   @IsNotEmpty()
   baslik: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  dosyaUrlleri?: string[];
+
+  @IsOptional()
+  @IsString()
+  youtubeUrl?: string;
 }

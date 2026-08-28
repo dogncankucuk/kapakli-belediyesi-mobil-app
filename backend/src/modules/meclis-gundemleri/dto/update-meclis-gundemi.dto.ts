@@ -1,4 +1,10 @@
-import { IsDateString, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsDateString,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class UpdateMeclisGundemiDto {
   @IsOptional()
@@ -12,5 +18,14 @@ export class UpdateMeclisGundemiDto {
 
   @IsOptional()
   @IsString()
-  dosyaUrl?: string;
+  icerik?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  dosyaUrlleri?: string[];
+
+  @IsOptional()
+  @IsString()
+  youtubeUrl?: string;
 }

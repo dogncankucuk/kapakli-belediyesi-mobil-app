@@ -81,9 +81,10 @@ export const RESOURCE_LABELS: Record<string, string> = {
   wifiNoktalari: 'Wi-Fi Noktaları',
   pharmacies: 'Nöbetçi Eczaneler',
   ulasimHatlari: 'Ulaşım Hatları',
+  atikRehberi: 'Atık Rehberi',
   meclisKararlari: 'Meclis Kararları',
   vefatEdenler: 'Vefat Edenler',
-  atikNoktalari: 'Atık Noktaları',
+  atikNoktalari: 'Atık Konumları',
   suHizmetleri: 'Su Hizmetleri',
   users: 'Mobil Uygulama Kullanıcıları',
   roles: 'Roller',
@@ -96,7 +97,9 @@ export interface Announcement {
   id: string;
   baslik: string;
   icerik: string;
-  resimUrl: string | null;
+  resimUrlleri: string[];
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
   yayinTarihi: string;
   kategori: string;
   updatedBy: string | null;
@@ -108,7 +111,9 @@ export interface Haber {
   id: string;
   baslik: string;
   icerik: string;
-  resimUrl: string | null;
+  resimUrlleri: string[];
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
   yayinTarihi: string;
   updatedBy: string | null;
   createdAt: string;
@@ -119,7 +124,9 @@ export interface Ilan {
   id: string;
   baslik: string;
   icerik: string;
-  resimUrl: string | null;
+  resimUrlleri: string[];
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
   yayinTarihi: string;
   updatedBy: string | null;
   createdAt: string;
@@ -130,7 +137,9 @@ export interface Ihale {
   id: string;
   baslik: string;
   icerik: string;
-  resimUrl: string | null;
+  resimUrlleri: string[];
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
   yayinTarihi: string;
   updatedBy: string | null;
   createdAt: string;
@@ -141,7 +150,9 @@ export interface Makale {
   id: string;
   baslik: string;
   icerik: string;
-  resimUrl: string | null;
+  resimUrlleri: string[];
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
   yayinTarihi: string;
   updatedBy: string | null;
   createdAt: string;
@@ -152,7 +163,9 @@ export interface MeclisGundemi {
   id: string;
   baslik: string;
   tarih: string;
-  dosyaUrl: string | null;
+  icerik: string;
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
   updatedBy: string | null;
   createdAt: string;
   updatedAt: string;
@@ -216,13 +229,23 @@ export interface UlasimSecenegi {
   updatedAt: string;
 }
 
+export type KalkisYonu = 'gidis' | 'donus';
+
+export interface KalkisSaati {
+  saat: string;
+  yon: KalkisYonu;
+}
+
 export interface UlasimHatti {
   id: string;
   hatAdi: string;
+  hatNumarasi: string | null;
   guzergah: string;
-  durum: string;
   canli: boolean;
   hatKodu: string | null;
+  fiyatTam: string | null;
+  fiyatIndirimli: string | null;
+  kalkisSaatleri: KalkisSaati[];
   updatedBy: string | null;
   createdAt: string;
   updatedAt: string;
@@ -282,8 +305,23 @@ export const talepDurumLabels: Record<TalepDurumu, string> = {
   tamamlandi: 'Tamamlandı',
 };
 
+// backend/src/modules/requests/requests.service.ts'teki TALEP_KATEGORI_KODLARI
+// ile birebir ayni - talep no'nun basindaki kod buradan gelir.
+export const talepKategoriLabels: Record<string, string> = {
+  cevre: 'Çevre',
+  hava: 'Hava',
+  gurultu: 'Gürültü',
+  atik: 'Atık',
+  altyapi: 'Altyapı',
+  diger: 'Diğer',
+  'ariza-bakim': 'Arıza/Bakım (eski)',
+  sikayet: 'Şikayet (eski)',
+  'gorus-oneri': 'Görüş/Öneri (eski)',
+};
+
 export interface TalepRequest {
   id: string;
+  talepNo: string;
   kategori: string;
   aciklama: string;
   adSoyad: string;
@@ -292,12 +330,34 @@ export interface TalepRequest {
   ekDosyaUrl: string | null;
   lat: number | null;
   lng: number | null;
+  adres: string | null;
   fotograflar: string[];
   yogunluk: number | null;
+  adminNotu: string | null;
+  kullaniciNotu: string | null;
   userId: string | null;
   updatedBy: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface TalepFiltreleri {
+  page: number;
+  pageSize: number;
+  kategori?: string;
+  durum?: string;
+  adSoyad?: string;
+  telefon?: string;
+  talepNo?: string;
+  baslangic?: string;
+  bitis?: string;
+}
+
+export interface PagedTalepRequests {
+  items: TalepRequest[];
+  total: number;
+  page: number;
+  pageSize: number;
 }
 
 export interface Pharmacy {
@@ -320,6 +380,8 @@ export interface MeclisKarari {
   kategori: string;
   tarih: string;
   baslik: string;
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
   updatedBy: string | null;
   createdAt: string;
   updatedAt: string;
@@ -418,6 +480,12 @@ export const atikTuruLabels: Record<AtikTuru, string> = {
   'Bitkisel Yağ': 'Bitkisel Yağ',
   'Zirai İlaç Kutusu': 'Zirai İlaç Kutusu',
 };
+
+export interface AtikRehberiIcerik {
+  tur: string;
+  aciklama: string;
+  updatedBy: string | null;
+}
 
 export interface AtikNoktasi {
   id: string;

@@ -5,6 +5,7 @@ import { Model, Types } from 'mongoose';
 import { CreateUlasimHattiDto } from './dto/create-ulasim-hatti.dto';
 import { UpdateUlasimHattiDto } from './dto/update-ulasim-hatti.dto';
 import {
+  KalkisSaati,
   UlasimHatti,
   UlasimHattiDocument,
 } from './schemas/ulasim-hatti.schema';
@@ -12,10 +13,13 @@ import {
 export interface AdminUlasimHatti {
   id: string;
   hatAdi: string;
+  hatNumarasi: string | null;
   guzergah: string;
-  durum: string;
   canli: boolean;
   hatKodu: string | null;
+  fiyatTam: string | null;
+  fiyatIndirimli: string | null;
+  kalkisSaatleri: KalkisSaati[];
   updatedBy: string | null;
   createdAt: string;
   updatedAt: string;
@@ -82,10 +86,13 @@ export class AdminUlasimHatlariService {
     return {
       id: doc._id.toString(),
       hatAdi: doc.hatAdi,
+      hatNumarasi: doc.hatNumarasi ?? null,
       guzergah: doc.guzergah,
-      durum: doc.durum,
       canli: doc.canli,
       hatKodu: doc.hatKodu ?? null,
+      fiyatTam: doc.fiyatTam ?? null,
+      fiyatIndirimli: doc.fiyatIndirimli ?? null,
+      kalkisSaatleri: doc.kalkisSaatleri ?? [],
       updatedBy: doc.updatedBy ?? null,
       createdAt: doc.createdAt.toISOString(),
       updatedAt: doc.updatedAt.toISOString(),

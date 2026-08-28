@@ -49,15 +49,23 @@ function MedyaPage({ canManage }: Props) {
   }
 
   async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
     setYukleniyor(true);
     setError(null);
     try {
-      await uploadMedya(file);
+      let basarisiz = 0;
+      for (const file of files) {
+        try {
+          await uploadMedya(file);
+        } catch {
+          basarisiz++;
+        }
+      }
+      if (basarisiz > 0) {
+        setError(`${basarisiz} dosya yüklenemedi`);
+      }
       await load();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Dosya yüklenemedi');
     } finally {
       setYukleniyor(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -126,6 +134,7 @@ function MedyaPage({ canManage }: Props) {
             <input
               ref={fileInputRef}
               type="file"
+              multiple
               onChange={handleFileChange}
               disabled={yukleniyor}
             />

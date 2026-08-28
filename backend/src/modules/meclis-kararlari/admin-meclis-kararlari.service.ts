@@ -15,6 +15,8 @@ export interface AdminMeclisKarari {
   kategori: string;
   tarih: string;
   baslik: string;
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
   updatedBy: string | null;
   createdAt: string;
   updatedAt: string;
@@ -84,6 +86,8 @@ export class AdminMeclisKararlariService {
       kategori: doc.kategori,
       tarih: doc.tarih.toISOString(),
       baslik: doc.baslik,
+      dosyaUrlleri: doc.dosyaUrlleri ?? [],
+      youtubeUrl: doc.youtubeUrl ?? null,
       updatedBy: doc.updatedBy ?? null,
       createdAt: doc.createdAt.toISOString(),
       updatedAt: doc.updatedAt.toISOString(),

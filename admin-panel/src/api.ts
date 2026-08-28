@@ -7,6 +7,7 @@ import type {
   Announcement,
   Appointment,
   AtikNoktasi,
+  AtikRehberiIcerik,
   Baraj,
   BasvuruDurumu,
   BasvuruHizmeti,
@@ -33,12 +34,15 @@ import type {
   PlanliKesinti,
   Pharmacy,
   SuHizmetleriAyarlari,
+  PagedTalepRequests,
   ResourcePermission,
   TalepDurumu,
+  TalepFiltreleri,
   TalepRequest,
   PanelTemasi,
   TarihiYer,
   TemaAyarlari,
+  KalkisSaati,
   UlasimHatti,
   UlasimSecenegi,
   VefatIlani,
@@ -97,7 +101,9 @@ export function getAnnouncements() {
 export type AnnouncementInput = {
   baslik: string;
   icerik: string;
-  resimUrl: string | null;
+  resimUrlleri: string[];
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
   yayinTarihi: string;
   kategori: string;
 };
@@ -123,7 +129,9 @@ export function deleteAnnouncement(id: string) {
 export type ArticleContentInput = {
   baslik: string;
   icerik: string;
-  resimUrl: string | null;
+  resimUrlleri: string[];
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
   yayinTarihi: string;
 };
 
@@ -194,7 +202,9 @@ export function deleteMakale(id: string) {
 export type MeclisGundemiInput = {
   baslik: string;
   tarih: string;
-  dosyaUrl: string | null;
+  icerik: string;
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
 };
 
 export function getMeclisGundemleri() {
@@ -364,12 +374,26 @@ export function deleteUlasimSecenegi(id: string) {
   return request<{ success: boolean }>(`/ulasim-hizmetleri/${id}`, { method: 'DELETE' });
 }
 
+export function getAtikRehberi() {
+  return request<AtikRehberiIcerik[]>('/atik-rehberi');
+}
+
+export function updateAtikRehberiIcerik(tur: string, aciklama: string) {
+  return request<AtikRehberiIcerik>('/atik-rehberi', {
+    method: 'PATCH',
+    body: JSON.stringify({ tur, aciklama }),
+  });
+}
+
 export type UlasimHattiInput = {
   hatAdi: string;
+  hatNumarasi?: string;
   guzergah: string;
-  durum: string;
   canli: boolean;
   hatKodu?: string;
+  fiyatTam?: string;
+  fiyatIndirimli?: string;
+  kalkisSaatleri?: KalkisSaati[];
 };
 
 export function getUlasimHatlari() {
@@ -465,15 +489,32 @@ export function updateAppointment(id: string, data: Partial<AppointmentInput>) {
   });
 }
 
-export function getRequests() {
-  return request<TalepRequest[]>('/requests');
+export function getRequests(filtreler: TalepFiltreleri) {
+  const params = new URLSearchParams();
+  params.set('page', String(filtreler.page));
+  params.set('pageSize', String(filtreler.pageSize));
+  if (filtreler.kategori) params.set('kategori', filtreler.kategori);
+  if (filtreler.durum) params.set('durum', filtreler.durum);
+  if (filtreler.adSoyad) params.set('adSoyad', filtreler.adSoyad);
+  if (filtreler.telefon) params.set('telefon', filtreler.telefon);
+  if (filtreler.talepNo) params.set('talepNo', filtreler.talepNo);
+  if (filtreler.baslangic) params.set('baslangic', filtreler.baslangic);
+  if (filtreler.bitis) params.set('bitis', filtreler.bitis);
+  return request<PagedTalepRequests>(`/requests?${params.toString()}`);
 }
 
-export function updateRequest(id: string, durum: TalepDurumu) {
+export function updateRequest(
+  id: string,
+  data: { durum?: TalepDurumu; adminNotu?: string; kullaniciNotu?: string },
+) {
   return request<TalepRequest>(`/requests/${id}`, {
     method: 'PATCH',
-    body: JSON.stringify({ durum }),
+    body: JSON.stringify(data),
   });
+}
+
+export function deleteRequest(id: string) {
+  return request<{ success: boolean }>(`/requests/${id}`, { method: 'DELETE' });
 }
 
 export type PharmacyInput = {
@@ -532,6 +573,8 @@ export type MeclisKarariInput = {
   kategori: string;
   tarih: string;
   baslik: string;
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
 };
 
 export function getMeclisKararlari() {

@@ -47,7 +47,7 @@ function MedyaSecici({ value, onChange, disabled, placeholder }: Props) {
   );
 }
 
-function MedyaSeciciModal({
+export function MedyaSeciciModal({
   onSelect,
   onClose,
 }: {

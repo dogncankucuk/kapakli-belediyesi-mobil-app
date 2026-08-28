@@ -125,6 +125,7 @@ function AdminUsersPage({ canManage }: Props) {
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -142,6 +143,7 @@ function AdminUsersPage({ canManage }: Props) {
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               minLength={8}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>

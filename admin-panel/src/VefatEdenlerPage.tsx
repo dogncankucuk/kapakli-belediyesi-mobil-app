@@ -7,6 +7,8 @@ import {
   updateVefatIlani,
 } from './api';
 import type { VefatIlaniInput } from './api';
+import { bugununTarihi } from './tarih';
+import TelefonOnizleme from './TelefonOnizleme';
 import type { VefatIlani } from './types';
 
 interface Props {
@@ -26,7 +28,7 @@ function VefatEdenlerPage({ canManage }: Props) {
   const [items, setItems] = useState<VefatIlani[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState<VefatIlaniInput>(emptyForm);
+  const [form, setForm] = useState<VefatIlaniInput>({ ...emptyForm, tarih: bugununTarihi() });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<VefatIlaniInput>(emptyForm);
 
@@ -51,7 +53,7 @@ function VefatEdenlerPage({ canManage }: Props) {
     setError(null);
     try {
       await createVefatIlani(form);
-      setForm(emptyForm);
+      setForm({ ...emptyForm, tarih: bugununTarihi() });
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'İlan oluşturulamadı');
@@ -97,6 +99,9 @@ function VefatEdenlerPage({ canManage }: Props) {
       <h2>Vefat Edenler</h2>
       {error && <p className="error-message">{error}</p>}
 
+      <div className="guncel-sayfa-govde">
+      <div className="guncel-sol">
+      {canManage && <h3 className="bolum-baslik">1. Bölüm: Ekleme</h3>}
       {canManage && (
         <form className="inline-form" onSubmit={handleCreate}>
           <h3>Yeni İlan</h3>
@@ -105,6 +110,7 @@ function VefatEdenlerPage({ canManage }: Props) {
             <input
               value={form.adSoyad}
               onChange={(e) => setForm({ ...form, adSoyad: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -115,18 +121,20 @@ function VefatEdenlerPage({ canManage }: Props) {
               min={0}
               value={form.yas}
               onChange={(e) => setForm({ ...form, yas: Number(e.target.value) })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
           <label>
             Not
-            <input value={form.not} onChange={(e) => setForm({ ...form, not: e.target.value })} required />
+            <input value={form.not} onChange={(e) => setForm({ ...form, not: e.target.value })} required placeholder="Lütfen veri girişi yapınız" />
           </label>
           <label>
             Mekan
             <input
               value={form.mekan}
               onChange={(e) => setForm({ ...form, mekan: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -135,6 +143,7 @@ function VefatEdenlerPage({ canManage }: Props) {
             <input
               value={form.namazVakti}
               onChange={(e) => setForm({ ...form, namazVakti: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -151,6 +160,7 @@ function VefatEdenlerPage({ canManage }: Props) {
         </form>
       )}
 
+      <h3 className="bolum-baslik">2. Bölüm: Eklenmiş Kayıtlar</h3>
       {loading ? (
         <p>Yükleniyor...</p>
       ) : (
@@ -254,6 +264,30 @@ function VefatEdenlerPage({ canManage }: Props) {
           </tbody>
         </table>
       )}
+      </div>
+
+      <div className="guncel-sag">
+        <h3 className="bolum-baslik">3. Bölüm: Mobil Uygulamadaki Görüntüsü</h3>
+        <TelefonOnizleme baslik="Vefat Edenler">
+          {items.length === 0 && (
+            <span className="genel-onizleme-bos">Henüz ilan eklenmemiş</span>
+          )}
+          {items.map((item) => (
+            <div className="genel-onizleme-bolum" key={item.id}>
+              <span className="genel-onizleme-bolum-baslik">
+                {item.adSoyad || 'Ad Soyad'} {item.yas ? `(${item.yas})` : ''}
+              </span>
+              <div className="genel-onizleme-satir">
+                <span className="genel-onizleme-satir-ipucu">{item.not}</span>
+                <span className="genel-onizleme-satir-ipucu">
+                  {item.mekan} · {item.namazVakti}
+                </span>
+              </div>
+            </div>
+          ))}
+        </TelefonOnizleme>
+      </div>
+      </div>
     </div>
   );
 }

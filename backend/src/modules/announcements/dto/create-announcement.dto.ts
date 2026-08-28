@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsDateString,
   IsNotEmpty,
   IsOptional,
@@ -15,8 +16,18 @@ export class CreateAnnouncementDto {
   icerik: string;
 
   @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  resimUrlleri?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  dosyaUrlleri?: string[];
+
+  @IsOptional()
   @IsString()
-  resimUrl?: string;
+  youtubeUrl?: string;
 
   @IsDateString()
   yayinTarihi: string;

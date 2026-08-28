@@ -13,7 +13,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { getAtikNoktalari } from "../api/atikNoktalari";
-import { AtikNoktasi, AtikTuru } from "../api/types";
+import { getAtikRehberi } from "../api/atikRehberi";
+import { AtikNoktasi, AtikRehberiIcerik, AtikTuru } from "../api/types";
 import { Card } from "../components";
 import { ATIK_TURLERI } from "../constants/atikTurleri";
 import { useTranslation } from "../i18n/LocaleContext";
@@ -34,13 +35,24 @@ export default function AtikNoktalariScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [filter, setFilter] = useState<FilterValue>(initialFilter ?? "hepsi");
+  const [rehber, setRehber] = useState<AtikRehberiIcerik[]>([]);
 
   useEffect(() => {
     getAtikNoktalari()
       .then(setNoktalar)
       .catch(() => setError(true))
       .finally(() => setIsLoading(false));
+    getAtikRehberi()
+      .then(setRehber)
+      .catch(() => {
+        // Rehber metni opsiyonel bir ek bilgi - sessiz basarisizlik kabul edilebilir.
+      });
   }, []);
+
+  const rehberMetni =
+    filter !== "hepsi"
+      ? rehber.find((k) => k.tur === filter)?.aciklama
+      : undefined;
 
   const filtered = useMemo(
     () =>
@@ -123,6 +135,10 @@ export default function AtikNoktalariScreen() {
           );
         })}
       </ScrollView>
+
+      {rehberMetni ? (
+        <Text style={styles.rehberMetni}>{rehberMetni}</Text>
+      ) : null}
 
       {isLoading ? (
         <ActivityIndicator
@@ -282,6 +298,12 @@ const createStyles = (colors: Colors) =>
       ...typography.bodyMd,
       color: colors.outline,
       paddingHorizontal: spacing.containerMargin,
+    },
+    rehberMetni: {
+      ...typography.bodyMd,
+      color: colors.onBackground,
+      paddingHorizontal: spacing.containerMargin,
+      paddingBottom: spacing.stackGap,
     },
     list: {
       paddingHorizontal: spacing.containerMargin,

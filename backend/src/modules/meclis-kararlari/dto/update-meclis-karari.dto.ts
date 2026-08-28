@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsDateString,
   IsNotEmpty,
   IsOptional,
@@ -24,4 +25,13 @@ export class UpdateMeclisKarariDto {
   @IsString()
   @IsNotEmpty()
   baslik?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  dosyaUrlleri?: string[];
+
+  @IsOptional()
+  @IsString()
+  youtubeUrl?: string;
 }

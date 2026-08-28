@@ -6,11 +6,11 @@ import { Platform } from "react-native";
 // - "physical-device": fiziksel telefon, host ile ayni Wi-Fi agindaysa
 //   asagidaki DEV_MACHINE_LAN_IP kullanilir (AVD'nin varsayilan SLIRP agi host'un
 //   gercek LAN IP'sine yonlendirme yapmaz, bu yuzden emulator'de calismaz).
-const ANDROID_TARGET: "emulator" | "physical-device" = "emulator";
+const ANDROID_TARGET: "emulator" | "physical-device" = "physical-device";
 
 // Sadece "physical-device" hedefinde kullanilir. Makine degisirse ("ipconfig" ile
 // Wi-Fi adaptorunun IPv4 adresi) guncellenmesi gerekir.
-const DEV_MACHINE_LAN_IP = "192.168.33.143";
+const DEV_MACHINE_LAN_IP = "192.168.33.132";
 
 const ANDROID_HOST =
   ANDROID_TARGET === "emulator" ? "10.0.2.2" : DEV_MACHINE_LAN_IP;

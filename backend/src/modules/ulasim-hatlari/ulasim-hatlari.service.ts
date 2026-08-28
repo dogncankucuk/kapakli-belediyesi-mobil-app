@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import {
+  KalkisSaati,
   UlasimHatti,
   UlasimHattiDocument,
 } from './schemas/ulasim-hatti.schema';
@@ -14,9 +15,12 @@ import {
 export interface PublicUlasimHatti {
   id: string;
   hatAdi: string;
+  hatNumarasi: string | null;
   guzergah: string;
-  durum: string;
   canli: boolean;
+  fiyatTam: string | null;
+  fiyatIndirimli: string | null;
+  kalkisSaatleri: KalkisSaati[];
 }
 
 @Injectable()
@@ -36,9 +40,12 @@ export class UlasimHatlariService {
     return hatlar.map((doc) => ({
       id: doc._id.toString(),
       hatAdi: doc.hatAdi,
+      hatNumarasi: doc.hatNumarasi ?? null,
       guzergah: doc.guzergah,
-      durum: doc.durum,
       canli: doc.canli,
+      fiyatTam: doc.fiyatTam ?? null,
+      fiyatIndirimli: doc.fiyatIndirimli ?? null,
+      kalkisSaatleri: doc.kalkisSaatleri ?? [],
     }));
   }
 

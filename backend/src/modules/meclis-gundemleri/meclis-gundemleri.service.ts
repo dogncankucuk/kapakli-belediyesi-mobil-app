@@ -11,7 +11,9 @@ export interface PublicMeclisGundemi {
   id: string;
   baslik: string;
   tarih: string;
-  dosyaUrl: string | null;
+  icerik: string;
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
 }
 
 @Injectable()
@@ -31,7 +33,9 @@ export class MeclisGundemleriService {
       id: doc._id.toString(),
       baslik: doc.baslik,
       tarih: doc.tarih.toISOString(),
-      dosyaUrl: doc.dosyaUrl ?? null,
+      icerik: doc.icerik ?? '',
+      dosyaUrlleri: doc.dosyaUrlleri ?? [],
+      youtubeUrl: doc.youtubeUrl ?? null,
     }));
   }
 }

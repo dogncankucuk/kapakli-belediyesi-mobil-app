@@ -7,6 +7,7 @@ import {
   updateUlasimSecenegi,
 } from './api';
 import type { UlasimSecenegiInput } from './api';
+import TelefonOnizleme from './TelefonOnizleme';
 import type { UlasimSecenegi } from './types';
 
 interface Props {
@@ -92,34 +93,57 @@ function UlasimHizmetleriPage({ canManage }: Props) {
       {error && <p className="error-message">{error}</p>}
 
       {canManage && (
-        <form className="inline-form" onSubmit={handleCreate}>
-          <h3>Yeni Seçenek</h3>
-          <label>
-            Başlık
-            <input
-              value={form.baslik}
-              onChange={(e) => setForm({ ...form, baslik: e.target.value })}
-              required
-            />
-          </label>
-          <label>
-            Açıklama
-            <input
-              value={form.aciklama}
-              onChange={(e) => setForm({ ...form, aciklama: e.target.value })}
-              required
-            />
-          </label>
-          <label>
-            Bağlantı (URL)
-            <input
-              value={form.url}
-              onChange={(e) => setForm({ ...form, url: e.target.value })}
-              required
-            />
-          </label>
-          <button type="submit">Kaydet</button>
-        </form>
+        <div className="form-onizleme-satir">
+          <form className="inline-form" onSubmit={handleCreate}>
+            <h3>Yeni Seçenek</h3>
+            <label>
+              Başlık
+              <input
+                value={form.baslik}
+                onChange={(e) => setForm({ ...form, baslik: e.target.value })}
+                placeholder="Lütfen veri girişi yapınız"
+                required
+              />
+            </label>
+            <label>
+              Açıklama
+              <input
+                value={form.aciklama}
+                onChange={(e) => setForm({ ...form, aciklama: e.target.value })}
+                placeholder="Lütfen veri girişi yapınız"
+                required
+              />
+            </label>
+            <label>
+              Bağlantı (URL)
+              <input
+                value={form.url}
+                onChange={(e) => setForm({ ...form, url: e.target.value })}
+                placeholder="Lütfen veri girişi yapınız"
+                required
+              />
+            </label>
+            <button type="submit">Kaydet</button>
+          </form>
+
+          <TelefonOnizleme baslik="Ulaşım Hizmetleri">
+            <div className="genel-onizleme-bolum">
+              <span className="genel-onizleme-bolum-baslik">Hizmetler</span>
+              {form.baslik || form.aciklama ? (
+                <div className="genel-onizleme-satir">
+                  <span className="genel-onizleme-satir-etiket">
+                    {form.baslik || 'Başlık'}
+                  </span>
+                  {form.aciklama && (
+                    <span className="genel-onizleme-satir-ipucu">{form.aciklama}</span>
+                  )}
+                </div>
+              ) : (
+                <span className="genel-onizleme-bos">Henüz içerik yok</span>
+              )}
+            </div>
+          </TelefonOnizleme>
+        </div>
       )}
 
       {loading ? (

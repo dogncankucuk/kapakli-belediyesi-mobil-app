@@ -17,6 +17,12 @@ export class MeclisKarari {
   @Prop({ required: true })
   baslik: string;
 
+  @Prop({ type: [String], default: [] })
+  dosyaUrlleri: string[];
+
+  @Prop()
+  youtubeUrl?: string;
+
   @Prop()
   updatedBy?: string;
 }

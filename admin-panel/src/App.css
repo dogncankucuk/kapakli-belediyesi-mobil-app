@@ -342,7 +342,8 @@ button:active:not(:disabled) {
 
 .login-form button[type='submit'],
 .inline-form button[type='submit'],
-.edit-row .row-actions button:first-child {
+.edit-row .row-actions button:first-child,
+.atik-rehberi-item button {
   background: var(--color-primary);
   color: #fff;
   border-color: var(--color-primary);
@@ -350,7 +351,8 @@ button:active:not(:disabled) {
 
 .login-form button[type='submit']:hover:not(:disabled),
 .inline-form button[type='submit']:hover:not(:disabled),
-.edit-row .row-actions button:first-child:hover:not(:disabled) {
+.edit-row .row-actions button:first-child:hover:not(:disabled),
+.atik-rehberi-item button:hover:not(:disabled) {
   background: var(--color-primary-dark);
   border-color: var(--color-primary-dark);
 }
@@ -389,7 +391,9 @@ button:active:not(:disabled) {
 /* Uzun metin alanlari (Icerik/Aciklama vb.) kisa alanlarla ayni dar
    sutuna sikismasin - kendi satirinda tam genislik kaplasin. */
 .inline-form label:has(textarea),
-.edit-row label:has(textarea) {
+.edit-row label:has(textarea),
+.inline-form label:has(.medya-coklu),
+.edit-row label:has(.medya-coklu) {
   grid-column: 1 / -1;
 }
 
@@ -415,6 +419,152 @@ button:active:not(:disabled) {
   grid-column: 1 / -1;
   justify-self: start;
   padding: 10px 22px;
+}
+
+/* ---------- Atık Rehberi ---------- */
+
+.atik-rehberi-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 640px;
+}
+
+.atik-rehberi-item {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.atik-rehberi-item button {
+  align-self: flex-start;
+}
+
+/* ---------- Ulaşım Hatları: fiyat/kalkış saatleri/canlı takip ---------- */
+
+.fiyat-satiri {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px 18px;
+}
+
+.kalkis-label {
+  grid-column: 1 / -1;
+}
+
+.kalkis-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-weight: 400;
+}
+
+.kalkis-ekle-satiri {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.kalkis-ekle-satiri input,
+.kalkis-ekle-satiri select {
+  padding: 7px 10px;
+}
+
+.kalkis-grup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.kalkis-grup-baslik {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  min-width: 52px;
+}
+
+.kalkis-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kalkis-bos {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.kalkis-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.kalkis-chip button {
+  border: none;
+  border-radius: 0;
+  padding: 5px 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.kalkis-chip-gidis {
+  background: var(--color-primary-light);
+}
+
+.kalkis-chip-donus {
+  background: #fdf0d8;
+}
+
+.kalkis-chip button:first-child {
+  background: transparent;
+}
+
+.kalkis-chip-sil {
+  color: var(--color-text-muted);
+  font-weight: 700;
+  padding-left: 6px !important;
+  padding-right: 8px !important;
+}
+
+.kalkis-chip-sil:hover {
+  color: var(--color-danger);
+}
+
+.canli-takip-blok {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  padding-top: 10px;
+  border-top: 1px dashed var(--color-border);
+}
+
+.canli-harita-notu {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-light);
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+  font-weight: 400;
+  max-width: 480px;
 }
 
 /* ---------- Tablolar ---------- */
@@ -548,11 +698,564 @@ td.row-actions button.btn-neutral:hover:not(:disabled) {
 
 .medya-secici-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+  min-width: 0;
+}
+
+.medya-coklu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.medya-coklu-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.medya-coklu-bos {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-style: italic;
+}
+
+.medya-coklu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  font-size: 12.5px;
+}
+
+.medya-coklu-item-ad {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.medya-coklu-item button {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  padding: 0 2px;
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+.medya-coklu-item button:hover:not(:disabled) {
+  color: var(--color-danger);
+  background: transparent;
+}
+
+.talep-filtre-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 0 0 20px 14px;
+  padding: 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.talep-filtre-bar label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.talep-filtre-bar input,
+.talep-filtre-bar select {
+  min-width: 140px;
+}
+
+.talep-filtre-bar button {
+  height: 38px;
+}
+
+.talep-sayfalama {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+/* "Guncel" basligindaki icerik sayfalarini 3 net bolume ayirmak icin
+   (1. Ekleme, 2. Eklenmis Kayitlar, 3. Mobil Uygulamadaki Gorunumu). */
+.bolum-baslik {
+  margin: 28px 0 12px 14px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.bolum-baslik:first-of-type {
+  margin-top: 0;
+}
+
+/* "Guncel" basligindaki icerik sayfalarinin govdesi: solda 1+2. bolumler,
+   sagda dikey duran telefon onizlemesi (3. bolum). */
+.guncel-sayfa-govde {
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+}
+
+.guncel-sol {
+  flex: 1;
+  min-width: 0;
+}
+
+.guncel-sag {
+  flex-shrink: 0;
+  position: sticky;
+  top: 20px;
+}
+
+/* Mobil onizleme - "Guncel" basligindaki icerik sayfalarinda 3. bolum.
+   mobile/src/screens/GuncelIcerikScreen.tsx, MeclisKararlariScreen.tsx,
+   MeclisGundemleriScreen.tsx ve mobile/src/theme/{colors,typography,spacing}.ts
+   ile birebir ayni degerler - gercek header + kart tasarimi. Siyah telefon
+   bezeli .genel-onizleme-cerceve ile GORSEL OLARAK BIREBIR AYNI (panel
+   genelinde tutarli tek bir "mobil onizleme" gorunumu icin). */
+.telefon-onizleme {
+  width: 250px;
+  padding: 8px;
+  border-radius: 28px;
+  background: #1a1a1a;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.telefon-onizleme-ekran {
+  border-radius: 20px;
+  overflow: hidden;
+  background: #fbf7f1;
+  display: flex;
+  flex-direction: column;
+}
+
+.telefon-onizleme-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #1f5c56;
+}
+
+.telefon-onizleme-geri {
+  color: #ffffff;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.telefon-onizleme-baslik {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.telefon-onizleme-header-duz {
+  background: transparent;
+  justify-content: space-between;
+}
+
+.telefon-onizleme-geri-duz {
+  color: #22302c;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.telefon-onizleme-baslik-duz {
+  color: #22302c;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.telefon-onizleme-sagikon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.telefon-onizleme-govde {
+  flex: 1;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.onizleme-bos-metin {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #7a756e;
+  margin: 0;
+}
+
+.onizleme-kart {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 0 4px rgba(34, 48, 44, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.onizleme-kart-resim {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 4px;
+  background: #e4dfd6;
+}
+
+.onizleme-kart-baslik {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: #22302c;
+}
+
+.onizleme-kart-icerik {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #7a756e;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.onizleme-kart-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.onizleme-kart-tarih {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: #3e7d74;
+}
+
+.onizleme-kart-chevron {
+  color: #3e7d74;
+  font-size: 16px;
+}
+
+.onizleme-kart-satir {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.onizleme-kart-satir-baslik {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: #22302c;
+}
+
+.onizleme-kart-ikon {
+  color: #3e7d74;
+  font-size: 18px;
+}
+
+.onizleme-karar-ust {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.onizleme-karar-no {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: #22302c;
+}
+
+.onizleme-karar-kategori {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: #3e7d74;
+}
+
+/* Basit yardimci siniflar - Kurumsal sayfalarinin mobil onizlemelerinde
+   (Baskanimiz, Hakkimizda, Yardim Merkezi, Bize Ulasin) ortak kullanilir. */
+.onizleme-paragraf {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #22302c;
+  margin: 0;
+}
+
+.onizleme-bolum-basligi-kucuk {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 24px;
+  color: #22302c;
+}
+
+.onizleme-kart-baslik-satir {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: #22302c;
+}
+
+.onizleme-chevron-right {
+  color: #7a756e;
+  font-size: 16px;
+}
+
+/* Baskanimiz onizlemesi - BaskanScreen.tsx ile ayni */
+.onizleme-baskan-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 24px 16px;
+  border-radius: 20px;
+  background: #dceeea;
+}
+
+.onizleme-baskan-foto-dis {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid #1f5c56;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.onizleme-baskan-foto-ic {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #e4dfd6;
+}
+
+.onizleme-baskan-foto-ic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.onizleme-baskan-ad {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  color: #22302c;
+  text-align: center;
+}
+
+.onizleme-baskan-ayrac {
+  width: 80px;
+  height: 1px;
+  background: #7a756e;
+  opacity: 0.5;
+  margin-top: 4px;
+}
+
+.onizleme-baskan-rol {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #bfe0da;
+  margin-top: 4px;
+}
+
+.onizleme-baskan-bio {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.onizleme-bullet-row {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.onizleme-bullet-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3e7d74;
+  margin-top: 7px;
+  flex-shrink: 0;
+}
+
+/* Hakkimizda onizlemesi - HakkimizdaScreen.tsx ile ayni */
+.onizleme-hakkimizda-hero {
+  min-height: 72px;
+  border-radius: 12px;
+  background: #1f5c56;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.onizleme-hakkimizda-kart {
+  gap: 6px;
+}
+
+.onizleme-istatistik-satiri {
+  display: flex;
+  gap: 6px;
+}
+
+.onizleme-istatistik {
+  flex: 1;
+  min-height: 44px;
+  border-radius: 12px;
+  background: #dceeea;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 2px;
+}
+
+.onizleme-istatistik-deger {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 24px;
+  color: #1f5c56;
+}
+
+.onizleme-istatistik-etiket {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: #1f5c56;
+  text-align: center;
+}
+
+/* Bize Ulasin onizlemesi - BizeUlasinScreen.tsx ile ayni */
+.onizleme-cagri-kart {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #1f5c56;
+}
+
+.onizleme-cagri-ikon {
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  background: #3e7d74;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.onizleme-cagri-etiket {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: #bfe0da;
+}
+
+.onizleme-cagri-numara {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  color: #ffffff;
+}
+
+.onizleme-iletisim-satiri {
+  display: flex;
+  gap: 6px;
+}
+
+.onizleme-iletisim-kart {
+  flex: 1;
+  min-height: 44px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 0 4px rgba(34, 48, 44, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #22302c;
+}
+
+.onizleme-adres-metin {
+  color: #7a756e;
+}
+
+.onizleme-harita-yer-tutucu {
+  min-height: 100px;
+  border-radius: 12px;
+  background: #1f5c56;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.onizleme-karar-baslik {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #22302c;
+}
+
+.onizleme-karar-tarih {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: #7a756e;
 }
 
 .medya-secici-row input {
   flex: 1;
+  min-width: 120px;
 }
 
 .medya-secici-row button {
@@ -815,4 +1518,147 @@ td.row-actions button.btn-neutral:hover:not(:disabled) {
   font-size: 13px;
   color: var(--color-text-muted);
   font-style: italic;
+}
+
+/* Mobil ekran onizleme (telefon cercevesi) - genel/tek-tip icerikler icin
+   (Basvuru Turleri, Ulasim, Su Hizmetleri, Atik Rehberi vb.). NOT: sayfaya
+   ozel kart tasarimlarina (haber/ilan/karar/baskan/hakkimizda/bize-ulasin)
+   ihtiyac duyan sayfalarda bunun yerine MEVCUT admin-panel/src/MobilOnizleme.tsx
+   (TelefonOnizleme + IcerikKartiOnizleme/BaskanOnizleme/... bilesenleri ve
+   .onizleme-* siniflari) kullanilir - o sistem zaten kurulu ve dogru,
+   BURADAKI "genel-onizleme-*" siniflarla KARISTIRILMAMALI/CAKISTIRILMAMALI.
+   mobile/src/theme/colors.ts'in light temasindaki renklerle birebir eslesir. */
+.genel-onizleme-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.genel-onizleme-etiket {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.genel-onizleme-cerceve {
+  width: 250px;
+  padding: 8px;
+  border-radius: 28px;
+  background: #1a1a1a;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.genel-onizleme-ekran {
+  min-height: 200px;
+  max-height: 460px;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #fbf7f1;
+}
+
+.genel-onizleme-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 14px 12px;
+  background: #1f5c56;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.genel-onizleme-geri {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.genel-onizleme-baslik {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.genel-onizleme-icerik {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: #22302c;
+}
+
+.genel-onizleme-icerik img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 14px;
+  display: block;
+}
+
+.genel-onizleme-bos {
+  color: #7a756e;
+  font-size: 13px;
+  font-style: italic;
+}
+
+.genel-onizleme-bolum {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.genel-onizleme-bolum-baslik {
+  font-size: 14px;
+  font-weight: 600;
+  color: #22302c;
+}
+
+.genel-onizleme-satir {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.genel-onizleme-satir-etiket {
+  font-weight: 600;
+  color: #22302c;
+}
+
+.genel-onizleme-satir-ipucu {
+  font-size: 12px;
+  color: #7a756e;
+}
+
+.form-onizleme-satir {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.form-onizleme-satir .inline-form {
+  flex: 1;
+  min-width: 320px;
+}
+
+.genel-onizleme-buton {
+  margin-top: auto;
+  padding: 12px;
+  border-radius: 14px;
+  background: #1f5c56;
+  color: #ffffff;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
 }

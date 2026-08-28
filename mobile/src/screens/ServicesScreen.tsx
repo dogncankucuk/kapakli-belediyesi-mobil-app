@@ -1,8 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { useMemo, useState } from "react";
 import {
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,7 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { CategoryIconCard, TopBar } from "../components";
+import { CategoryIconCard, HavaVeAramaSag, TopBar } from "../components";
 import {
   navigateToServiceTarget,
   SERVICE_CATALOG,
@@ -40,11 +39,14 @@ const HIDDEN_ON_SERVICES_SCREEN: ServiceId[] = [
 
 export default function ServicesScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
   const { openMenu } = useAppShell();
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const acSearch = (route.params as { acSearch?: boolean } | undefined)
+    ?.acSearch;
+  const [isSearchOpen, setIsSearchOpen] = useState(!!acSearch);
   const [query, setQuery] = useState("");
 
   const visibleServices = useMemo(
@@ -74,18 +76,7 @@ export default function ServicesScreen() {
         title={t("common_appName")}
         onMenuPress={openMenu}
         rightSlot={
-          <Pressable
-            onPress={toggleSearch}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel={t("common_search")}
-          >
-            <MaterialIcons
-              name={isSearchOpen ? "close" : "search"}
-              size={24}
-              color={colors.onPrimary}
-            />
-          </Pressable>
+          <HavaVeAramaSag onSearchPress={toggleSearch} searchActive={isSearchOpen} />
         }
       />
       <ScrollView

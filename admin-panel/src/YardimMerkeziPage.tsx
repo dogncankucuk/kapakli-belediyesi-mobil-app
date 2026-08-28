@@ -7,6 +7,7 @@ import {
   updateYardimMerkeziSoru,
 } from './api';
 import type { YardimMerkeziSoruInput } from './api';
+import { OnizlemeBosMetin, TelefonOnizleme, YardimMerkeziKartiOnizleme } from './MobilOnizleme';
 import type { YardimMerkeziSoru } from './types';
 
 interface Props {
@@ -87,6 +88,9 @@ function YardimMerkeziPage({ canManage }: Props) {
       <p>Mobil uygulamadaki "Yardım Merkezi" ekranındaki sıkça sorulan soruları buradan yönetin.</p>
       {error && <p className="error-message">{error}</p>}
 
+      <div className="guncel-sayfa-govde">
+      <div className="guncel-sol">
+      {canManage && <h3 className="bolum-baslik">1. Bölüm: Ekleme</h3>}
       {canManage && (
         <form className="inline-form" onSubmit={handleCreate}>
           <h3>Yeni Soru</h3>
@@ -95,6 +99,7 @@ function YardimMerkeziPage({ canManage }: Props) {
             <input
               value={form.soru}
               onChange={(e) => setForm({ ...form, soru: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -103,6 +108,7 @@ function YardimMerkeziPage({ canManage }: Props) {
             <textarea
               value={form.cevap}
               onChange={(e) => setForm({ ...form, cevap: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -110,6 +116,7 @@ function YardimMerkeziPage({ canManage }: Props) {
         </form>
       )}
 
+      <h3 className="bolum-baslik">2. Bölüm: Eklenmiş Kayıtlar</h3>
       {loading ? (
         <p>Yükleniyor...</p>
       ) : (
@@ -172,6 +179,21 @@ function YardimMerkeziPage({ canManage }: Props) {
           </tbody>
         </table>
       )}
+      </div>
+
+      {canManage && (
+        <div className="guncel-sag">
+          <h3 className="bolum-baslik">3. Bölüm: Mobil Uygulamadaki Görüntüsü</h3>
+          <TelefonOnizleme baslik="Yardım Merkezi" varyant="duz" sagIkon="search">
+            <div className="onizleme-bolum-basligi-kucuk">Popüler Sorular</div>
+            {items.length === 0 && <OnizlemeBosMetin>Henüz soru eklenmemiş.</OnizlemeBosMetin>}
+            {items.map((item) => (
+              <YardimMerkeziKartiOnizleme key={item.id} soru={item.soru} />
+            ))}
+          </TelefonOnizleme>
+        </div>
+      )}
+      </div>
     </div>
   );
 }

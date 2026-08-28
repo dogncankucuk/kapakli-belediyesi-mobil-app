@@ -1,3 +1,4 @@
+import { MaterialIcons } from "@expo/vector-icons";
 import { useMemo } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -8,6 +9,8 @@ type AnnouncementCardProps = {
   title: string;
   date: string;
   imageUrl?: string | null;
+  dosyaUrlleri?: string[];
+  youtubeUrl?: string | null;
   onPress?: () => void;
 };
 
@@ -15,6 +18,8 @@ export default function AnnouncementCard({
   title,
   date,
   imageUrl,
+  dosyaUrlleri,
+  youtubeUrl,
   onPress,
 }: AnnouncementCardProps) {
   const colors = useThemeColors();
@@ -37,7 +42,23 @@ export default function AnnouncementCard({
             <Text style={styles.title} numberOfLines={2}>
               {title}
             </Text>
-            <Text style={styles.date}>{date}</Text>
+            <View style={styles.dateRow}>
+              <Text style={styles.date}>{date}</Text>
+              {dosyaUrlleri && dosyaUrlleri.length > 0 && (
+                <MaterialIcons
+                  name="picture-as-pdf"
+                  size={16}
+                  color={colors.secondary}
+                />
+              )}
+              {youtubeUrl && (
+                <MaterialIcons
+                  name="movie"
+                  size={16}
+                  color={colors.secondary}
+                />
+              )}
+            </View>
           </View>
         </Card>
       )}
@@ -70,6 +91,11 @@ const createStyles = (colors: Colors) =>
     title: {
       ...typography.labelLg,
       color: colors.onBackground,
+    },
+    dateRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
     },
     date: {
       ...typography.bodyMd,

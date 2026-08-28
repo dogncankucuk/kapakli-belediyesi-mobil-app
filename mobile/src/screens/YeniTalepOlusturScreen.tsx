@@ -19,6 +19,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { createRequest } from "../api/requests";
 import { TalepKategorisi } from "../api/types";
 import {
+  BOS_KONUM,
   Card,
   CategoryIconCard,
   LocationPreviewCard,
@@ -63,7 +64,7 @@ export default function YeniTalepOlusturScreen() {
   const [adSoyad, setAdSoyad] = useState("");
   const [telefon, setTelefon] = useState("");
   const [aciklama, setAciklama] = useState("");
-  const [location, setLocation] = useState<LocationValue>(null);
+  const [location, setLocation] = useState<LocationValue>(BOS_KONUM);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [yogunluk, setYogunluk] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,10 +73,13 @@ export default function YeniTalepOlusturScreen() {
     ? YOGUNLUK_GOSTEREN_KATEGORILER.includes(kategori)
     : false;
 
+  // Telefon her zaman +90 ile baslar, kullanici sadece 10 haneli yerel
+  // numarayi girer - backend'e gonderilirken +90 onekiyle birlestirilir.
+  const telefonGecerli = /^[0-9]{10}$/.test(telefon);
+  const telefonHataGoster = telefon.length > 0 && !telefonGecerli;
+
   const step2Gecerli =
-    adSoyad.trim().length > 0 &&
-    telefon.trim().length >= 10 &&
-    aciklama.trim().length > 0;
+    adSoyad.trim().length > 0 && telefonGecerli && aciklama.trim().length > 0;
 
   const secilenKategori = kategoriTanimlari.find((k) => k.value === kategori);
 
@@ -156,9 +160,10 @@ export default function YeniTalepOlusturScreen() {
         kategori,
         aciklama: aciklama.trim(),
         adSoyad: adSoyad.trim(),
-        telefon: telefon.trim(),
-        lat: location?.lat,
-        lng: location?.lng,
+        telefon: `+90${telefon}`,
+        lat: location.lat ?? undefined,
+        lng: location.lng ?? undefined,
+        adres: location.adres.trim() || undefined,
         fotograflar: photos.map((p) => p.base64),
         yogunluk: showYogunluk ? yogunluk : undefined,
       });
@@ -283,15 +288,28 @@ export default function YeniTalepOlusturScreen() {
                   onChangeText={setAdSoyad}
                   accessibilityLabel={t("yeniTalep_adSoyadPlaceholder")}
                 />
-                <TextInput
-                  style={styles.input}
-                  placeholder={t("yeniTalep_telefonPlaceholder")}
-                  placeholderTextColor={colors.outline}
-                  value={telefon}
-                  onChangeText={setTelefon}
-                  keyboardType="phone-pad"
-                  accessibilityLabel={t("yeniTalep_telefonPlaceholder")}
-                />
+                <View style={styles.telefonRow}>
+                  <View style={styles.telefonOnEk}>
+                    <Text style={styles.telefonOnEkText}>+90</Text>
+                  </View>
+                  <TextInput
+                    style={[styles.input, styles.telefonInput]}
+                    placeholder={t("yeniTalep_telefonPlaceholder")}
+                    placeholderTextColor={colors.outline}
+                    value={telefon}
+                    onChangeText={(text) =>
+                      setTelefon(text.replace(/[^0-9]/g, "").slice(0, 10))
+                    }
+                    keyboardType="number-pad"
+                    maxLength={10}
+                    accessibilityLabel={t("yeniTalep_telefonPlaceholder")}
+                  />
+                </View>
+                {telefonHataGoster && (
+                  <Text style={styles.telefonHata}>
+                    {t("yeniTalep_telefonGecersiz")}
+                  </Text>
+                )}
               </Card>
             </View>
 
@@ -411,9 +429,10 @@ export default function YeniTalepOlusturScreen() {
                 icon="location-on"
                 label={t("yeniTalep_konum")}
                 value={
-                  location
+                  location.adres.trim() ||
+                  (location.lat != null && location.lng != null
                     ? `${location.lat.toFixed(4)}°N · ${location.lng.toFixed(4)}°E`
-                    : t("yeniTalep_konumIzniYok")
+                    : t("yeniTalep_konumIzniYok"))
                 }
                 colors={colors}
               />
@@ -633,6 +652,28 @@ const createStyles = (colors: Colors) =>
       paddingHorizontal: spacing.stackGap,
       minHeight: spacing.touchTargetMin,
     },
+    telefonRow: {
+      flexDirection: "row",
+      gap: spacing.stackGap / 2,
+    },
+    telefonOnEk: {
+      minHeight: spacing.touchTargetMin,
+      paddingHorizontal: spacing.stackGap,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      borderRadius: shape.rounded,
+      backgroundColor: colors.secondaryContainer,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    telefonOnEkText: {
+      ...typography.bodyLg,
+      fontWeight: "600",
+      color: colors.onBackground,
+    },
+    telefonInput: {
+      flex: 1,
+    },
     textArea: {
       ...typography.bodyMd,
       height: 100,
@@ -647,6 +688,10 @@ const createStyles = (colors: Colors) =>
       ...typography.labelSm,
       color: colors.outline,
       alignSelf: "flex-end",
+    },
+    telefonHata: {
+      ...typography.labelSm,
+      color: colors.error,
     },
     fotoRow: {
       flexDirection: "row",

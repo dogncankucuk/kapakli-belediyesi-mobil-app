@@ -14,8 +14,8 @@ import HakkimizdaPage from './HakkimizdaPage';
 import YardimMerkeziPage from './YardimMerkeziPage';
 import BizeUlasinPage from './BizeUlasinPage';
 import FaturaOdemePage from './FaturaOdemePage';
-import UlasimHizmetleriPage from './UlasimHizmetleriPage';
 import UlasimHatlariPage from './UlasimHatlariPage';
+import AtikRehberiPage from './AtikRehberiPage';
 import TemaAyarlariPage from './TemaAyarlariPage';
 import PanelTemasiPage from './PanelTemasiPage';
 import MedyaPage from './MedyaPage';
@@ -42,168 +42,21 @@ import RolesPage from './RolesPage';
 import AdminUsersPage from './AdminUsersPage';
 import './App.css';
 
-type Page =
-  | 'haberler'
-  | 'announcements'
-  | 'ilanlar'
-  | 'ihaleler'
-  | 'makaleler'
-  | 'meclisGundemleri'
-  | 'baskan'
-  | 'hakkimizda'
-  | 'yardimMerkezi'
-  | 'bizeUlasin'
-  | 'faturaOdeme'
-  | 'ulasimHizmetleri'
-  | 'ulasimHatlari'
-  | 'temaAyarlari'
-  | 'panelTemasi'
-  | 'medya'
-  | 'atikNoktalari'
-  | 'appointments'
-  | 'requests'
-  | 'pharmacies'
-  | 'meclisKararlari'
-  | 'vefatEdenler'
-  | 'wifiNoktalari'
-  | 'suHizmetleri'
-  | 'asevi'
-  | 'camiler'
-  | 'onemliKurumlar'
-  | 'parklar'
-  | 'tarihiYerler'
-  | 'formlar'
-  | 'basvuruHizmetleri'
-  | 'basvuruTurleri'
-  | 'basvurular'
-  | 'mapEditor'
-  | 'users'
-  | 'roles'
-  | 'adminUsers';
+import {
+  MAP_EDITOR_RESOURCES,
+  NAV_GROUPS,
+  pageResource,
+} from './navGroups';
+import type { Page } from './navGroups';
 
-interface NavGroup {
-  heading: string;
-  // Sadece tek bir sayfaya sahip gruplarda kullanilir: heading'in kendisi
-  // tiklanabilir bir link olur, ayrica alt sekme gostermeye gerek kalmaz
-  // (bkz. "Medya" grubu).
-  headingPage?: Page;
-  items: { page: Page; label: string }[];
-}
-
-// Ana basliklar + alt sekmeler - butonlar sol sidebar'da bu gruplamayla
-// gosterilir. Bu panelin tamami adminler icindir - hicbir grup vatandasa
-// acik degildir. Bazi gruplar sadece mobil uygulamadan gelen vatandas
-// verisini (randevu/talep/hesap) yonetmeye yarar, bu farkli bir sey -
-// grup basliklari bu yuzden "kim kullanir" degil "admin ne yapiyor"
-// mantigiyla adlandirilir (bkz. Gurkan'in duzeltmesi: panel vatandas icin
-// degil, mobil uygulamayi yonetecek adminler icindir).
-// "Harita Konumları" grubu, lat/lng iceren tum icerik turlerini (harita
-// katmanlarini besleyen kaynaklar) ve harita editorunu bir arada toplar.
-const NAV_GROUPS: NavGroup[] = [
-  {
-    heading: 'Güncel',
-    items: [
-      { page: 'haberler', label: 'Haberler' },
-      { page: 'announcements', label: 'Duyurular' },
-      { page: 'ilanlar', label: 'İlanlar' },
-      { page: 'ihaleler', label: 'İhaleler' },
-      { page: 'makaleler', label: 'Makaleler' },
-      { page: 'meclisGundemleri', label: 'Meclis Gündemleri' },
-      { page: 'meclisKararlari', label: 'Meclis Kararları' },
-    ],
-  },
-  {
-    heading: 'Kurumsal',
-    items: [
-      { page: 'baskan', label: 'Başkanımız' },
-      { page: 'hakkimizda', label: 'Hakkımızda' },
-      { page: 'yardimMerkezi', label: 'Yardım Merkezi' },
-      { page: 'bizeUlasin', label: 'Bize Ulaşın' },
-    ],
-  },
-  {
-    // Mobil uygulamadaki "Hizmetler" sekmesindeki servis katalogunun
-    // (SERVICE_CATALOG) birebir eslesigi - hava durumu/hava kalitesi haric
-    // (onlar dis API'den canli cekiliyor, admin panelde yonetilecek icerik
-    // yok). Bazi ogeler baska gruplarda zaten var olan sayfalara isaret
-    // eder (ayni kaynagi iki basliktan erisilebilir kilmak icin kasitli).
-    heading: 'Hizmetler',
-    items: [
-      { page: 'faturaOdeme', label: 'Fatura Ödeme' },
-      { page: 'suHizmetleri', label: 'Su Hizmetleri' },
-      { page: 'formlar', label: 'Formlar ve Dilekçeler' },
-      { page: 'basvuruHizmetleri', label: 'Engelli / Yaşlı Hizmetleri' },
-      { page: 'ulasimHizmetleri', label: 'Ulaşım Hizmetleri' },
-      { page: 'ulasimHatlari', label: 'Ulaşım Hatları' },
-      { page: 'pharmacies', label: 'Nöbetçi Eczaneler' },
-      { page: 'atikNoktalari', label: 'Atık Noktaları' },
-      { page: 'asevi', label: 'Aşevi' },
-      { page: 'vefatEdenler', label: 'Vefat Edenler' },
-    ],
-  },
-  {
-    heading: 'Talepler',
-    items: [{ page: 'requests', label: 'Talepler' }],
-  },
-  {
-    heading: 'Randevular',
-    items: [{ page: 'appointments', label: 'Randevular' }],
-  },
-  {
-    heading: 'Başvurular',
-    items: [
-      { page: 'basvuruTurleri', label: 'Başvuru Türleri' },
-      { page: 'basvurular', label: 'Başvurular' },
-    ],
-  },
-  {
-    heading: 'Harita Konumları',
-    items: [
-      { page: 'mapEditor', label: 'Harita Editörü' },
-      { page: 'camiler', label: 'Camiler' },
-      { page: 'onemliKurumlar', label: 'Önemli Kurumlar' },
-      { page: 'parklar', label: 'Parklar' },
-      { page: 'tarihiYerler', label: 'Tarihi Yerler' },
-      { page: 'wifiNoktalari', label: 'Wi-Fi Noktaları' },
-      { page: 'pharmacies', label: 'Nöbetçi Eczaneler' },
-    ],
-  },
-  {
-    heading: 'Medya',
-    headingPage: 'medya',
-    items: [],
-  },
-  {
-    heading: 'Ayarlar',
-    items: [
-      { page: 'panelTemasi', label: 'Panel Görünümü' },
-      { page: 'temaAyarlari', label: 'Mobil Görünüm Ayarları' },
-      { page: 'roles', label: 'Roller' },
-      { page: 'adminUsers', label: 'Yönetici Kullanıcılar' },
-      { page: 'users', label: 'Mobil Uygulama Kullanıcıları' },
-    ],
-  },
-];
-
-// Harita Editörü tek bir kaynağa değil, harita katmanlarını besleyen tüm
-// kaynaklara bağlı - bunlardan en az birini yönetebilen görebilir.
-const MAP_EDITOR_RESOURCES = [
-  'camiler',
-  'onemliKurumlar',
-  'parklar',
-  'tarihiYerler',
-  'wifiNoktalari',
-  'pharmacies',
-];
-
-function pageResource(page: Page): string | null {
-  return page === 'mapEditor' ? null : page;
-}
+const SAYFA_DEPOLAMA_ANAHTARI = 'kapakli-admin-sayfa';
 
 function App() {
   const [user, setUser] = useState<AdminUser | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
-  const [page, setPage] = useState<Page | null>(null);
+  const [page, setPage] = useState<Page | null>(
+    () => (localStorage.getItem(SAYFA_DEPOLAMA_ANAHTARI) as Page | null) ?? null,
+  );
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [sidebarArama, setSidebarArama] = useState('');
 
@@ -263,9 +116,13 @@ function App() {
     return NAV_GROUPS.map((group) => ({
       ...group,
       items: group.items.filter((item) => canViewPage(item.page)),
-    })).filter(
-      (group) => !group.headingPage || canViewPage(group.headingPage),
-    );
+    })).filter((group) => {
+      // "Medya" gibi tek sayfali gruplarda gorunurluk o sayfanin kendi
+      // iznine bagli; digerlerinde ise altinda gorulebilir en az bir alt
+      // sekme kalmadiysa grup basligi bos halde gosterilmemeli.
+      if (group.headingPage) return canViewPage(group.headingPage);
+      return group.items.length > 0;
+    });
   }, [canViewPage]);
 
   // Arama bosken normal ac/kapa (collapsedGroups) durumu gecerli. Arama
@@ -303,12 +160,17 @@ function App() {
     setPage(firstVisible);
   }, [user, page, canViewPage, visibleGroups]);
 
+  useEffect(() => {
+    if (page) localStorage.setItem(SAYFA_DEPOLAMA_ANAHTARI, page);
+  }, [page]);
+
   async function handleLogout() {
     try {
       await logout();
     } finally {
       setUser(null);
       setPage(null);
+      localStorage.removeItem(SAYFA_DEPOLAMA_ANAHTARI);
     }
   }
 
@@ -417,10 +279,10 @@ function App() {
         {page === 'bizeUlasin' && <BizeUlasinPage canManage={canManage('bizeUlasin')} />}
         {page === 'faturaOdeme' && <FaturaOdemePage canManage={canManage('faturaOdeme')} />}
         {page === 'ulasimHizmetleri' && (
-          <UlasimHizmetleriPage canManage={canManage('ulasimHizmetleri')} />
-        )}
-        {page === 'ulasimHatlari' && (
           <UlasimHatlariPage canManage={canManage('ulasimHatlari')} />
+        )}
+        {page === 'atikRehberi' && (
+          <AtikRehberiPage canManage={canManage('atikRehberi')} />
         )}
         {page === 'temaAyarlari' && (
           <TemaAyarlariPage canManage={canManage('temaAyarlari')} />

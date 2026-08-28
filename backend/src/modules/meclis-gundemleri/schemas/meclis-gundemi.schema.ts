@@ -11,8 +11,14 @@ export class MeclisGundemi {
   @Prop({ required: true })
   tarih: Date;
 
+  @Prop({ default: '' })
+  icerik: string;
+
+  @Prop({ type: [String], default: [] })
+  dosyaUrlleri: string[];
+
   @Prop()
-  dosyaUrl?: string;
+  youtubeUrl?: string;
 
   @Prop()
   updatedBy?: string;

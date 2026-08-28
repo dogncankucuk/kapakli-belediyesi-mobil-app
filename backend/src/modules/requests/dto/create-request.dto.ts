@@ -46,7 +46,9 @@ export class CreateRequestDto {
   @MaxLength(120)
   adSoyad: string;
 
-  @Matches(/^[0-9+()\-\s]{10,15}$/)
+  // Mobil uygulama telefonu her zaman +90 onekiyle ve 10 haneli yerel
+  // numarayla gonderiyor (bkz. YeniTalepOlusturScreen.tsx telefon alani).
+  @Matches(/^\+90[0-9]{10}$/)
   telefon: string;
 
   @IsOptional()
@@ -60,6 +62,11 @@ export class CreateRequestDto {
   @IsOptional()
   @IsLongitude()
   lng?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  adres?: string;
 
   // Base64 data-URI fotoğraflar (client tarafında küçültülmüş, quality:0.4) -
   // AtikSiniflandirmaScreen'in classifyAtik() için kullandığı aynı desen.

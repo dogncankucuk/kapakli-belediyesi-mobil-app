@@ -24,6 +24,7 @@ export type AdminResource =
   | 'vefatEdenler'
   | 'wifiNoktalari'
   | 'ulasimHatlari'
+  | 'atikRehberi'
   | 'suHizmetleri'
   | 'asevi'
   | 'camiler'
@@ -64,6 +65,7 @@ export const ALL_ADMIN_RESOURCES: AdminResource[] = [
   'vefatEdenler',
   'wifiNoktalari',
   'ulasimHatlari',
+  'atikRehberi',
   'suHizmetleri',
   'asevi',
   'camiler',

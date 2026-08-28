@@ -7,7 +7,9 @@ import {
   updateMeclisGundemi,
 } from './api';
 import type { MeclisGundemiInput } from './api';
-import MedyaSecici from './MedyaSecici';
+import MedyaSeciciCoklu from './MedyaSeciciCoklu';
+import { IcerikKartiOnizleme, OnizlemeBosMetin, TelefonOnizleme } from './MobilOnizleme';
+import { bugununTarihi } from './tarih';
 import type { MeclisGundemi } from './types';
 
 interface Props {
@@ -17,14 +19,16 @@ interface Props {
 const emptyForm: MeclisGundemiInput = {
   baslik: '',
   tarih: '',
-  dosyaUrl: '',
+  icerik: '',
+  dosyaUrlleri: [],
+  youtubeUrl: '',
 };
 
 function MeclisGundemleriPage({ canManage }: Props) {
   const [items, setItems] = useState<MeclisGundemi[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState<MeclisGundemiInput>(emptyForm);
+  const [form, setForm] = useState<MeclisGundemiInput>({ ...emptyForm, tarih: bugununTarihi() });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<MeclisGundemiInput>(emptyForm);
 
@@ -48,8 +52,8 @@ function MeclisGundemleriPage({ canManage }: Props) {
     e.preventDefault();
     setError(null);
     try {
-      await createMeclisGundemi({ ...form, dosyaUrl: form.dosyaUrl || null });
-      setForm(emptyForm);
+      await createMeclisGundemi({ ...form, youtubeUrl: form.youtubeUrl || null });
+      setForm({ ...emptyForm, tarih: bugununTarihi() });
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Meclis gündemi oluşturulamadı');
@@ -61,14 +65,16 @@ function MeclisGundemleriPage({ canManage }: Props) {
     setEditForm({
       baslik: item.baslik,
       tarih: item.tarih.slice(0, 10),
-      dosyaUrl: item.dosyaUrl ?? '',
+      icerik: item.icerik,
+      dosyaUrlleri: item.dosyaUrlleri,
+      youtubeUrl: item.youtubeUrl ?? '',
     });
   }
 
   async function handleUpdate(id: string) {
     setError(null);
     try {
-      await updateMeclisGundemi(id, { ...editForm, dosyaUrl: editForm.dosyaUrl || null });
+      await updateMeclisGundemi(id, { ...editForm, youtubeUrl: editForm.youtubeUrl || null });
       setEditingId(null);
       await load();
     } catch (err) {
@@ -92,6 +98,9 @@ function MeclisGundemleriPage({ canManage }: Props) {
       <h2>Meclis Gündemleri</h2>
       {error && <p className="error-message">{error}</p>}
 
+      <div className="guncel-sayfa-govde">
+      <div className="guncel-sol">
+      {canManage && <h3 className="bolum-baslik">1. Bölüm: Ekleme</h3>}
       {canManage && (
         <form className="inline-form" onSubmit={handleCreate}>
           <h3>Yeni Meclis Gündemi</h3>
@@ -100,6 +109,7 @@ function MeclisGundemleriPage({ canManage }: Props) {
             <input
               value={form.baslik}
               onChange={(e) => setForm({ ...form, baslik: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -113,16 +123,33 @@ function MeclisGundemleriPage({ canManage }: Props) {
             />
           </label>
           <label>
-            Dosya URL
-            <MedyaSecici
-              value={form.dosyaUrl ?? ''}
-              onChange={(url) => setForm({ ...form, dosyaUrl: url })}
+            Metin / Gündem İçeriği
+            <textarea
+              value={form.icerik}
+              onChange={(e) => setForm({ ...form, icerik: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
+            />
+          </label>
+          <label>
+            Dosya URL (birden fazla seçilebilir)
+            <MedyaSeciciCoklu
+              value={form.dosyaUrlleri}
+              onChange={(dosyaUrlleri) => setForm({ ...form, dosyaUrlleri })}
+            />
+          </label>
+          <label>
+            YouTube Video URL (opsiyonel)
+            <input
+              value={form.youtubeUrl ?? ''}
+              onChange={(e) => setForm({ ...form, youtubeUrl: e.target.value })}
+              placeholder="https://www.youtube.com/watch?v=..."
             />
           </label>
           <button type="submit">Kaydet</button>
         </form>
       )}
 
+      <h3 className="bolum-baslik">2. Bölüm: Eklenmiş Kayıtlar</h3>
       {loading ? (
         <p>Yükleniyor...</p>
       ) : (
@@ -157,12 +184,27 @@ function MeclisGundemleriPage({ canManage }: Props) {
                         />
                       </label>
                       <label>
-                        Dosya URL
-                        <MedyaSecici
-                          value={editForm.dosyaUrl ?? ''}
-                          onChange={(url) =>
-                            setEditForm({ ...editForm, dosyaUrl: url })
+                        Metin / Gündem İçeriği
+                        <textarea
+                          value={editForm.icerik}
+                          onChange={(e) => setEditForm({ ...editForm, icerik: e.target.value })}
+                        />
+                      </label>
+                      <label>
+                        Dosya URL (birden fazla seçilebilir)
+                        <MedyaSeciciCoklu
+                          value={editForm.dosyaUrlleri}
+                          onChange={(dosyaUrlleri) =>
+                            setEditForm({ ...editForm, dosyaUrlleri })
                           }
+                        />
+                      </label>
+                      <label>
+                        YouTube Video URL (opsiyonel)
+                        <input
+                          value={editForm.youtubeUrl ?? ''}
+                          onChange={(e) => setEditForm({ ...editForm, youtubeUrl: e.target.value })}
+                          placeholder="https://www.youtube.com/watch?v=..."
                         />
                       </label>
                       <div className="row-actions">
@@ -197,6 +239,28 @@ function MeclisGundemleriPage({ canManage }: Props) {
           </tbody>
         </table>
       )}
+
+      </div>
+
+      {canManage && (
+        <div className="guncel-sag">
+          <h3 className="bolum-baslik">3. Bölüm: Mobil Uygulamadaki Görüntüsü</h3>
+          <TelefonOnizleme baslik="Meclis Gündemleri">
+            {items.length === 0 && <OnizlemeBosMetin>Henüz gündem eklenmemiş.</OnizlemeBosMetin>}
+            {items.map((item) => (
+              <IcerikKartiOnizleme
+                key={item.id}
+                baslik={item.baslik}
+                icerik={item.icerik}
+                tarih={item.tarih}
+                dosyaUrlleri={item.dosyaUrlleri}
+                youtubeUrl={item.youtubeUrl}
+              />
+            ))}
+          </TelefonOnizleme>
+        </div>
+      )}
+      </div>
     </div>
   );
 }

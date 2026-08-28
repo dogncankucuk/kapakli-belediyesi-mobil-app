@@ -9,6 +9,7 @@ import {
 } from './api';
 import type { PharmacyInput } from './api';
 import KonumSecici from './KonumSecici';
+import TelefonOnizleme from './TelefonOnizleme';
 import type { Pharmacy } from './types';
 
 interface Props {
@@ -160,7 +161,7 @@ function PharmaciesPage({ canManage }: Props) {
   const [items, setItems] = useState<Pharmacy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState<PharmacyInput>(emptyForm);
+  const [form, setForm] = useState<PharmacyInput>({ ...emptyForm, nobetTarihi: bugun() });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<PharmacyInput>(emptyForm);
   const [csvBusy, setCsvBusy] = useState(false);
@@ -248,7 +249,7 @@ function PharmaciesPage({ canManage }: Props) {
     setError(null);
     try {
       await createPharmacy(form);
-      setForm(emptyForm);
+      setForm({ ...emptyForm, nobetTarihi: bugun() });
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Eczane oluşturulamadı');
@@ -300,6 +301,9 @@ function PharmaciesPage({ canManage }: Props) {
       </p>
       {error && <p className="error-message">{error}</p>}
 
+      <div className="guncel-sayfa-govde">
+      <div className="guncel-sol">
+      {canManage && <h3 className="bolum-baslik">1. Bölüm: Ekleme</h3>}
       {canManage && (
         <div className="inline-form">
           <h3>CSV ile Toplu Yükleme</h3>
@@ -380,13 +384,14 @@ function PharmaciesPage({ canManage }: Props) {
           </label>
           <label>
             Eczane Adı
-            <input value={form.ad} onChange={(e) => setForm({ ...form, ad: e.target.value })} required />
+            <input value={form.ad} onChange={(e) => setForm({ ...form, ad: e.target.value })} required placeholder="Lütfen veri girişi yapınız" />
           </label>
           <label>
             Telefon
             <input
               value={form.telefon}
               onChange={(e) => setForm({ ...form, telefon: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -395,6 +400,7 @@ function PharmaciesPage({ canManage }: Props) {
             <input
               value={form.adres}
               onChange={(e) => setForm({ ...form, adres: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -413,6 +419,7 @@ function PharmaciesPage({ canManage }: Props) {
               step="any"
               value={form.lat}
               onChange={(e) => setForm({ ...form, lat: Number(e.target.value) })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -423,6 +430,7 @@ function PharmaciesPage({ canManage }: Props) {
               step="any"
               value={form.lng}
               onChange={(e) => setForm({ ...form, lng: Number(e.target.value) })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -437,6 +445,7 @@ function PharmaciesPage({ canManage }: Props) {
         </form>
       )}
 
+      <h3 className="bolum-baslik">2. Bölüm: Eklenmiş Kayıtlar</h3>
       {loading ? (
         <p>Yükleniyor...</p>
       ) : (
@@ -554,6 +563,26 @@ function PharmaciesPage({ canManage }: Props) {
           </tbody>
         </table>
       )}
+      </div>
+
+      <div className="guncel-sag">
+        <h3 className="bolum-baslik">3. Bölüm: Mobil Uygulamadaki Görüntüsü</h3>
+        <TelefonOnizleme baslik="Nöbetçi Eczaneler">
+          {items.length === 0 && (
+            <span className="genel-onizleme-bos">Henüz eczane eklenmemiş</span>
+          )}
+          {items.map((item) => (
+            <div className="genel-onizleme-bolum" key={item.id}>
+              <span className="genel-onizleme-bolum-baslik">{item.ad || 'Eczane Adı'}</span>
+              <div className="genel-onizleme-satir">
+                <span className="genel-onizleme-satir-etiket">{item.telefon}</span>
+                <span className="genel-onizleme-satir-ipucu">{item.adres}</span>
+              </div>
+            </div>
+          ))}
+        </TelefonOnizleme>
+      </div>
+      </div>
     </div>
   );
 }

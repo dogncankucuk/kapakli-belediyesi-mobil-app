@@ -13,7 +13,9 @@ export interface AdminMeclisGundemi {
   id: string;
   baslik: string;
   tarih: string;
-  dosyaUrl: string | null;
+  icerik: string;
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
   updatedBy: string | null;
   createdAt: string;
   updatedAt: string;
@@ -86,7 +88,9 @@ export class AdminMeclisGundemleriService {
       id: doc._id.toString(),
       baslik: doc.baslik,
       tarih: doc.tarih.toISOString(),
-      dosyaUrl: doc.dosyaUrl ?? null,
+      icerik: doc.icerik ?? '',
+      dosyaUrlleri: doc.dosyaUrlleri ?? [],
+      youtubeUrl: doc.youtubeUrl ?? null,
       updatedBy: doc.updatedBy ?? null,
       createdAt: doc.createdAt.toISOString(),
       updatedAt: doc.updatedAt.toISOString(),

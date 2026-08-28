@@ -85,7 +85,7 @@ function TarihiYerlerPage({ canManage }: Props) {
           <h3>Yeni Tarihi Yer</h3>
           <label>
             Ad
-            <input value={form.ad} onChange={(e) => setForm({ ...form, ad: e.target.value })} required />
+            <input value={form.ad} onChange={(e) => setForm({ ...form, ad: e.target.value })} required placeholder="Lütfen veri girişi yapınız" />
           </label>
           <label>
             Tür
@@ -108,6 +108,7 @@ function TarihiYerlerPage({ canManage }: Props) {
               step="any"
               value={form.lat}
               onChange={(e) => setForm({ ...form, lat: Number(e.target.value) })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -118,6 +119,7 @@ function TarihiYerlerPage({ canManage }: Props) {
               step="any"
               value={form.lng}
               onChange={(e) => setForm({ ...form, lng: Number(e.target.value) })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>

@@ -44,6 +44,8 @@ function LoginPage({ onLogin }: Props) {
           E-posta
           <input
             type="email"
+            name="email"
+            autoComplete="username"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -53,6 +55,8 @@ function LoginPage({ onLogin }: Props) {
           Şifre
           <input
             type="password"
+            name="password"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required

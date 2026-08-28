@@ -3,6 +3,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
   StyleSheet,
   Text,
@@ -108,6 +109,13 @@ export default function HaberlerVeEtkinliklerScreen() {
                   key={item.id}
                   title={item.baslik}
                   date={formatAnnouncementDate(item)}
+                  dosyaUrlleri={item.dosyaUrlleri}
+                  youtubeUrl={item.youtubeUrl}
+                  onPress={
+                    item.dosyaUrlleri.length > 0
+                      ? () => Linking.openURL(item.dosyaUrlleri[0])
+                      : undefined
+                  }
                 />
               ),
             )}

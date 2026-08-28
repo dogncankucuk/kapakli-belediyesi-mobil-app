@@ -4,7 +4,7 @@ import { ComponentProps, useMemo } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { Card, PrimaryButton, TopBar } from "../components";
+import { Card, HavaVeAramaSag, PrimaryButton, TopBar } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { TranslationKey } from "../i18n/tr";
 import { useAppShell } from "../navigation/AppShellContext";
@@ -51,7 +51,16 @@ export default function ProfileScreen() {
         title={t("common_appName")}
         onMenuPress={openMenu}
         rightSlot={
-          <MaterialIcons name="search" size={22} color={colors.onPrimary} />
+          <HavaVeAramaSag
+            onSearchPress={() =>
+              (
+                navigation.navigate as (
+                  screen: string,
+                  params?: object,
+                ) => void
+              )("Services", { screen: "ServicesMain", params: { acSearch: true } })
+            }
+          />
         }
       />
       <View style={styles.content}>

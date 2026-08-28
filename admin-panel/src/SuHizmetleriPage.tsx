@@ -14,6 +14,8 @@ import {
   updateSuHizmetleriAyarlari,
 } from './api';
 import type { BarajInput, PlanliKesintiInput, SuHizmetleriAyarlariInput } from './api';
+import { bugununTarihi } from './tarih';
+import TelefonOnizleme from './TelefonOnizleme';
 import type { Baraj, PlanliKesinti } from './types';
 
 interface Props {
@@ -37,7 +39,10 @@ function SuHizmetleriPage({ canManage }: Props) {
   const [editingBarajId, setEditingBarajId] = useState<string | null>(null);
   const [editBarajForm, setEditBarajForm] = useState<BarajInput>(emptyBarajForm);
 
-  const [kesintiForm, setKesintiForm] = useState<PlanliKesintiInput>(emptyKesintiForm);
+  const [kesintiForm, setKesintiForm] = useState<PlanliKesintiInput>({
+    ...emptyKesintiForm,
+    tarih: bugununTarihi(),
+  });
   const [editingKesintiId, setEditingKesintiId] = useState<string | null>(null);
   const [editKesintiForm, setEditKesintiForm] = useState<PlanliKesintiInput>(emptyKesintiForm);
 
@@ -141,7 +146,7 @@ function SuHizmetleriPage({ canManage }: Props) {
     setError(null);
     try {
       await createPlanliKesinti(kesintiForm);
-      setKesintiForm(emptyKesintiForm);
+      setKesintiForm({ ...emptyKesintiForm, tarih: bugununTarihi() });
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Kesinti oluşturulamadı');
@@ -184,6 +189,8 @@ function SuHizmetleriPage({ canManage }: Props) {
       <h2>Su Hizmetleri</h2>
       {error && <p className="error-message">{error}</p>}
 
+      <div className="guncel-sayfa-govde">
+      <div className="guncel-sol">
       <h3>Dış Kaynak</h3>
       <p>
         TESKİ gibi bir dış kaynaktan planlı kesinti verisi çekmek veya
@@ -247,6 +254,7 @@ function SuHizmetleriPage({ canManage }: Props) {
             <input
               value={barajForm.ad}
               onChange={(e) => setBarajForm({ ...barajForm, ad: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -258,6 +266,7 @@ function SuHizmetleriPage({ canManage }: Props) {
               max={100}
               value={barajForm.doluluk}
               onChange={(e) => setBarajForm({ ...barajForm, doluluk: Number(e.target.value) })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -351,6 +360,7 @@ function SuHizmetleriPage({ canManage }: Props) {
             <input
               value={kesintiForm.ilce}
               onChange={(e) => setKesintiForm({ ...kesintiForm, ilce: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -359,6 +369,7 @@ function SuHizmetleriPage({ canManage }: Props) {
             <input
               value={kesintiForm.aciklama}
               onChange={(e) => setKesintiForm({ ...kesintiForm, aciklama: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -449,6 +460,42 @@ function SuHizmetleriPage({ canManage }: Props) {
           )}
         </tbody>
       </table>
+      </div>
+
+      <div className="guncel-sag">
+        <h3 className="bolum-baslik">Mobil Uygulamadaki Görüntüsü</h3>
+        <TelefonOnizleme baslik="Su Hizmetleri">
+          <div className="genel-onizleme-bolum">
+            <span className="genel-onizleme-bolum-baslik">Baraj Doluluk</span>
+            {barajlar.length === 0 ? (
+              <span className="genel-onizleme-bos">Henüz içerik yok</span>
+            ) : (
+              barajlar.map((baraj) => (
+                <div className="genel-onizleme-satir" key={baraj.id}>
+                  <span className="genel-onizleme-satir-etiket">{baraj.ad}</span>
+                  <span className="genel-onizleme-satir-ipucu">%{baraj.doluluk}</span>
+                </div>
+              ))
+            )}
+          </div>
+          <div className="genel-onizleme-bolum">
+            <span className="genel-onizleme-bolum-baslik">Planlı Su Kesintileri</span>
+            {kesintiler.length === 0 ? (
+              <span className="genel-onizleme-bos">Henüz içerik yok</span>
+            ) : (
+              kesintiler.map((kesinti) => (
+                <div className="genel-onizleme-satir" key={kesinti.id}>
+                  <span className="genel-onizleme-satir-etiket">
+                    {kesinti.tarih.slice(0, 10)} · {kesinti.ilce}
+                  </span>
+                  <span className="genel-onizleme-satir-ipucu">{kesinti.aciklama}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </TelefonOnizleme>
+      </div>
+      </div>
     </div>
   );
 }

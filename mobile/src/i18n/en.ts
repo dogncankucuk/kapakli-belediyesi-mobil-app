@@ -134,7 +134,6 @@ export const en: Record<TranslationKey, string> = {
   baskan_bioTitle: "Biography",
   baskan_roleLabel: "Mayor of Kapaklı",
 
-  announcements_error: "Announcements could not be loaded.",
 
   engelliYasli_title: "Services for the Disabled and Elderly",
   engelliYasli_subtitle:
@@ -195,7 +194,7 @@ export const en: Record<TranslationKey, string> = {
   home_quickActionsEditHint: "Choose the shortcuts to show on the home screen.",
   home_quickActionsMinWarning: "You must select at least 1 action.",
   home_myRequests: "My Requests",
-  home_projects: "Our Projects",
+  home_haberlerError: "News could not be loaded.",
 
   projelerimiz_title: "Our Projects",
   projelerimiz_all: "All",
@@ -254,6 +253,7 @@ export const en: Record<TranslationKey, string> = {
 
   guncelIcerik_error: "Content could not be loaded.",
   guncelIcerik_empty: "No content found.",
+  guncelIcerik_dosyaIndir: "Download / View PDF",
 
   nobetciEczaneler_title: "On-Duty Pharmacies",
   nobetciEczaneler_subtitle: "Pharmacies on duty today",
@@ -319,22 +319,6 @@ export const en: Record<TranslationKey, string> = {
   basvurularim_redSebebiLabel: "Rejection Reason:",
   basvurularim_notLabel: "Note:",
 
-  randevuAl_veterinerBadge: "Animal Health",
-  randevuAl_veterinerTitle: "Veterinary Services",
-  randevuAl_veterinerDesc:
-    "Consultation and support from the Directorate of Veterinary Affairs (444 80 59).",
-  randevuAl_nikahBadge: "Marriage Transactions",
-  randevuAl_nikahTitle: "Marriage Services",
-  randevuAl_nikahDesc:
-    "Marriage applications, required documents, and ceremony appointments at Atatürk Cultural Center.",
-  randevuAl_psikolojikBadge: "Psychological Support",
-  randevuAl_psikolojikTitle: "Psychological Counseling",
-  randevuAl_psikolojikDesc:
-    "Free psychological counseling - Mondays 08:00-17:00, by appointment.",
-  randevuAl_sevgiEliBadge: "Social Aid",
-  randevuAl_sevgiEliTitle: "Sevgi Eli Aid Store",
-  randevuAl_sevgiEliDesc:
-    "Appointment for clothing donation drop-off or applying as a person in need.",
   basvuruTuruDetay_gerekliBelgeler: "Required Documents",
   basvuruTuruDetay_istenenBilgiler: "Requested Information",
   basvuruTuruDetay_basvurButton: "Apply",
@@ -352,7 +336,7 @@ export const en: Record<TranslationKey, string> = {
   services_engelliYasli: "Services for the Disabled and Elderly",
   services_ulasim: "Transportation Services",
   services_nobetciEczane: "On-Duty Pharmacies",
-  services_atikNoktalari: "Waste Points",
+  services_atikNoktalari: "Waste Guide",
   services_asevi: "Aşevi",
   services_havaDurumu: "Weather",
   services_havaKalitesi: "Air Pollution Index",
@@ -376,11 +360,29 @@ export const en: Record<TranslationKey, string> = {
   taleplerim_statusCompleted: "Completed",
   taleplerim_statusInProgress: "In Progress",
   taleplerim_statusPending: "Pending",
+  taleplerim_notLabel: "Note:",
 
-  ulasim_title: "Transportation Services",
-  ulasim_error: "An error occurred while loading transportation services.",
-  ulasim_busTitle: "Bus Tracking, Fares and Route Information",
-  ulasim_busSubtitle: "View Kapaklı routes live",
+  ulasim_title: "Transportation",
+  ulasim_error: "An error occurred while loading transportation lines.",
+  ulasim_kartTitle: "Kapaklı Card Printing Point",
+  ulasim_kartAdres: "Cumhuriyet Neighborhood, Kapaklı Culture Center, Kapaklı/Tekirdağ",
+  ulasim_kartTuruButton: "Show Card Types",
+  ulasim_kartTuruButtonHide: "Hide Card Types",
+  ulasim_bakiyeButton: "Top Up Card Balance",
+  ulasim_bakiyeYakindaTitle: "Coming Soon",
+  ulasim_bakiyeYakindaMesaj: "This feature will be available soon.",
+  ulasim_aramaLabel: "Search Lines",
+  ulasim_aramaPlaceholder: "Search by line name or route",
+  ulasim_aramaEmpty: "No line matches your search.",
+  ulasim_fiyatTam: "Full Fare",
+  ulasim_fiyatIndirimli: "Discounted Fare",
+  ulasim_kalkisSaatleri: "Departure Times",
+  ulasim_gidisSaatleri: "Outbound",
+  ulasim_donusSaatleri: "Return",
+  ulasim_saatYok: "No departure times have been entered yet.",
+  ulasim_canliKonumlar: "Live Bus Locations",
+  ulasim_canliBosluk: "No live location data available right now.",
+  ulasim_geriDon: "Back to Search",
 
   vefatEdenler_title: "Obituaries",
   vefatEdenler_today: "Today",
@@ -458,6 +460,7 @@ export const en: Record<TranslationKey, string> = {
   yeniTalep_iletisimBilgileri: "Contact Information",
   yeniTalep_adSoyadPlaceholder: "Full Name",
   yeniTalep_telefonPlaceholder: "Phone",
+  yeniTalep_telefonGecersiz: "Enter a valid phone number (10-20 characters, digits, spaces, +, - and parentheses only).",
   yeniTalep_talepDetaylari: "Request Details",
   yeniTalep_aciklama: "Description",
   yeniTalep_detayPlaceholder: "Write your request here...",
@@ -500,6 +503,7 @@ export const en: Record<TranslationKey, string> = {
   yeniTalep_konumIzniYok:
     "Location permission was not granted, request will be sent without location.",
 
+  yanMenu_guncel: "Current",
   yanMenu_settings: "Settings",
   yanMenu_logout: "Log Out",
   yanMenu_footer: "© 2026 All Rights Reserved",

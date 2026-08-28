@@ -10,12 +10,14 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import WebView from "react-native-webview";
 
 import { getMeclisGundemleri } from "../api/meclisGundemleri";
 import { MeclisGundemi } from "../api/types";
 import { Card, SegmentedControl } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { extractYoutubeId } from "../utils/youtube";
 
 function yilFromTarih(tarih: string): string {
   return new Date(tarih).getFullYear().toString();
@@ -30,6 +32,7 @@ export default function MeclisGundemleriScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [year, setYear] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     getMeclisGundemleri()
@@ -86,29 +89,64 @@ export default function MeclisGundemleriScreen() {
               onChange={setYear}
             />
             <View style={styles.list}>
-              {visibleGundemler.map((item) => (
-                <Pressable
-                  key={item.id}
-                  onPress={() =>
-                    item.dosyaUrl && Linking.openURL(item.dosyaUrl)
-                  }
-                  disabled={!item.dosyaUrl}
-                  accessibilityRole="button"
-                >
-                  <Card style={styles.card}>
-                    <Text style={styles.itemTitle} numberOfLines={2}>
-                      {item.baslik}
-                    </Text>
-                    {item.dosyaUrl && (
-                      <MaterialIcons
-                        name="open-in-new"
-                        size={20}
-                        color={colors.secondary}
-                      />
-                    )}
-                  </Card>
-                </Pressable>
-              ))}
+              {visibleGundemler.map((item) => {
+                const expanded = expandedId === item.id;
+                return (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => setExpandedId(expanded ? null : item.id)}
+                    accessibilityRole="button"
+                  >
+                    <Card style={styles.card}>
+                      <Text style={styles.itemTitle} numberOfLines={2}>
+                        {item.baslik}
+                      </Text>
+                      {item.icerik ? (
+                        <Text
+                          style={styles.itemSummary}
+                          numberOfLines={expanded ? undefined : 2}
+                        >
+                          {item.icerik}
+                        </Text>
+                      ) : null}
+                      {expanded &&
+                        item.youtubeUrl &&
+                        extractYoutubeId(item.youtubeUrl) && (
+                          <View style={styles.videoContainer}>
+                            <WebView
+                              source={{
+                                uri: `https://www.youtube.com/embed/${extractYoutubeId(item.youtubeUrl)}`,
+                              }}
+                              style={styles.video}
+                              allowsFullscreenVideo
+                            />
+                          </View>
+                        )}
+                      {item.dosyaUrlleri.map((dosyaUrl, index) => (
+                        <Pressable
+                          key={dosyaUrl}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            Linking.openURL(dosyaUrl);
+                          }}
+                          accessibilityRole="button"
+                          style={styles.dosyaRow}
+                        >
+                          <MaterialIcons
+                            name="picture-as-pdf"
+                            size={18}
+                            color={colors.secondary}
+                          />
+                          <Text style={styles.dosyaText}>
+                            {t("guncelIcerik_dosyaIndir")}
+                            {item.dosyaUrlleri.length > 1 ? ` ${index + 1}` : ''}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </Card>
+                  </Pressable>
+                );
+              })}
             </View>
           </>
         )}
@@ -160,14 +198,38 @@ const createStyles = (colors: Colors) =>
       gap: spacing.stackGap,
     },
     card: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing.stackGap,
       padding: spacing.stackGap,
+      gap: 4,
     },
     itemTitle: {
       ...typography.labelLg,
       color: colors.onBackground,
+    },
+    itemSummary: {
+      ...typography.bodyMd,
+      color: colors.outline,
+    },
+    videoContainer: {
+      aspectRatio: 16 / 9,
+      borderRadius: shape.rounded,
+      overflow: "hidden",
+      marginTop: 4,
+    },
+    video: {
       flex: 1,
+    },
+    dosyaRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      marginTop: 4,
+      paddingTop: 8,
+      borderTopWidth: 1,
+      borderTopColor: colors.outlineVariant,
+    },
+    dosyaText: {
+      ...typography.labelSm,
+      color: colors.secondary,
+      fontWeight: "600",
     },
   });

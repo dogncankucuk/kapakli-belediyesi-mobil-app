@@ -150,6 +150,7 @@ function BasvuruHizmetleriPage({ canManage }: Props) {
             <input
               value={form.baslik}
               onChange={(e) => setForm({ ...form, baslik: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -158,6 +159,7 @@ function BasvuruHizmetleriPage({ canManage }: Props) {
             <input
               value={form.ozet}
               onChange={(e) => setForm({ ...form, ozet: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>

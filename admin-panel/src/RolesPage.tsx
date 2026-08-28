@@ -1,15 +1,69 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { createRole, deleteRole, getRoles, updateRole } from './api';
 import type { RoleInput } from './api';
+import { NAV_GROUPS, pageResource } from './navGroups';
 import type { AdminRole, ResourceAction } from './types';
-import { RESOURCE_LABELS, RESOURCE_ORDER } from './types';
+import { RESOURCE_ORDER } from './types';
 
 interface Props {
   canManage: boolean;
 }
 
 type MatrixState = Record<string, { list: boolean; manage: boolean }>;
+
+interface YetkiGrubu {
+  heading: string;
+  resources: string[];
+}
+
+// Sidebar'daki NAV_GROUPS ile birebir ayni gruplama - roller artik ~37
+// kaynagi tek tek degil, bu ana basliklara gore yonetiyor (kullanicinin
+// istegi: "her alt baslik icin ayri ayri yetkilendirmeye gerek yok").
+// asevi ve basvuruHizmetleri kaynaklarinin NAV_GROUPS'ta hicbir ogesi yok
+// (Asevi nav'dan kasitli kaldirilmisti, bkz. App.tsx yorumu) - sidebar'dan
+// zaten erisilemedikleri icin bu tabloda da yer almiyorlar; var olan
+// rollerdeki eski izinleri sessizce korur (matrixToPermissions asagida
+// RESOURCE_ORDER'in tamamini yazmaya devam eder, sadece bu ikisi icin UI yok).
+const YETKI_GRUPLARI: YetkiGrubu[] = NAV_GROUPS.map((group) => {
+  const resources = new Set<string>();
+  if (group.headingPage) {
+    const resource = pageResource(group.headingPage);
+    if (resource) resources.add(resource);
+  }
+  for (const item of group.items) {
+    const resource = pageResource(item.page);
+    if (resource) resources.add(resource);
+  }
+  return { heading: group.heading, resources: Array.from(resources) };
+}).filter((grup) => grup.resources.length > 0);
+
+function grupDurumu(
+  matrix: MatrixState,
+  resources: string[],
+  seviye: 'list' | 'manage',
+): { checked: boolean; indeterminate: boolean } {
+  const degerler = resources.map((r) => matrix[r]?.[seviye] ?? false);
+  const hepsi = degerler.length > 0 && degerler.every(Boolean);
+  const herhangi = degerler.some(Boolean);
+  return { checked: hepsi, indeterminate: herhangi && !hepsi };
+}
+
+function GrupCheckbox({
+  checked,
+  indeterminate,
+  onChange,
+}: {
+  checked: boolean;
+  indeterminate: boolean;
+  onChange: () => void;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (ref.current) ref.current.indeterminate = indeterminate;
+  }, [indeterminate]);
+  return <input ref={ref} type="checkbox" checked={checked} onChange={onChange} />;
+}
 
 function emptyMatrix(): MatrixState {
   const matrix: MatrixState = {};
@@ -84,15 +138,23 @@ function RolesPage({ canManage }: Props) {
     setMatrix(matrixFromRole(role));
   }
 
-  function toggle(resource: string, level: 'list' | 'manage') {
+  function toggleGrup(resources: string[], seviye: 'list' | 'manage') {
     setMatrix((prev) => {
-      const current = prev[resource];
-      const next = { ...current, [level]: !current[level] };
-      // "Yönet" acilirsa "Goruntule" de otomatik acilir - yonetim
-      // goruntuleme olmadan anlamsiz.
-      if (level === 'manage' && next.manage) next.list = true;
-      if (level === 'list' && !next.list) next.manage = false;
-      return { ...prev, [resource]: next };
+      const { checked } = grupDurumu(prev, resources, seviye);
+      // Kismi (indeterminate) ya da tamamen kapaliysa hepsini ac, hepsi
+      // acikken tiklanirsa hepsini kapat - standart "tumunu sec" davranisi.
+      const yeniDeger = !checked;
+      const next = { ...prev };
+      for (const resource of resources) {
+        const mevcut = next[resource] ?? { list: false, manage: false };
+        const guncel = { ...mevcut, [seviye]: yeniDeger };
+        // "Yönet" acilirsa "Goruntule" de otomatik acilir - yonetim
+        // goruntuleme olmadan anlamsiz.
+        if (seviye === 'manage' && guncel.manage) guncel.list = true;
+        if (seviye === 'list' && !guncel.list) guncel.manage = false;
+        next[resource] = guncel;
+      }
+      return next;
     });
   }
 
@@ -125,14 +187,13 @@ function RolesPage({ canManage }: Props) {
     }
   }
 
-  const matrixRows = useMemo(() => RESOURCE_ORDER, []);
-
   return (
     <div className="page">
       <h2>Roller</h2>
       <p>
-        Her rol için hangi bölümlerin "görüntülenebileceğini" ve hangilerinin
-        "yönetilebileceğini" (ekleme/düzenleme/silme) buradan belirleyin.
+        Her rol için sidebar'daki ana başlıklara göre hangilerinin
+        "görüntülenebileceğini" ve hangilerinin "yönetilebileceğini"
+        (ekleme/düzenleme/silme) buradan belirleyin.
       </p>
       {error && <p className="error-message">{error}</p>}
 
@@ -141,7 +202,7 @@ function RolesPage({ canManage }: Props) {
           <h3>{isEditing ? `Rolü Düzenle: ${name}` : 'Yeni Rol'}</h3>
           <label>
             Rol Adı
-            <input value={name} onChange={(e) => setName(e.target.value)} required />
+            <input value={name} onChange={(e) => setName(e.target.value)} required placeholder="Lütfen veri girişi yapınız" />
           </label>
 
           <div className="permission-matrix-wrap">
@@ -154,25 +215,29 @@ function RolesPage({ canManage }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {matrixRows.map((resource) => (
-                  <tr key={resource}>
-                    <td>{RESOURCE_LABELS[resource] ?? resource}</td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={matrix[resource].list}
-                        onChange={() => toggle(resource, 'list')}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={matrix[resource].manage}
-                        onChange={() => toggle(resource, 'manage')}
-                      />
-                    </td>
-                  </tr>
-                ))}
+                {YETKI_GRUPLARI.map((grup) => {
+                  const listDurum = grupDurumu(matrix, grup.resources, 'list');
+                  const manageDurum = grupDurumu(matrix, grup.resources, 'manage');
+                  return (
+                    <tr key={grup.heading}>
+                      <td>{grup.heading}</td>
+                      <td>
+                        <GrupCheckbox
+                          checked={listDurum.checked}
+                          indeterminate={listDurum.indeterminate}
+                          onChange={() => toggleGrup(grup.resources, 'list')}
+                        />
+                      </td>
+                      <td>
+                        <GrupCheckbox
+                          checked={manageDurum.checked}
+                          indeterminate={manageDurum.indeterminate}
+                          onChange={() => toggleGrup(grup.resources, 'manage')}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

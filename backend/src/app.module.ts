@@ -24,6 +24,7 @@ import { UlasimHizmetleriModule } from './modules/ulasim-hizmetleri/ulasim-hizme
 import { TemaAyarlariModule } from './modules/tema-ayarlari/tema-ayarlari.module';
 import { PanelTemasiModule } from './modules/panel-temasi/panel-temasi.module';
 import { AtikNoktalariModule } from './modules/atik-noktalari/atik-noktalari.module';
+import { AtikRehberiModule } from './modules/atik-rehberi/atik-rehberi.module';
 import { AtikSiniflandirmaModule } from './modules/atik-siniflandirma/atik-siniflandirma.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { RequestsModule } from './modules/requests/requests.module';
@@ -93,6 +94,7 @@ import { UPLOADS_DIR } from './uploads-dir';
     TemaAyarlariModule,
     PanelTemasiModule,
     AtikNoktalariModule,
+    AtikRehberiModule,
     AtikSiniflandirmaModule,
     AppointmentsModule,
     RequestsModule,

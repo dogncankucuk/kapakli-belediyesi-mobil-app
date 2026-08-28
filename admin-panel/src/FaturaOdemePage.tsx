@@ -8,6 +8,7 @@ import {
 } from './api';
 import type { FaturaOdemeKurumuInput } from './api';
 import type { FaturaOdemeKurumu } from './types';
+import TelefonOnizleme from './TelefonOnizleme';
 
 interface Props {
   canManage: boolean;
@@ -91,6 +92,9 @@ function FaturaOdemePage({ canManage }: Props) {
       </p>
       {error && <p className="error-message">{error}</p>}
 
+      <div className="guncel-sayfa-govde">
+      <div className="guncel-sol">
+      {canManage && <h3 className="bolum-baslik">1. Bölüm: Ekleme</h3>}
       {canManage && (
         <form className="inline-form" onSubmit={handleCreate}>
           <h3>Yeni Kurum</h3>
@@ -99,6 +103,7 @@ function FaturaOdemePage({ canManage }: Props) {
             <input
               value={form.ad}
               onChange={(e) => setForm({ ...form, ad: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -107,6 +112,7 @@ function FaturaOdemePage({ canManage }: Props) {
             <input
               value={form.aciklama}
               onChange={(e) => setForm({ ...form, aciklama: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -115,6 +121,7 @@ function FaturaOdemePage({ canManage }: Props) {
             <input
               value={form.url}
               onChange={(e) => setForm({ ...form, url: e.target.value })}
+              placeholder="Lütfen veri girişi yapınız"
               required
             />
           </label>
@@ -122,6 +129,7 @@ function FaturaOdemePage({ canManage }: Props) {
         </form>
       )}
 
+      <h3 className="bolum-baslik">2. Bölüm: Eklenmiş Kayıtlar</h3>
       {loading ? (
         <p>Yükleniyor...</p>
       ) : (
@@ -199,6 +207,25 @@ function FaturaOdemePage({ canManage }: Props) {
           </tbody>
         </table>
       )}
+      </div>
+
+      <div className="guncel-sag">
+        <h3 className="bolum-baslik">3. Bölüm: Mobil Uygulamadaki Görüntüsü</h3>
+        <TelefonOnizleme baslik="Fatura Ödeme">
+          {items.length === 0 && (
+            <span className="genel-onizleme-bos">Henüz kurum eklenmemiş</span>
+          )}
+          {items.map((item) => (
+            <div className="genel-onizleme-bolum" key={item.id}>
+              <span className="genel-onizleme-bolum-baslik">{item.ad || 'Kurum Adı'}</span>
+              <div className="genel-onizleme-satir">
+                <span className="genel-onizleme-satir-ipucu">{item.aciklama || 'Açıklama'}</span>
+              </div>
+            </div>
+          ))}
+        </TelefonOnizleme>
+      </div>
+      </div>
     </div>
   );
 }

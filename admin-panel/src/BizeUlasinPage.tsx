@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { getBizeUlasin, updateBizeUlasin } from './api';
 import type { BizeUlasinInput } from './api';
 import KonumSecici from './KonumSecici';
+import { BizeUlasinOnizleme, TelefonOnizleme } from './MobilOnizleme';
 
 interface Props {
   canManage: boolean;
@@ -71,6 +72,8 @@ function BizeUlasinPage({ canManage }: Props) {
       {error && <p className="error-message">{error}</p>}
       {saved && !error && <p className="success-message">Kaydedildi.</p>}
 
+      <div className="guncel-sayfa-govde">
+      <div className="guncel-sol">
       <form className="inline-form" onSubmit={handleSubmit}>
         <label>
           Çağrı Merkezi Telefonu
@@ -139,6 +142,20 @@ function BizeUlasinPage({ canManage }: Props) {
         {canManage && <button type="submit">Kaydet</button>}
         {updatedBy && <p className="map-editor-readonly-note">Son güncelleyen: {updatedBy}</p>}
       </form>
+      </div>
+
+      <div className="guncel-sag">
+        <h3 className="bolum-baslik">Mobil Uygulamadaki Görüntüsü</h3>
+        <TelefonOnizleme baslik="Bize Ulaşın" varyant="duz" sagIkon="help">
+          <BizeUlasinOnizleme
+            telefon={form.telefon}
+            whatsapp={form.whatsapp}
+            eposta={form.eposta}
+            adres={form.adres}
+          />
+        </TelefonOnizleme>
+      </div>
+      </div>
     </div>
   );
 }

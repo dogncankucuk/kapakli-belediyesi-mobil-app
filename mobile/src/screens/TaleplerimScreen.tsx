@@ -17,7 +17,7 @@ import { talepKategorisiEtiketi } from "../constants/talepKategorileri";
 import { useTranslation } from "../i18n/LocaleContext";
 import { TranslationKey } from "../i18n/tr";
 import { getTakipNumaralari } from "../storage/talepStorage";
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
 
 type IconName = ComponentProps<typeof MaterialIcons>["name"];
 
@@ -154,8 +154,7 @@ export default function TaleplerimScreen() {
               <Card key={talep.id} style={styles.talepCard}>
                 <View style={styles.talepRow}>
                   <Text style={styles.talepNo}>
-                    {t("taleplerim_recordNo")}{" "}
-                    {talep.id.slice(-8).toUpperCase()}
+                    {t("taleplerim_recordNo")} {talep.talepNo}
                   </Text>
                   <View style={styles.durumBadge}>
                     <MaterialIcons
@@ -184,6 +183,14 @@ export default function TaleplerimScreen() {
                     {formatTarih(talep.createdAt)}
                   </Text>
                 </View>
+                {talep.kullaniciNotu ? (
+                  <View style={styles.notBox}>
+                    <Text style={styles.notLabel}>
+                      {t("taleplerim_notLabel")}
+                    </Text>
+                    <Text style={styles.notText}>{talep.kullaniciNotu}</Text>
+                  </View>
+                ) : null}
               </Card>
             );
           })}
@@ -278,5 +285,20 @@ const createStyles = (colors: Colors) =>
     talepDate: {
       ...typography.bodyMd,
       color: colors.outline,
+    },
+    notBox: {
+      marginTop: 4,
+      padding: spacing.stackGap / 2,
+      borderRadius: shape.rounded,
+      backgroundColor: colors.primaryContainer,
+    },
+    notLabel: {
+      ...typography.labelSm,
+      color: colors.onPrimary,
+      fontWeight: "600",
+    },
+    notText: {
+      ...typography.bodyMd,
+      color: colors.onPrimary,
     },
   });

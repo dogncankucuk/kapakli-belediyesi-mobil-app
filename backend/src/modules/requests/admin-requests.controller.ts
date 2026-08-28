@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
   Patch,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -13,7 +15,12 @@ import type { Request } from 'express';
 import { RbacGuard } from '../../admin/auth/rbac.guard';
 import { RequirePermission } from '../../admin/auth/require-permission.decorator';
 import { SessionAuthGuard } from '../../admin/auth/session-auth.guard';
-import { AdminRequest, AdminRequestsService } from './admin-requests.service';
+import {
+  AdminRequest,
+  AdminRequestsService,
+  PagedAdminRequests,
+} from './admin-requests.service';
+import { ListRequestsQueryDto } from './dto/list-requests-query.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 
 @Controller('admin-api/requests')
@@ -23,8 +30,8 @@ export class AdminRequestsController {
 
   @Get()
   @RequirePermission('requests', 'list')
-  findAll(): Promise<AdminRequest[]> {
-    return this.adminRequestsService.findAll();
+  findAll(@Query() query: ListRequestsQueryDto): Promise<PagedAdminRequests> {
+    return this.adminRequestsService.findAll(query);
   }
 
   @Get(':id')
@@ -53,5 +60,15 @@ export class AdminRequestsController {
       throw new NotFoundException();
     }
     return updated;
+  }
+
+  @Delete(':id')
+  @RequirePermission('requests', 'delete')
+  async remove(@Param('id') id: string): Promise<{ success: true }> {
+    const removed = await this.adminRequestsService.remove(id);
+    if (!removed) {
+      throw new NotFoundException();
+    }
+    return { success: true };
   }
 }

@@ -133,7 +133,6 @@ export const tr = {
   baskan_bioTitle: "Özgeçmiş",
   baskan_roleLabel: "Kapaklı Belediye Başkanı",
 
-  announcements_error: "Duyurular yüklenemedi.",
 
   engelliYasli_title: "Engelli ve Yaşlı Hizmetleri",
   engelliYasli_subtitle:
@@ -194,7 +193,7 @@ export const tr = {
   home_quickActionsEditHint: "Ana sayfada göstermek istediğin kısayolları seç.",
   home_quickActionsMinWarning: "En az 1 işlem seçmelisiniz.",
   home_myRequests: "Taleplerim",
-  home_projects: "Projelerimiz",
+  home_haberlerError: "Haberler yüklenemedi.",
 
   projelerimiz_title: "Projelerimiz",
   projelerimiz_all: "Tümü",
@@ -252,6 +251,7 @@ export const tr = {
 
   guncelIcerik_error: "İçerik yüklenemedi.",
   guncelIcerik_empty: "İçerik bulunamadı.",
+  guncelIcerik_dosyaIndir: "PDF'i İndir / Görüntüle",
 
   nobetciEczaneler_title: "Nöbetçi Eczaneler",
   nobetciEczaneler_subtitle: "Bugün nöbetçi olan eczaneler",
@@ -317,22 +317,6 @@ export const tr = {
   basvurularim_redSebebiLabel: "Red Sebebi:",
   basvurularim_notLabel: "Not:",
 
-  randevuAl_veterinerBadge: "Hayvan Sağlığı",
-  randevuAl_veterinerTitle: "Veteriner Hizmetleri",
-  randevuAl_veterinerDesc:
-    "Veteriner İşleri Müdürlüğü hekimlerinden danışmanlık ve destek (444 80 59).",
-  randevuAl_nikahBadge: "Evlilik İşlemleri",
-  randevuAl_nikahTitle: "Nikah Hizmetleri",
-  randevuAl_nikahDesc:
-    "Evlilik başvurusu, gerekli belgeler ve Atatürk Kültür Merkezi'nde nikah günü randevusu.",
-  randevuAl_psikolojikBadge: "Psikolojik Destek",
-  randevuAl_psikolojikTitle: "Psikolojik Danışmanlık",
-  randevuAl_psikolojikDesc:
-    "Ücretsiz psikolojik danışmanlık - Pazartesi 08:00-17:00, randevu ile.",
-  randevuAl_sevgiEliBadge: "Sosyal Yardım",
-  randevuAl_sevgiEliTitle: "Sevgi Eli Yardım Mağazası",
-  randevuAl_sevgiEliDesc:
-    "Giysi bağışı teslimi veya ihtiyaç sahibi olarak başvuru için randevu.",
   basvuruTuruDetay_gerekliBelgeler: "Gerekli Belgeler",
   basvuruTuruDetay_istenenBilgiler: "İstenen Bilgiler",
   basvuruTuruDetay_basvurButton: "Başvur",
@@ -350,7 +334,7 @@ export const tr = {
   services_engelliYasli: "Engelli ve Yaşlı Hizmetleri",
   services_ulasim: "Ulaşım Hizmetleri",
   services_nobetciEczane: "Nöbetçi Eczaneler",
-  services_atikNoktalari: "Atık Noktaları",
+  services_atikNoktalari: "Atık Rehberi",
   services_asevi: "Aşevi",
   services_havaDurumu: "Hava Durumu",
   services_havaKalitesi: "Hava Kirlilik Göstergesi",
@@ -374,11 +358,29 @@ export const tr = {
   taleplerim_statusCompleted: "Tamamlandı",
   taleplerim_statusInProgress: "İşlemde",
   taleplerim_statusPending: "Beklemede",
+  taleplerim_notLabel: "Not:",
 
-  ulasim_title: "Ulaşım Hizmetleri",
-  ulasim_error: "Ulaşım hizmetleri yüklenirken bir hata oluştu.",
-  ulasim_busTitle: "Otobüs Takip, Fiyat ve Güzergah Bilgileri",
-  ulasim_busSubtitle: "Kapaklı hatlarını canlı görüntüleyin",
+  ulasim_title: "Ulaşım",
+  ulasim_error: "Ulaşım hatları yüklenirken bir hata oluştu.",
+  ulasim_kartTitle: "Kapaklı Kart Basım Noktası",
+  ulasim_kartAdres: "Cumhuriyet Mah. Kapaklı Kültür Merkezi Kapaklı/Tekirdağ",
+  ulasim_kartTuruButton: "Kart Tiplerini Göster",
+  ulasim_kartTuruButtonHide: "Kart Tiplerini Gizle",
+  ulasim_bakiyeButton: "Karta Bakiye Yükleme",
+  ulasim_bakiyeYakindaTitle: "Yakında",
+  ulasim_bakiyeYakindaMesaj: "Bu özellik yakında aktif olacak.",
+  ulasim_aramaLabel: "Hat Ara",
+  ulasim_aramaPlaceholder: "Hat adı veya güzergah ara",
+  ulasim_aramaEmpty: "Aramanızla eşleşen bir hat bulunamadı.",
+  ulasim_fiyatTam: "Tam Kart",
+  ulasim_fiyatIndirimli: "İndirimli Kart",
+  ulasim_kalkisSaatleri: "Kalkış Saatleri",
+  ulasim_gidisSaatleri: "Gidiş",
+  ulasim_donusSaatleri: "Dönüş",
+  ulasim_saatYok: "Henüz saat bilgisi girilmedi.",
+  ulasim_canliKonumlar: "Canlı Otobüs Konumları",
+  ulasim_canliBosluk: "Şu anda canlı konum verisi bulunmuyor.",
+  ulasim_geriDon: "Aramaya Dön",
 
   vefatEdenler_title: "Vefat Edenler",
   vefatEdenler_today: "Bugün",
@@ -456,6 +458,7 @@ export const tr = {
   yeniTalep_iletisimBilgileri: "İletişim Bilgileri",
   yeniTalep_adSoyadPlaceholder: "Ad Soyad",
   yeniTalep_telefonPlaceholder: "Telefon",
+  yeniTalep_telefonGecersiz: "Geçerli bir telefon numarası girin (10-20 karakter, sadece rakam, boşluk, +, - ve parantez).",
   yeniTalep_talepDetaylari: "Talep Detayları",
   yeniTalep_aciklama: "Açıklama",
   yeniTalep_detayPlaceholder: "Talebinizi buraya yazınız...",
@@ -497,6 +500,7 @@ export const tr = {
     "Talep gönderilirken bir hata oluştu. Tekrar deneyin.",
   yeniTalep_konumIzniYok: "Konum izni verilmedi, talep konumsuz gönderilecek.",
 
+  yanMenu_guncel: "Güncel",
   yanMenu_settings: "Ayarlar",
   yanMenu_logout: "Çıkış Yap",
   yanMenu_footer: "© 2026 Tüm Hakları Saklıdır",

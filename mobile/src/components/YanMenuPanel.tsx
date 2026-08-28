@@ -27,7 +27,7 @@ const MENU_ITEMS: MenuItem[] = [
     target: { screen: "Map" },
   },
   {
-    labelKey: "tabs_announcements",
+    labelKey: "yanMenu_guncel",
     icon: "campaign",
     target: { screen: "Announcements" },
   },

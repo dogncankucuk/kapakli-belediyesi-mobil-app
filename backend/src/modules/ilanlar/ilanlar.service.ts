@@ -8,7 +8,9 @@ export interface PublicIlan {
   id: string;
   baslik: string;
   icerik: string;
-  resimUrl: string | null;
+  resimUrlleri: string[];
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
   yayinTarihi: string;
 }
 
@@ -29,7 +31,9 @@ export class IlanlarService {
       id: doc._id.toString(),
       baslik: doc.baslik,
       icerik: doc.icerik,
-      resimUrl: doc.resimUrl ?? null,
+      resimUrlleri: doc.resimUrlleri ?? [],
+      dosyaUrlleri: doc.dosyaUrlleri ?? [],
+      youtubeUrl: doc.youtubeUrl ?? null,
       yayinTarihi: doc.yayinTarihi.toISOString(),
     }));
   }

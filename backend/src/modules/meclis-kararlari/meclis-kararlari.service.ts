@@ -13,6 +13,8 @@ export interface PublicMeclisKarari {
   kategori: string;
   tarih: string;
   baslik: string;
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
 }
 
 @Injectable()
@@ -34,6 +36,8 @@ export class MeclisKararlariService {
       kategori: doc.kategori,
       tarih: doc.tarih.toISOString(),
       baslik: doc.baslik,
+      dosyaUrlleri: doc.dosyaUrlleri ?? [],
+      youtubeUrl: doc.youtubeUrl ?? null,
     }));
   }
 }

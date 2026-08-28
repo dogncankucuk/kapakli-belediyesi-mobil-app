@@ -2,7 +2,9 @@ export type Announcement = {
   id: string;
   baslik: string;
   icerik: string;
-  resimUrl: string | null;
+  resimUrlleri: string[];
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
   yayinTarihi: string;
   kategori: string;
 };
@@ -11,7 +13,9 @@ export type Haber = {
   id: string;
   baslik: string;
   icerik: string;
-  resimUrl: string | null;
+  resimUrlleri: string[];
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
   yayinTarihi: string;
 };
 
@@ -19,7 +23,9 @@ export type Ilan = {
   id: string;
   baslik: string;
   icerik: string;
-  resimUrl: string | null;
+  resimUrlleri: string[];
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
   yayinTarihi: string;
 };
 
@@ -27,7 +33,9 @@ export type Ihale = {
   id: string;
   baslik: string;
   icerik: string;
-  resimUrl: string | null;
+  resimUrlleri: string[];
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
   yayinTarihi: string;
 };
 
@@ -35,7 +43,9 @@ export type Makale = {
   id: string;
   baslik: string;
   icerik: string;
-  resimUrl: string | null;
+  resimUrlleri: string[];
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
   yayinTarihi: string;
 };
 
@@ -43,7 +53,9 @@ export type MeclisGundemi = {
   id: string;
   baslik: string;
   tarih: string;
-  dosyaUrl: string | null;
+  icerik: string;
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
 };
 
 export type AppointmentDurum = "beklemede";
@@ -82,6 +94,7 @@ export type TalepDurumu = "beklemede" | "islemde" | "tamamlandi";
 
 export type TalepRequest = {
   id: string;
+  talepNo: string;
   kategori: TalepKategorisi;
   aciklama: string;
   adSoyad: string;
@@ -90,8 +103,10 @@ export type TalepRequest = {
   ekDosyaUrl: string | null;
   lat: number | null;
   lng: number | null;
+  adres: string | null;
   fotograflar: string[];
   yogunluk: number | null;
+  kullaniciNotu: string | null;
   userId: string | null;
   createdAt: string;
   updatedAt: string;
@@ -105,6 +120,7 @@ export type CreateRequestBody = {
   ekDosyaUrl?: string;
   lat?: number;
   lng?: number;
+  adres?: string;
   fotograflar?: string[];
   yogunluk?: number;
   userId?: string | null;
@@ -139,6 +155,8 @@ export type MeclisKarari = {
   kategori: string;
   tarih: string;
   baslik: string;
+  dosyaUrlleri: string[];
+  youtubeUrl: string | null;
 };
 
 export type VefatIlani = {
@@ -200,6 +218,11 @@ export type AtikTuru =
   | "İlaç"
   | "Bitkisel Yağ"
   | "Zirai İlaç Kutusu";
+
+export type AtikRehberiIcerik = {
+  tur: AtikTuru;
+  aciklama: string;
+};
 
 export type AtikNoktasi = {
   id: string;
@@ -352,12 +375,22 @@ export type UlasimSecenegi = {
   url: string;
 };
 
+export type KalkisYonu = "gidis" | "donus";
+
+export type KalkisSaati = {
+  saat: string;
+  yon: KalkisYonu;
+};
+
 export type UlasimHatti = {
   id: string;
   hatAdi: string;
+  hatNumarasi: string | null;
   guzergah: string;
-  durum: string;
   canli: boolean;
+  fiyatTam: string | null;
+  fiyatIndirimli: string | null;
+  kalkisSaatleri: KalkisSaati[];
 };
 
 export type CanliOtobus = {
