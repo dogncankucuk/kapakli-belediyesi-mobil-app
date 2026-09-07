@@ -13,8 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { CategoryIconCard, HavaVeAramaSag, TopBar } from "../components";
 import {
   navigateToServiceTarget,
-  SERVICE_CATALOG,
-  ServiceId,
+  VISIBLE_SERVICE_CATALOG,
 } from "../constants/serviceCatalog";
 import { useTranslation } from "../i18n/LocaleContext";
 import { useAppShell } from "../navigation/AppShellContext";
@@ -26,16 +25,6 @@ import {
   typography,
   useThemeColors,
 } from "../theme";
-
-// Bu ekrandan kaldirilmasi istenen kisayollar - hala SERVICE_CATALOG'da
-// (Hizli Islemler duzenleyicisinde secilebilir olarak) kaliyorlar.
-const HIDDEN_ON_SERVICES_SCREEN: ServiceId[] = [
-  "yeni-talep",
-  "taleplerim",
-  "etkinlik-tarihleri",
-  "hakkimizda",
-  "meclis-kararlari",
-];
 
 export default function ServicesScreen() {
   const navigation = useNavigation();
@@ -49,21 +38,13 @@ export default function ServicesScreen() {
   const [isSearchOpen, setIsSearchOpen] = useState(!!acSearch);
   const [query, setQuery] = useState("");
 
-  const visibleServices = useMemo(
-    () =>
-      SERVICE_CATALOG.filter(
-        (service) => !HIDDEN_ON_SERVICES_SCREEN.includes(service.id),
-      ),
-    [],
-  );
-
   const filteredServices = useMemo(() => {
     const q = query.trim().toLocaleLowerCase("tr-TR");
-    if (!q) return visibleServices;
-    return visibleServices.filter((service) =>
+    if (!q) return VISIBLE_SERVICE_CATALOG;
+    return VISIBLE_SERVICE_CATALOG.filter((service) =>
       t(service.labelKey).toLocaleLowerCase("tr-TR").includes(q),
     );
-  }, [visibleServices, query, t]);
+  }, [query, t]);
 
   const toggleSearch = () => {
     setIsSearchOpen((open) => !open);

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateIlanDto } from './dto/create-ilan.dto';
 import { UpdateIlanDto } from './dto/update-ilan.dto';
 import { Ilan, IlanDocument } from './schemas/ilan.schema';
@@ -29,6 +30,7 @@ export class AdminIlanlarService {
   constructor(
     @InjectModel(Ilan.name)
     private readonly ilanModel: Model<IlanDocument>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(): Promise<AdminIlan[]> {
@@ -52,6 +54,12 @@ export class AdminIlanlarService {
       ...dto,
       updatedBy,
     })) as unknown as TimestampedIlan;
+
+    await this.notificationsService.sendBroadcast(
+      'guncel',
+      created.baslik,
+      'Yeni içerik yayınlandı, incelemek için uygulamayı açın.',
+    );
 
     return this.toAdmin(created);
   }

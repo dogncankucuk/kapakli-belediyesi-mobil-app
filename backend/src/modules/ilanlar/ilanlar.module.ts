@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { NotificationsModule } from '../notifications/notifications.module';
 import { Ilan, IlanSchema } from './schemas/ilan.schema';
 import { AdminIlanlarController } from './admin-ilanlar.controller';
 import { AdminIlanlarService } from './admin-ilanlar.service';
@@ -10,6 +11,7 @@ import { IlanlarService } from './ilanlar.service';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Ilan.name, schema: IlanSchema }]),
+    NotificationsModule,
   ],
   controllers: [IlanlarController, AdminIlanlarController],
   providers: [IlanlarService, AdminIlanlarService],

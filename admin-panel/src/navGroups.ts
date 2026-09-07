@@ -29,6 +29,8 @@ export type Page =
   | 'vefatEdenler'
   | 'wifiNoktalari'
   | 'suHizmetleri'
+  | 'fenIsleri'
+  | 'elektrik'
   | 'asevi'
   | 'camiler'
   | 'onemliKurumlar'
@@ -41,7 +43,8 @@ export type Page =
   | 'mapEditor'
   | 'users'
   | 'roles'
-  | 'adminUsers';
+  | 'adminUsers'
+  | 'notifications';
 
 export interface NavGroup {
   heading: string;
@@ -93,11 +96,12 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { page: 'faturaOdeme', label: 'Fatura Ödeme' },
       { page: 'suHizmetleri', label: 'Su Hizmetleri' },
+      { page: 'fenIsleri', label: 'Kazı Çalışmaları' },
+      { page: 'elektrik', label: 'Elektrik Kesintileri' },
       { page: 'formlar', label: 'Formlar ve Dilekçeler' },
       { page: 'ulasimHizmetleri', label: 'Ulaşım Hizmetleri' },
       { page: 'atikRehberi', label: 'Atık Rehberi' },
       { page: 'pharmacies', label: 'Nöbetçi Eczaneler' },
-      { page: 'vefatEdenler', label: 'Vefat Edenler' },
     ],
   },
   {
@@ -140,8 +144,15 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    heading: 'Bildirimler',
+    items: [{ page: 'notifications', label: 'Bildirim Gönder' }],
+  },
+  {
     heading: 'Kapalı Hizmetler',
-    items: [{ page: 'appointments', label: 'Randevular' }],
+    items: [
+      { page: 'appointments', label: 'Randevular' },
+      { page: 'vefatEdenler', label: 'Vefat Edenler' },
+    ],
   },
 ];
 
@@ -164,5 +175,7 @@ export function pageResource(page: Page): string | null {
   // halde bir rol 'ulasimHizmetleri' izniyle menuyu gorup hicbir seyi
   // duzenleyemez ya da tam tersi olur.
   if (page === 'ulasimHizmetleri') return 'ulasimHatlari';
+  if (page === 'fenIsleri') return 'kaziCalismalari';
+  if (page === 'elektrik') return 'elektrikKesintileri';
   return page;
 }

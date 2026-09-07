@@ -2,6 +2,8 @@ import type {
   AdminAccount,
   AdminBasvuru,
   AdminBasvuruTuru,
+  AdminElektrikKesintisi,
+  AdminKazi,
   AdminRole,
   AdminUser,
   Announcement,
@@ -726,6 +728,66 @@ export function kesintilerCek(url?: string) {
   );
 }
 
+export type KaziInput = {
+  mahalle: string;
+  baslangicTarihi: string;
+  sureGun: number;
+  saat: string;
+  aciklama: string;
+};
+
+export function getKaziCalismalari() {
+  return request<AdminKazi[]>('/kazi-calismalari');
+}
+
+export function createKazi(data: KaziInput) {
+  return request<AdminKazi>('/kazi-calismalari', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateKazi(id: string, data: Partial<KaziInput>) {
+  return request<AdminKazi>(`/kazi-calismalari/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteKazi(id: string) {
+  return request<{ success: boolean }>(`/kazi-calismalari/${id}`, { method: 'DELETE' });
+}
+
+export type ElektrikKesintisiInput = {
+  mahalle: string;
+  tarih: string;
+  aciklama: string;
+};
+
+export function getElektrikKesintileri() {
+  return request<AdminElektrikKesintisi[]>('/elektrik-kesintileri');
+}
+
+export function createElektrikKesintisi(data: ElektrikKesintisiInput) {
+  return request<AdminElektrikKesintisi>('/elektrik-kesintileri', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateElektrikKesintisi(id: string, data: Partial<ElektrikKesintisiInput>) {
+  return request<AdminElektrikKesintisi>(`/elektrik-kesintileri/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteElektrikKesintisi(id: string) {
+  return request<{ success: boolean }>(`/elektrik-kesintileri/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 export function getMedyaDosyalari() {
   return request<MedyaDosyasi[]>('/medya');
 }
@@ -1084,4 +1146,11 @@ export function updateAdminUser(id: string, data: AdminAccountUpdateInput) {
 
 export function deleteAdminUser(id: string) {
   return request<{ success: boolean }>(`/admin-users/${id}`, { method: 'DELETE' });
+}
+
+export function sendManualNotification(baslik: string, govde: string, kategoriler: string[]) {
+  return request<{ success: true }>('/notifications/send', {
+    method: 'POST',
+    body: JSON.stringify({ baslik, govde, kategoriler }),
+  });
 }

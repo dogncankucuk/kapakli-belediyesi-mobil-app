@@ -4,6 +4,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
@@ -34,6 +35,8 @@ import { VefatEdenlerModule } from './modules/vefat-edenler/vefat-edenler.module
 import { WifiNoktalariModule } from './modules/wifi-noktalari/wifi-noktalari.module';
 import { UlasimHatlariModule } from './modules/ulasim-hatlari/ulasim-hatlari.module';
 import { SuHizmetleriModule } from './modules/su-hizmetleri/su-hizmetleri.module';
+import { FenIsleriModule } from './modules/fen-isleri/fen-isleri.module';
+import { ElektrikModule } from './modules/elektrik/elektrik.module';
 import { AseviModule } from './modules/asevi/asevi.module';
 import { HavaKalitesiModule } from './modules/hava-kalitesi/hava-kalitesi.module';
 import { HavaDurumuModule } from './modules/hava-durumu/hava-durumu.module';
@@ -48,6 +51,7 @@ import { BasvuruHizmetleriModule } from './modules/basvuru-hizmetleri/basvuru-hi
 import { BasvurularModule } from './modules/basvurular/basvurular.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { MedyaModule } from './modules/medya/medya.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AdminModule } from './admin/admin.module';
 import { UPLOADS_DIR } from './uploads-dir';
 
@@ -79,6 +83,7 @@ import { UPLOADS_DIR } from './uploads-dir';
     // yuksek olan public endpoint'ler (auth, requests, appointments) kendi
     // route'larinda @Throttle ile daha siki limit tanimliyor.
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 100 }]),
+    ScheduleModule.forRoot(),
     AnnouncementsModule,
     HaberlerModule,
     IlanlarModule,
@@ -104,6 +109,8 @@ import { UPLOADS_DIR } from './uploads-dir';
     WifiNoktalariModule,
     UlasimHatlariModule,
     SuHizmetleriModule,
+    FenIsleriModule,
+    ElektrikModule,
     AseviModule,
     HavaKalitesiModule,
     HavaDurumuModule,
@@ -118,6 +125,7 @@ import { UPLOADS_DIR } from './uploads-dir';
     BasvurularModule,
     RolesModule,
     MedyaModule,
+    NotificationsModule,
     AdminModule,
   ],
   controllers: [AppController],

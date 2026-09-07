@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreatePlanliKesintiDto } from './dto/create-planli-kesinti.dto';
 import { UpdatePlanliKesintiDto } from './dto/update-planli-kesinti.dto';
 import {
@@ -29,6 +30,7 @@ export class AdminPlanliKesintilerService {
   constructor(
     @InjectModel(PlanliKesinti.name)
     private readonly planliKesintiModel: Model<PlanliKesintiDocument>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(): Promise<AdminPlanliKesinti[]> {
@@ -57,6 +59,16 @@ export class AdminPlanliKesintilerService {
       ...dto,
       updatedBy,
     })) as unknown as TimestampedPlanliKesinti;
+
+    await this.notificationsService.sendToMahalle(
+      dto.ilce,
+      'suKesintisi',
+      'Planlı Su Kesintisi',
+      'Bölgenizde planlı bir su kesintisi var, detaylar için uygulamayı açın.',
+      'suKesintisi',
+      created.id,
+    );
+
     return this.toAdmin(created);
   }
 

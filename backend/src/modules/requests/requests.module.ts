@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { NotificationsModule } from '../notifications/notifications.module';
 import {
   RequestCounter,
   RequestCounterSchema,
@@ -17,6 +18,7 @@ import { RequestsService } from './requests.service';
       { name: RequestItem.name, schema: RequestSchema },
       { name: RequestCounter.name, schema: RequestCounterSchema },
     ]),
+    NotificationsModule,
   ],
   controllers: [RequestsController, AdminRequestsController],
   providers: [RequestsService, AdminRequestsService],

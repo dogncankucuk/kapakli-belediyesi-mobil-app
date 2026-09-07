@@ -21,6 +21,9 @@ export class Appointment {
   @Prop({ required: true })
   durum: string;
 
+  @Prop({ default: false })
+  hatirlatmaGonderildiMi: boolean;
+
   @Prop()
   updatedBy?: string;
 }

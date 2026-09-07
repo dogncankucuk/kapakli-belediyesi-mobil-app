@@ -1,9 +1,49 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useMemo } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { useMemo, useState } from "react";
+import {
+  ActionSheetIOS,
+  Alert,
+  FlatList,
+  Image,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+// Kapaklı Kaymakamlığı'nın resmi mahalle listesi (kapakli.gov.tr/mahalleler)
+const KAPAKLI_MAHALLELERI = [
+  "Atatürk",
+  "Bahçelievler",
+  "Cumhuriyet",
+  "İnönü",
+  "İsmetpaşa",
+  "Bahçeağıl",
+  "Karlı",
+  "Pınarca",
+  "Uzunhacı",
+  "Yanıkağıl",
+  "Fatih",
+  "Karaağaç",
+  "Kazımkarabekir",
+  "Mimar Sinan",
+  "Adnan Menderes",
+  "Mevlana",
+  "Ömer Halisdemir",
+  "Vatan",
+  "Yıldızkent",
+  "Yunus Emre",
+  "19 Mayıs",
+];
+
+import { updateProfile } from "../api/auth";
+import { resolveMediaUrl } from "../api/client";
 import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { useAppShell } from "../navigation/AppShellContext";
@@ -17,10 +57,107 @@ function maskTcKimlikNo(tcKimlikNo: string | null): string | null {
 
 export default function HesapBilgilerimScreen() {
   const navigation = useNavigation();
-  const { user } = useAppShell();
+  const { user, updateUser } = useAppShell();
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const [mahalle, setMahalle] = useState(user?.mahalle ?? "");
+  const [adres, setAdres] = useState(user?.adres ?? "");
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [mahalleModalVisible, setMahalleModalVisible] = useState(false);
+
+  async function handleMahalleSecim(secilen: string) {
+    setMahalleModalVisible(false);
+    if (!user || secilen === (user.mahalle ?? "")) return;
+    const oncekiMahalle = mahalle;
+    setMahalle(secilen);
+    try {
+      const updatedUser = await updateProfile({ mahalle: secilen });
+      updateUser(updatedUser);
+    } catch (err) {
+      const mesaj = err instanceof Error ? err.message : "Bir hata oluştu";
+      Alert.alert("Hata", mesaj);
+      setMahalle(oncekiMahalle);
+    }
+  }
+
+  async function handleAdresBlur() {
+    if (!user || adres === (user.adres ?? "")) return;
+    try {
+      const updatedUser = await updateProfile({ adres });
+      updateUser(updatedUser);
+    } catch (err) {
+      const mesaj = err instanceof Error ? err.message : "Bir hata oluştu";
+      Alert.alert("Hata", mesaj);
+      setAdres(user.adres ?? "");
+    }
+  }
+
+  async function handleFotografYukle(base64: string) {
+    setIsUploadingPhoto(true);
+    try {
+      const updatedUser = await updateProfile({ profilFotografiBase64: base64 });
+      updateUser(updatedUser);
+    } catch (err) {
+      const mesaj = err instanceof Error ? err.message : "Bir hata oluştu";
+      Alert.alert("Hata", mesaj);
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  }
+
+  function handleFotografSec() {
+    const openLibrary = async () => {
+      const permission =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) return;
+      const picked = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        base64: true,
+        quality: 0.4,
+      });
+      if (picked.canceled) return;
+      const asset = picked.assets[0];
+      if (asset.base64) await handleFotografYukle(asset.base64);
+    };
+
+    const openCamera = async () => {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) return;
+      const picked = await ImagePicker.launchCameraAsync({
+        mediaTypes: ["images"],
+        base64: true,
+        quality: 0.4,
+      });
+      if (picked.canceled) return;
+      const asset = picked.assets[0];
+      if (asset.base64) await handleFotografYukle(asset.base64);
+    };
+
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: [
+            t("common_cancel"),
+            t("atikAi_takePhoto"),
+            t("atikAi_pickFromGallery"),
+          ],
+          cancelButtonIndex: 0,
+        },
+        (index) => {
+          if (index === 1) void openCamera();
+          if (index === 2) void openLibrary();
+        },
+      );
+      return;
+    }
+
+    Alert.alert(t("basvuruForm_belgeSecenekFoto"), undefined, [
+      { text: t("atikAi_takePhoto"), onPress: () => void openCamera() },
+      { text: t("atikAi_pickFromGallery"), onPress: () => void openLibrary() },
+      { text: t("common_cancel"), style: "cancel" },
+    ]);
+  }
 
   if (!user) {
     return (
@@ -71,8 +208,35 @@ export default function HesapBilgilerimScreen() {
 
       <View style={styles.content}>
         <View style={styles.identity}>
-          <View style={styles.avatar}>
-            <MaterialIcons name="person" size={28} color={colors.onPrimary} />
+          <View style={styles.avatarColumn}>
+            <Pressable
+              onPress={handleFotografSec}
+              disabled={isUploadingPhoto}
+              accessibilityRole="button"
+              style={styles.avatar}
+            >
+              {user.profilFotografiUrl ? (
+                <Image
+                  source={{ uri: resolveMediaUrl(user.profilFotografiUrl) }}
+                  style={styles.avatarImage}
+                />
+              ) : (
+                <MaterialIcons
+                  name="person"
+                  size={28}
+                  color={colors.onPrimary}
+                />
+              )}
+            </Pressable>
+            <Pressable
+              onPress={handleFotografSec}
+              disabled={isUploadingPhoto}
+              accessibilityRole="button"
+            >
+              <Text style={styles.changePhotoText}>
+                {isUploadingPhoto ? "Yükleniyor..." : "Fotoğraf Değiştir"}
+              </Text>
+            </Pressable>
           </View>
           <View>
             <Text style={styles.name}>
@@ -130,6 +294,44 @@ export default function HesapBilgilerimScreen() {
               />
             </View>
           </View>
+          <View style={styles.fieldRow}>
+            <View style={styles.field}>
+              <Text style={styles.label}>Mahalle</Text>
+              <Pressable
+                onPress={() => setMahalleModalVisible(true)}
+                accessibilityRole="button"
+              >
+                <View style={[styles.input, styles.selectInput]}>
+                  <Text
+                    style={
+                      mahalle ? styles.selectValue : styles.selectPlaceholder
+                    }
+                  >
+                    {mahalle || "Mahalle seçiniz"}
+                  </Text>
+                  <MaterialIcons
+                    name="arrow-drop-down"
+                    size={20}
+                    color={colors.outline}
+                  />
+                </View>
+              </Pressable>
+            </View>
+          </View>
+          <View style={styles.fieldRow}>
+            <View style={styles.field}>
+              <Text style={styles.label}>Adres</Text>
+              <TextInput
+                style={[styles.input, styles.multilineInput]}
+                value={adres}
+                onChangeText={setAdres}
+                onBlur={handleAdresBlur}
+                placeholder="Adres giriniz"
+                placeholderTextColor={colors.outline}
+                multiline
+              />
+            </View>
+          </View>
         </Card>
 
         <Card style={styles.card}>
@@ -156,6 +358,43 @@ export default function HesapBilgilerimScreen() {
           </Pressable>
         </Card>
       </View>
+
+      <Modal
+        visible={mahalleModalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setMahalleModalVisible(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setMahalleModalVisible(false)}
+        >
+          <Pressable style={styles.modalSheet} onPress={() => undefined}>
+            <Text style={styles.modalTitle}>Mahalle Seçiniz</Text>
+            <FlatList
+              data={KAPAKLI_MAHALLELERI}
+              keyExtractor={(item) => item}
+              style={styles.modalList}
+              renderItem={({ item }) => (
+                <Pressable
+                  style={styles.modalItem}
+                  onPress={() => void handleMahalleSecim(item)}
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.modalItemText}>{item} Mahallesi</Text>
+                  {item === mahalle && (
+                    <MaterialIcons
+                      name="check"
+                      size={18}
+                      color={colors.secondary}
+                    />
+                  )}
+                </Pressable>
+              )}
+            />
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -199,6 +438,10 @@ const createStyles = (colors: Colors) =>
       alignItems: "center",
       gap: spacing.stackGap,
     },
+    avatarColumn: {
+      alignItems: "center",
+      gap: 4,
+    },
     avatar: {
       width: 56,
       height: 56,
@@ -206,6 +449,15 @@ const createStyles = (colors: Colors) =>
       backgroundColor: colors.primaryContainer,
       alignItems: "center",
       justifyContent: "center",
+      overflow: "hidden",
+    },
+    avatarImage: {
+      width: 56,
+      height: 56,
+    },
+    changePhotoText: {
+      ...typography.labelSm,
+      color: colors.secondary,
     },
     name: {
       ...typography.titleMd,
@@ -249,6 +501,58 @@ const createStyles = (colors: Colors) =>
       paddingHorizontal: spacing.stackGap / 2,
       color: colors.onBackground,
       backgroundColor: colors.background,
+    },
+    multilineInput: {
+      minHeight: 64,
+      paddingTop: spacing.stackGap / 2,
+      textAlignVertical: "top",
+    },
+    selectInput: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    selectValue: {
+      ...typography.bodyMd,
+      color: colors.onBackground,
+    },
+    selectPlaceholder: {
+      ...typography.bodyMd,
+      color: colors.outline,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.4)",
+      justifyContent: "flex-end",
+    },
+    modalSheet: {
+      backgroundColor: colors.background,
+      borderTopLeftRadius: shape.roundedLg,
+      borderTopRightRadius: shape.roundedLg,
+      maxHeight: "70%",
+      paddingTop: spacing.stackGap,
+      paddingHorizontal: spacing.containerMargin,
+      paddingBottom: spacing.stackGap * 2,
+    },
+    modalTitle: {
+      ...typography.titleMd,
+      color: colors.onBackground,
+      marginBottom: spacing.stackGap / 2,
+    },
+    modalList: {
+      flexGrow: 0,
+    },
+    modalItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingVertical: spacing.stackGap / 2,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.outlineVariant,
+    },
+    modalItemText: {
+      ...typography.bodyMd,
+      color: colors.onBackground,
     },
     securityRow: {
       flexDirection: "row",

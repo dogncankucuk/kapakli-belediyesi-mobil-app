@@ -41,6 +41,10 @@ export class BasvuruBelgeGirisiDto {
 }
 
 export class CreateBasvuruDto {
+  @IsOptional()
+  @IsString()
+  userId?: string | null;
+
   @IsString()
   @IsNotEmpty()
   basvuruTuruId: string;

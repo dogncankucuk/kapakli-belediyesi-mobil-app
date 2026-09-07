@@ -10,7 +10,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { SERVICE_CATALOG, ServiceId } from "../constants/serviceCatalog";
+import {
+  ServiceId,
+  VISIBLE_SERVICE_CATALOG,
+} from "../constants/serviceCatalog";
 import { useTranslation } from "../i18n/LocaleContext";
 import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
 
@@ -91,7 +94,7 @@ export default function HizliIslemlerModal({
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
         >
-          {SERVICE_CATALOG.map((service) => {
+          {VISIBLE_SERVICE_CATALOG.map((service) => {
             const isSelected = draft.includes(service.id);
             return (
               <Pressable

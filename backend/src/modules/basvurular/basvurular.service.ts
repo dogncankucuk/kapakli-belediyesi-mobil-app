@@ -132,6 +132,7 @@ export class BasvurularService {
     let created: TimestampedBasvuru;
     try {
       created = (await this.basvuruModel.create({
+        userId: dto.userId ?? null,
         basvuruTuruId: dto.basvuruTuruId,
         basvuruTuruAdi: basvuruTuru.baslik,
         adSoyad: dto.adSoyad,

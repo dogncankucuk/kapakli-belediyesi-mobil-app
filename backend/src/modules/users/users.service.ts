@@ -1,4 +1,6 @@
-import { randomInt } from 'crypto';
+import { randomInt, randomUUID } from 'crypto';
+import { writeFile } from 'fs/promises';
+import { join } from 'path';
 
 import {
   BadRequestException,
@@ -15,10 +17,12 @@ import * as bcrypt from 'bcryptjs';
 import { OAuth2Client } from 'google-auth-library';
 import { Model } from 'mongoose';
 
+import { UPLOADS_DIR } from '../../uploads-dir';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { User, UserDocument } from './schemas/user.schema';
 import { SmsService } from './sms.service';
 
@@ -29,6 +33,9 @@ export type PublicUser = {
   tcKimlikNo: string | null;
   telefon: string | null;
   eposta: string | null;
+  mahalle: string | null;
+  adres: string | null;
+  profilFotografiUrl: string | null;
 };
 
 export type AuthResponse = { token: string; user: PublicUser };
@@ -62,6 +69,9 @@ export class UsersService {
       tcKimlikNo: user.tcKimlikNo ?? null,
       telefon: user.telefon ?? null,
       eposta: user.eposta ?? null,
+      mahalle: user.mahalle ?? null,
+      adres: user.adres ?? null,
+      profilFotografiUrl: user.profilFotografiUrl ?? null,
     };
   }
 
@@ -141,6 +151,35 @@ export class UsersService {
 
   async findById(id: string): Promise<PublicUser> {
     const user = await this.userModel.findById(id);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    return this.toPublicUser(user);
+  }
+
+  async updateProfile(
+    userId: string,
+    dto: UpdateProfileDto,
+  ): Promise<PublicUser> {
+    // dto.profilFotografiBase64 DB semasinda yok, dogrudan yazilmiyor -
+    // yerine medya kutuphanesiyle ayni mantikla /uploads'a dosya olarak
+    // yazilip goreceli URL'i turetiliyor (bkz. RequestsService.fotograflariKaydet).
+    const update: { mahalle?: string; adres?: string; profilFotografiUrl?: string } =
+      {};
+    if (dto.mahalle !== undefined) update.mahalle = dto.mahalle;
+    if (dto.adres !== undefined) update.adres = dto.adres;
+    if (dto.profilFotografiBase64) {
+      const dosyaAdi = `${randomUUID()}.jpg`;
+      await writeFile(
+        join(UPLOADS_DIR, dosyaAdi),
+        Buffer.from(dto.profilFotografiBase64, 'base64'),
+      );
+      update.profilFotografiUrl = `/uploads/${dosyaAdi}`;
+    }
+
+    const user = await this.userModel.findByIdAndUpdate(userId, update, {
+      new: true,
+    });
     if (!user) {
       throw new UnauthorizedException();
     }

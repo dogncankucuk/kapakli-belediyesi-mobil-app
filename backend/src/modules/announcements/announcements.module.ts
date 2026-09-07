@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { NotificationsModule } from '../notifications/notifications.module';
 import {
   Announcement,
   AnnouncementSchema,
@@ -15,6 +16,7 @@ import { AnnouncementsService } from './announcements.service';
     MongooseModule.forFeature([
       { name: Announcement.name, schema: AnnouncementSchema },
     ]),
+    NotificationsModule,
   ],
   controllers: [AnnouncementsController, AdminAnnouncementsController],
   providers: [AnnouncementsService, AdminAnnouncementsService],

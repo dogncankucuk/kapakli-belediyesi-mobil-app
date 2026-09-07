@@ -24,6 +24,9 @@ export class RegisterDto {
 
   @IsString()
   @IsNotEmpty()
+  @Matches(/^5\d{9}$/, {
+    message: 'Telefon numarası 5 ile başlayan 10 haneli olmalı (örn. 5321234567)',
+  })
   telefon: string;
 
   @IsOptional()
@@ -32,8 +35,12 @@ export class RegisterDto {
 
   @IsString()
   @MinLength(8, { message: 'Şifre en az 8 karakter olmalı' })
-  @Matches(/(?=.*[A-Za-zÇĞİÖŞÜçğıöşü])(?=.*\d)/, {
-    message: 'Şifre en az bir harf ve bir rakam içermeli',
-  })
+  @Matches(
+    /^(?=.*[a-zçğıöşü])(?=.*[A-ZÇĞİÖŞÜ])(?=.*\d)(?=.*[^\wçğıöşüÇĞİÖŞÜ\s]).{8,}$/,
+    {
+      message:
+        'Şifre en az 8 karakter olmalı, en az 1 büyük harf, 1 küçük harf, 1 rakam ve 1 noktalama işareti içermeli',
+    },
+  )
   password: string;
 }

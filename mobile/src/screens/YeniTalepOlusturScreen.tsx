@@ -26,15 +26,11 @@ import {
   LocationValue,
   PrimaryButton,
   SecondaryButton,
-  SeveritySlider,
   StatusStepper,
   StatusStep,
   StepProgressBar,
 } from "../components";
-import {
-  buildTalepKategoriTanimlari,
-  YOGUNLUK_GOSTEREN_KATEGORILER,
-} from "../constants/talepKategorileri";
+import { buildTalepKategoriTanimlari } from "../constants/talepKategorileri";
 import {
   talepKategoriRenkleri,
   defaultCategoryAccent,
@@ -45,6 +41,7 @@ import {
   useThemeColors,
 } from "../theme";
 import { useTranslation } from "../i18n/LocaleContext";
+import { useAppShell } from "../navigation/AppShellContext";
 import { takipNumarasiEkle } from "../storage/talepStorage";
 
 const MAX_LENGTH = 500;
@@ -58,6 +55,7 @@ export default function YeniTalepOlusturScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const kategoriTanimlari = useMemo(() => buildTalepKategoriTanimlari(t), [t]);
+  const { user } = useAppShell();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [kategori, setKategori] = useState<TalepKategorisi | null>(null);
@@ -66,12 +64,7 @@ export default function YeniTalepOlusturScreen() {
   const [aciklama, setAciklama] = useState("");
   const [location, setLocation] = useState<LocationValue>(BOS_KONUM);
   const [photos, setPhotos] = useState<Photo[]>([]);
-  const [yogunluk, setYogunluk] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const showYogunluk = kategori
-    ? YOGUNLUK_GOSTEREN_KATEGORILER.includes(kategori)
-    : false;
 
   // Telefon her zaman +90 ile baslar, kullanici sadece 10 haneli yerel
   // numarayi girer - backend'e gonderilirken +90 onekiyle birlestirilir.
@@ -165,7 +158,7 @@ export default function YeniTalepOlusturScreen() {
         lng: location.lng ?? undefined,
         adres: location.adres.trim() || undefined,
         fotograflar: photos.map((p) => p.base64),
-        yogunluk: showYogunluk ? yogunluk : undefined,
+        userId: user?.id ?? null,
       });
       await takipNumarasiEkle(talep.id);
       Alert.alert(t("yeniTalep_successTitle"), t("yeniTalep_successMessage"));
@@ -374,24 +367,6 @@ export default function YeniTalepOlusturScreen() {
               </View>
             </View>
 
-            {showYogunluk && (
-              <View style={styles.section}>
-                <Text style={styles.sectionLabel}>
-                  {t("yeniTalep_yogunluk")}
-                </Text>
-                <SeveritySlider
-                  labels={[
-                    t("yeniTalep_yogunlukHafif"),
-                    t("yeniTalep_yogunlukOrta"),
-                    t("yeniTalep_yogunlukYogun"),
-                    t("yeniTalep_yogunlukSiddetli"),
-                  ]}
-                  value={yogunluk}
-                  onChange={setYogunluk}
-                />
-              </View>
-            )}
-
             <View style={styles.footerButtons}>
               <SecondaryButton
                 label={t("yeniTalep_geri")}
@@ -442,21 +417,6 @@ export default function YeniTalepOlusturScreen() {
                 value={aciklama.trim()}
                 colors={colors}
               />
-              {showYogunluk && (
-                <PreviewRow
-                  icon="water-drop"
-                  label={t("yeniTalep_yogunluk")}
-                  value={
-                    [
-                      t("yeniTalep_yogunlukHafif"),
-                      t("yeniTalep_yogunlukOrta"),
-                      t("yeniTalep_yogunlukYogun"),
-                      t("yeniTalep_yogunlukSiddetli"),
-                    ][yogunluk]
-                  }
-                  colors={colors}
-                />
-              )}
               {photos.length > 0 && (
                 <PreviewRow
                   icon="photo-camera"

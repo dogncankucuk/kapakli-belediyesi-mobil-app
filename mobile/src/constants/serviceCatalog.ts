@@ -12,7 +12,7 @@ export type ServiceTarget = {
 
 export type ServiceId =
   | "fatura-odeme"
-  | "su-hizmetleri"
+  | "elektrik-ve-su-kesintileri"
   | "randevu-al"
   | "yeni-talep"
   | "taleplerim"
@@ -44,10 +44,10 @@ export const SERVICE_CATALOG: ServiceDefinition[] = [
     target: { tab: "Services", screen: "FaturaOdeme" },
   },
   {
-    id: "su-hizmetleri",
-    icon: "water-drop",
-    labelKey: "services_suHizmetleri",
-    target: { tab: "Services", screen: "SuHizmetleri" },
+    id: "elektrik-ve-su-kesintileri",
+    icon: "bolt",
+    labelKey: "services_elektrikVeSuKesintileri",
+    target: { tab: "Services", screen: "ElektrikVeSuKesintileri" },
   },
   {
     id: "randevu-al",
@@ -122,6 +122,22 @@ export const SERVICE_CATALOG: ServiceDefinition[] = [
     target: { tab: "Profile", screen: "Hakkimizda" },
   },
 ];
+
+// Hizmetler ekranindan kaldirilmasi istenen kisayollar - Hizli Islemler
+// duzenleyicisi de SADECE aktif olarak Hizmetler'de goruntulenenlerden secim
+// yaptirmali, bu yuzden ayni filtreyi paylasiyorlar (tek kaynak).
+const HIDDEN_ON_SERVICES_SCREEN: ServiceId[] = [
+  "yeni-talep",
+  "taleplerim",
+  "etkinlik-tarihleri",
+  "hakkimizda",
+  "meclis-kararlari",
+];
+
+export const VISIBLE_SERVICE_CATALOG: ServiceDefinition[] =
+  SERVICE_CATALOG.filter(
+    (service) => !HIDDEN_ON_SERVICES_SCREEN.includes(service.id),
+  );
 
 export const DEFAULT_QUICK_ACTION_IDS: ServiceId[] = [
   "nobetci-eczane",

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateMeclisKarariDto } from './dto/create-meclis-karari.dto';
 import { UpdateMeclisKarariDto } from './dto/update-meclis-karari.dto';
 import {
@@ -32,6 +33,7 @@ export class AdminMeclisKararlariService {
   constructor(
     @InjectModel(MeclisKarari.name)
     private readonly meclisKarariModel: Model<MeclisKarariDocument>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(): Promise<AdminMeclisKarari[]> {
@@ -58,6 +60,13 @@ export class AdminMeclisKararlariService {
       ...dto,
       updatedBy,
     })) as unknown as TimestampedMeclisKarari;
+
+    await this.notificationsService.sendBroadcast(
+      'guncel',
+      created.baslik,
+      'Yeni içerik yayınlandı, incelemek için uygulamayı açın.',
+    );
+
     return this.toAdmin(created);
   }
 

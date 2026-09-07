@@ -10,6 +10,7 @@ import * as WebBrowser from "expo-web-browser";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Modal,
   Platform,
   Pressable,
@@ -29,11 +30,54 @@ import {
 } from "../api/auth";
 import { GOOGLE_WEB_CLIENT_ID } from "../api/googleAuthConfig";
 import { Card, PrimaryButton, SecondaryButton } from "../components";
+import { KvkkMetniContent } from "../components/KvkkMetniContent";
 import { useTranslation } from "../i18n/LocaleContext";
 import { useAppShell } from "../navigation/AppShellContext";
 import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { tcKimlikNoGecerliMi } from "../utils/tcKimlikDogrula";
 import { BizeUlasinContent } from "./BizeUlasinScreen";
 import { YardimMerkeziContent } from "./YardimMerkeziScreen";
+
+// Backend'deki telefon formati ^5\d{9}$ ile ayni sonuca varmak icin
+// kullanicinin girebilecegi cesitli formatlari (bosluk/tire, +90, 90, 0
+// onekleri) sadelestirir. Gecersizse null doner.
+function telefonuNormallestir(ham: string): string | null {
+  let temiz = ham.replace(/[\s-]/g, "");
+  if (temiz.startsWith("+90")) {
+    temiz = temiz.slice(3);
+  } else if (temiz.startsWith("90") && temiz.length > 10) {
+    temiz = temiz.slice(2);
+  }
+  if (temiz.startsWith("0")) {
+    temiz = temiz.slice(1);
+  }
+  return /^5\d{9}$/.test(temiz) ? temiz : null;
+}
+
+// Backend'deki sifre regex'iyle (register.dto.ts) ayni karakter setlerini
+// kullanan, kullanici yazarken anlik kural kontrolu icin ayrik fonksiyonlar.
+const sifreKurallari = [
+  {
+    etiket: "En az 8 karakter",
+    kontrolEt: (sifre: string) => sifre.length >= 8,
+  },
+  {
+    etiket: "En az 1 büyük harf",
+    kontrolEt: (sifre: string) => /[A-ZÇĞİÖŞÜ]/.test(sifre),
+  },
+  {
+    etiket: "En az 1 küçük harf",
+    kontrolEt: (sifre: string) => /[a-zçğıöşü]/.test(sifre),
+  },
+  {
+    etiket: "En az 1 rakam",
+    kontrolEt: (sifre: string) => /\d/.test(sifre),
+  },
+  {
+    etiket: "En az 1 noktalama işareti",
+    kontrolEt: (sifre: string) => /[^\wçğıöşüÇĞİÖŞÜ\s]/.test(sifre),
+  },
+];
 
 // Redirect'ten donuldugunde bekleyen AuthSession promise'ini tamamlar - Expo'nun
 // kendi dokumantasyonunda onerilen, modul seviyesinde bir kere cagrilmasi gereken kurulum.
@@ -50,7 +94,7 @@ if (Platform.OS !== "web" && GOOGLE_WEB_CLIENT_ID) {
   GoogleSignin.configure({ webClientId: GOOGLE_WEB_CLIENT_ID });
 }
 
-type InfoModal = "BizeUlasin" | "YardimMerkezi" | null;
+type InfoModal = "BizeUlasin" | "YardimMerkezi" | "Kvkk" | null;
 
 type Mode = "giris" | "kayit";
 
@@ -70,6 +114,11 @@ export default function GirisEkraniScreen() {
   const [soyad, setSoyad] = useState("");
   const [tcKimlikNo, setTcKimlikNo] = useState("");
   const [telefon, setTelefon] = useState("");
+  const [telefonHata, setTelefonHata] = useState<string | null>(null);
+  const [sartlarKabul, setSartlarKabul] = useState(false);
+
+  const tcHataGoster =
+    tcKimlikNo.length === 11 && !tcKimlikNoGecerliMi(tcKimlikNo);
 
   const [forgotPasswordVisible, setForgotPasswordVisible] = useState(false);
   const [fpStep, setFpStep] = useState<"request" | "reset">("request");
@@ -193,13 +242,21 @@ export default function GirisEkraniScreen() {
 
   const handleKayit = async () => {
     setError(null);
+    const normalTelefon = telefonuNormallestir(telefon);
+    if (!normalTelefon) {
+      setTelefonHata(
+        "Geçerli bir telefon numarası girin (örn. 5321234567)",
+      );
+      return;
+    }
+    setTelefonHata(null);
     setIsSubmitting(true);
     try {
       const { user } = await register({
         ad: ad.trim(),
         soyad: soyad.trim(),
         tcKimlikNo: tcKimlikNo.trim(),
-        telefon: telefon.trim(),
+        telefon: normalTelefon,
         password,
       });
       enterApp(user);
@@ -216,11 +273,11 @@ export default function GirisEkraniScreen() {
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <View style={styles.logoCircle}>
-            <MaterialIcons
-              name="account-balance"
-              size={36}
-              color={colors.onPrimary}
+          <View style={styles.logoContainer}>
+            <Image
+              source={require("../../assets/brand/kapakli_belediyesi_logo.png")}
+              style={styles.logoImage}
+              resizeMode="contain"
             />
           </View>
           <Text style={styles.title}>{t("girisEkrani_welcomeTitle")}</Text>
@@ -300,6 +357,11 @@ export default function GirisEkraniScreen() {
                   value={tcKimlikNo}
                   onChangeText={setTcKimlikNo}
                 />
+                {tcHataGoster && (
+                  <Text style={styles.fieldHata}>
+                    Geçerli bir T.C. Kimlik No girin
+                  </Text>
+                )}
               </View>
               <View style={styles.field}>
                 <Text style={styles.label}>
@@ -309,10 +371,22 @@ export default function GirisEkraniScreen() {
                   style={styles.input}
                   placeholder={t("girisEkrani_telefonPlaceholder")}
                   placeholderTextColor={colors.outline}
-                  keyboardType="phone-pad"
+                  keyboardType="number-pad"
+                  maxLength={10}
                   value={telefon}
-                  onChangeText={setTelefon}
+                  onChangeText={(text) => {
+                    const sadeceRakam = text.replace(/\D/g, "").slice(0, 10);
+                    setTelefon(sadeceRakam);
+                    if (telefonHata) setTelefonHata(null);
+                  }}
                 />
+                <Text style={styles.fieldHint}>
+                  Başında 0 olmadan, 5 ile başlayan 10 haneli numaranızı girin
+                  (örn. 5321234567)
+                </Text>
+                {telefonHata && (
+                  <Text style={styles.fieldHata}>{telefonHata}</Text>
+                )}
               </View>
               <View style={styles.field}>
                 <Text style={styles.label}>
@@ -326,19 +400,64 @@ export default function GirisEkraniScreen() {
                   value={password}
                   onChangeText={setPassword}
                 />
+                <View style={styles.sifreKuralListesi}>
+                  {sifreKurallari.map((kural) => {
+                    const gecti = kural.kontrolEt(password);
+                    return (
+                      <View key={kural.etiket} style={styles.sifreKuralRow}>
+                        <MaterialIcons
+                          name={gecti ? "check-circle" : "cancel"}
+                          size={16}
+                          color={gecti ? "#2E7D32" : colors.outline}
+                        />
+                        <Text style={styles.sifreKuralText}>
+                          {kural.etiket}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
               </View>
-              <View style={styles.dividerRow}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>{t("girisEkrani_or")}</Text>
-                <View style={styles.dividerLine} />
+              <View style={styles.sartlarRow}>
+                <Pressable
+                  onPress={() => setSartlarKabul((onceki) => !onceki)}
+                  hitSlop={8}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: sartlarKabul }}
+                >
+                  <MaterialIcons
+                    name={
+                      sartlarKabul ? "check-box" : "check-box-outline-blank"
+                    }
+                    size={22}
+                    color={
+                      sartlarKabul ? colors.primaryContainer : colors.outline
+                    }
+                  />
+                </Pressable>
+                <Text style={styles.sartlarText}>
+                  <Text
+                    style={styles.sartlarLink}
+                    onPress={() => setInfoModal("Kvkk")}
+                  >
+                    Kullanım Şartları ve KVKK Aydınlatma Metni
+                  </Text>
+                  {"'ni okudum, kabul ediyorum"}
+                </Text>
               </View>
-              <SecondaryButton
-                label={t("girisEkrani_googleButton")}
-                onPress={handleGoogle}
-                disabled={!googleRequest || isSubmitting}
-              />
             </>
           )}
+
+          <View style={styles.dividerRow}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>{t("girisEkrani_or")}</Text>
+            <View style={styles.dividerLine} />
+          </View>
+          <SecondaryButton
+            label={t("girisEkrani_googleButton")}
+            onPress={handleGoogle}
+            disabled={!googleRequest || isSubmitting}
+          />
 
           {error && <Text style={styles.errorText}>{error}</Text>}
 
@@ -352,6 +471,7 @@ export default function GirisEkraniScreen() {
                   : t("girisEkrani_registerButton")
               }
               onPress={mode === "giris" ? handleGiris : handleKayit}
+              disabled={mode === "kayit" && !sartlarKabul}
             />
           )}
         </Card>
@@ -423,6 +543,9 @@ export default function GirisEkraniScreen() {
         )}
         {infoModal === "YardimMerkezi" && (
           <YardimMerkeziContent onBack={() => setInfoModal(null)} />
+        )}
+        {infoModal === "Kvkk" && (
+          <KvkkMetniContent onBack={() => setInfoModal(null)} />
         )}
       </Modal>
 
@@ -539,14 +662,12 @@ const createStyles = (colors: Colors) =>
       alignItems: "center",
       gap: spacing.stackGap / 2,
     },
-    logoCircle: {
-      width: 72,
-      height: 72,
-      borderRadius: 36,
-      backgroundColor: colors.primaryContainer,
-      alignItems: "center",
-      justifyContent: "center",
+    logoContainer: {
       marginBottom: spacing.stackGap / 2,
+    },
+    logoImage: {
+      width: 220,
+      height: 83,
     },
     title: {
       ...typography.titleLg,
@@ -581,6 +702,40 @@ const createStyles = (colors: Colors) =>
     errorText: {
       ...typography.bodyMd,
       color: colors.error,
+    },
+    fieldHata: {
+      ...typography.labelSm,
+      color: colors.error,
+    },
+    fieldHint: {
+      ...typography.labelSm,
+      color: colors.outline,
+    },
+    sifreKuralListesi: {
+      gap: spacing.stackGap / 4,
+    },
+    sifreKuralRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.stackGap / 2,
+    },
+    sifreKuralText: {
+      ...typography.labelSm,
+      color: colors.outline,
+    },
+    sartlarRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: spacing.stackGap / 2,
+    },
+    sartlarText: {
+      ...typography.bodyMd,
+      color: colors.onBackground,
+      flex: 1,
+    },
+    sartlarLink: {
+      color: colors.onTertiaryContainer,
+      fontWeight: "600",
     },
     forgotPasswordLink: {
       alignSelf: "flex-end",

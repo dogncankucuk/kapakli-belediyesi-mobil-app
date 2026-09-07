@@ -283,6 +283,22 @@ export type PlanliKesinti = {
   aciklama: string;
 };
 
+export type Kazi = {
+  id: string;
+  mahalle: string;
+  baslangicTarihi: string;
+  sureGun: number;
+  saat: string;
+  aciklama: string;
+};
+
+export type ElektrikKesintisi = {
+  id: string;
+  mahalle: string;
+  tarih: string;
+  aciklama: string;
+};
+
 export type AseviBasvuruBody = {
   adSoyad: string;
   telefon: string;
@@ -294,7 +310,11 @@ export type BasvuruTuru = {
   baslik: string;
   aciklama: string | null;
   ekBilgiAlanlari: { etiket: string; zorunlu: boolean }[];
-  gerekliBelgeler: { etiket: string; aciklama: string | null; zorunlu: boolean }[];
+  gerekliBelgeler: {
+    etiket: string;
+    aciklama: string | null;
+    zorunlu: boolean;
+  }[];
   gorselUrl: string | null;
 };
 
@@ -317,6 +337,7 @@ export type CreateBasvuruBody = {
   adres: string;
   ekBilgiler?: { etiket: string; deger: string }[];
   belgeler?: { etiket: string; base64: string; mimeType: string }[];
+  userId?: string | null;
 };
 
 export type HavaKalitesiDurum = {

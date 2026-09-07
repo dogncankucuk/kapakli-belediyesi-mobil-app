@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { ComponentProps, useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { getHavaDurumu } from "../api/havaDurumu";
@@ -103,14 +103,11 @@ export default function YanMenuPanel() {
           >
             <MaterialIcons name="close" size={24} color={colors.onBackground} />
           </Pressable>
-          <View style={styles.logoCircle}>
-            <MaterialIcons
-              name="account-balance"
-              size={28}
-              color={colors.onPrimary}
-            />
-          </View>
-          <Text style={styles.headerTitle}>{t("common_appName")}</Text>
+          <Image
+            source={require("../../assets/brand/kapakli_belediyesi_logo.png")}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
           {havaDurumu && (
             <View style={styles.weatherRow}>
               <MaterialIcons
@@ -190,13 +187,9 @@ const createStyles = (colors: Colors) =>
       right: 0,
       padding: 4,
     },
-    logoCircle: {
-      width: 56,
-      height: 56,
-      borderRadius: 28,
-      backgroundColor: colors.primaryContainer,
-      alignItems: "center",
-      justifyContent: "center",
+    logoImage: {
+      width: 140,
+      height: 53,
       marginBottom: 4,
     },
     headerTitle: {

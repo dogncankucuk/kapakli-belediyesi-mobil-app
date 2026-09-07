@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { NotificationsModule } from '../notifications/notifications.module';
 import {
   MeclisGundemi,
   MeclisGundemiSchema,
@@ -15,6 +16,7 @@ import { MeclisGundemleriService } from './meclis-gundemleri.service';
     MongooseModule.forFeature([
       { name: MeclisGundemi.name, schema: MeclisGundemiSchema },
     ]),
+    NotificationsModule,
   ],
   controllers: [MeclisGundemleriController, AdminMeclisGundemleriController],
   providers: [MeclisGundemleriService, AdminMeclisGundemleriService],

@@ -7,14 +7,44 @@ import {
   useMemo,
   useState,
 } from "react";
+import { Platform } from "react-native";
 
 import { CurrentUser, getSessionUser, logout } from "../api/auth";
+import { deletePushToken, registerPushToken } from "../api/notifications";
+import {
+  clearStoredPushToken,
+  getStoredPushToken,
+  requestPermissionsAndGetToken,
+  setStoredPushToken,
+} from "../services/pushNotifications";
 import {
   getOnboardingGorulduMu,
   onboardingGorulduIsaretle,
 } from "../storage/onboardingStorage";
 
+function registerPushNotifications() {
+  requestPermissionsAndGetToken()
+    .then((token) => {
+      if (!token) return;
+      void setStoredPushToken(token);
+      void registerPushToken(token, Platform.OS as "ios" | "android");
+    })
+    .catch(() => {});
+}
+
 export type PendingRoute = { screen: string; params?: object };
+
+// App.tsx, AppShellProvider agacinin DISINDA render edildigi icin
+// (bkz. navigation/index.tsx: Root() = AppShellProvider > AppShellGate)
+// push bildirimi tiklamasi App.tsx'te useAppShell() hook'unu kullanamiyor.
+// Bu modul-seviyesi referans, provider icindeki AYNI setPendingRoute state
+// setter'ina disaridan erisim sagliyor - ayri bir pendingRoute mekanizmasi
+// DEGIL, mevcut olanin disariya acilan kapisi.
+let externalSetPendingRoute: ((route: PendingRoute) => void) | null = null;
+
+export function setPendingRouteFromOutside(route: PendingRoute) {
+  externalSetPendingRoute?.(route);
+}
 
 type AppShellContextValue = {
   hasEnteredApp: boolean;
@@ -23,6 +53,7 @@ type AppShellContextValue = {
   onboardingiTamamla: () => void;
   user: CurrentUser | null;
   enterApp: (user: CurrentUser) => void;
+  updateUser: (user: CurrentUser) => void;
   // Girişe gerek duymayan iki bilgi ekranı (Bize Ulaşın/Yardım Merkezi) icin
   // - kullanici olmadan sadece navigasyon agacini gosterir.
   // target verilirse (ör. login öncesi haritaya git), Navigation mount olup
@@ -53,11 +84,19 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
   const [onboardingGorulduMu, setOnboardingGorulduMu] = useState(false);
 
   useEffect(() => {
+    externalSetPendingRoute = setPendingRoute;
+    return () => {
+      externalSetPendingRoute = null;
+    };
+  }, []);
+
+  useEffect(() => {
     Promise.all([
       getSessionUser().then((sessionUser) => {
         if (sessionUser) {
           setUser(sessionUser);
           setHasEnteredApp(true);
+          registerPushNotifications();
         }
       }),
       getOnboardingGorulduMu().then(setOnboardingGorulduMu),
@@ -72,6 +111,10 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
   const enterApp = useCallback((sessionUser: CurrentUser) => {
     setUser(sessionUser);
     setHasEnteredApp(true);
+    registerPushNotifications();
+  }, []);
+  const updateUser = useCallback((updatedUser: CurrentUser) => {
+    setUser(updatedUser);
   }, []);
   const previewApp = useCallback((target?: PendingRoute) => {
     if (target) {
@@ -83,7 +126,20 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
   const exitApp = useCallback(() => {
     setUser(null);
     setHasEnteredApp(false);
-    void logout();
+    void (async () => {
+      // deletePushToken kendi icinde saklanan auth token'i okuyor - logout()
+      // bu token'i temizlemeden ONCE cagrilmali, yoksa yetkisiz kalir.
+      const pushToken = await getStoredPushToken();
+      if (pushToken) {
+        try {
+          await deletePushToken(pushToken);
+        } catch {
+          // sunucuya ulasilamasa bile cikis akisini engellemeyelim
+        }
+        await clearStoredPushToken();
+      }
+      await logout();
+    })();
   }, []);
   const openMenu = useCallback(() => setIsMenuOpen(true), []);
   const closeMenu = useCallback(() => setIsMenuOpen(false), []);
@@ -98,6 +154,7 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
       onboardingiTamamla,
       user,
       enterApp,
+      updateUser,
       previewApp,
       pendingRoute,
       clearPendingRoute,
@@ -116,6 +173,7 @@ export function AppShellProvider({ children }: { children: ReactNode }) {
       onboardingiTamamla,
       user,
       enterApp,
+      updateUser,
       previewApp,
       pendingRoute,
       clearPendingRoute,

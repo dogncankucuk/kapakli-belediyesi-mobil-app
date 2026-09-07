@@ -86,9 +86,12 @@ export const RESOURCE_LABELS: Record<string, string> = {
   vefatEdenler: 'Vefat Edenler',
   atikNoktalari: 'Atık Konumları',
   suHizmetleri: 'Su Hizmetleri',
+  kaziCalismalari: 'Kazı Çalışmaları',
+  elektrikKesintileri: 'Elektrik Kesintileri',
   users: 'Mobil Uygulama Kullanıcıları',
   roles: 'Roller',
   adminUsers: 'Yönetici Kullanıcılar',
+  notifications: 'Bildirim Gönder',
 };
 
 export const RESOURCE_ORDER = Object.keys(RESOURCE_LABELS);
@@ -558,6 +561,28 @@ export interface PlanliKesinti {
   id: string;
   tarih: string;
   ilce: string;
+  aciklama: string;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminKazi {
+  id: string;
+  mahalle: string;
+  baslangicTarihi: string;
+  sureGun: number;
+  saat: string;
+  aciklama: string;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminElektrikKesintisi {
+  id: string;
+  mahalle: string;
+  tarih: string;
   aciklama: string;
   updatedBy: string | null;
   createdAt: string;

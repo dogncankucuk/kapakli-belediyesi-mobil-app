@@ -12,6 +12,9 @@ export type CurrentUser = {
   tcKimlikNo: string | null;
   telefon: string | null;
   eposta: string | null;
+  mahalle: string | null;
+  adres: string | null;
+  profilFotografiUrl: string | null;
 };
 
 type AuthResponse = { token: string; user: CurrentUser };
@@ -105,6 +108,30 @@ export async function getSessionUser(): Promise<CurrentUser | null> {
 
 export function logout(): Promise<void> {
   return clearStoredToken();
+}
+
+export async function updateProfile(patch: {
+  mahalle?: string;
+  adres?: string;
+  profilFotografiBase64?: string;
+}): Promise<CurrentUser> {
+  const token = await getStoredToken();
+  if (!token) throw new Error("Oturum bulunamadı");
+
+  const response = await fetch(`${BASE_URL}/auth/me`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(patch),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  return response.json();
 }
 
 export async function forgotPassword(identifier: string): Promise<string> {

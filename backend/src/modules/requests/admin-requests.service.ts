@@ -5,6 +5,7 @@ import { Model, Types } from 'mongoose';
 import { join } from 'path';
 
 import { UPLOADS_DIR } from '../../uploads-dir';
+import { NotificationsService } from '../notifications/notifications.service';
 import { ListRequestsQueryDto } from './dto/list-requests-query.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { RequestItem, RequestDocument } from './schemas/request.schema';
@@ -52,6 +53,7 @@ export class AdminRequestsService {
   constructor(
     @InjectModel(RequestItem.name)
     private readonly requestModel: Model<RequestDocument>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   // Koleksiyon buyudukce (potansiyel olarak gunde binlerce kayit) "hepsini
@@ -112,6 +114,8 @@ export class AdminRequestsService {
   ): Promise<AdminRequest | null> {
     if (!Types.ObjectId.isValid(id)) return null;
 
+    const oncekiDurum = (await this.requestModel.findById(id).exec())?.durum;
+
     const updatePayload: Record<string, unknown> = { updatedBy };
     if (dto.durum !== undefined) updatePayload.durum = dto.durum;
     if (dto.adminNotu !== undefined) {
@@ -124,7 +128,18 @@ export class AdminRequestsService {
     const doc = await this.requestModel
       .findByIdAndUpdate(id, updatePayload, { new: true })
       .exec();
-    return doc ? this.toAdmin(doc as unknown as TimestampedRequest) : null;
+    if (!doc) return null;
+
+    if (doc.durum !== oncekiDurum && doc.userId) {
+      await this.notificationsService.sendToUser(
+        doc.userId,
+        'talepDurumu',
+        'Talebiniz güncellendi',
+        'Talebinizin durumu güncellendi, detaylar için uygulamayı açın.',
+      );
+    }
+
+    return this.toAdmin(doc as unknown as TimestampedRequest);
   }
 
   async remove(id: string): Promise<boolean> {

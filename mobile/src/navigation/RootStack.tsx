@@ -12,6 +12,9 @@ import BasvuruFormScreen from "../screens/BasvuruFormScreen";
 import BasvuruTuruDetayScreen from "../screens/BasvuruTuruDetayScreen";
 import BasvurularimScreen from "../screens/BasvurularimScreen";
 import BizeUlasinScreen from "../screens/BizeUlasinScreen";
+import ElektrikKesintileriScreen from "../screens/ElektrikKesintileriScreen";
+import ElektrikKesintisiDetayScreen from "../screens/ElektrikKesintisiDetayScreen";
+import ElektrikVeSuKesintileriScreen from "../screens/ElektrikVeSuKesintileriScreen";
 import EngelliYasliHizmetleriScreen from "../screens/EngelliYasliHizmetleriScreen";
 import FaturaOdemeScreen from "../screens/FaturaOdemeScreen";
 import FormlarVeDilekcelerScreen from "../screens/FormlarVeDilekcelerScreen";
@@ -20,6 +23,7 @@ import HaberlerVeEtkinliklerScreen from "../screens/HaberlerVeEtkinliklerScreen"
 import HakkimizdaScreen from "../screens/HakkimizdaScreen";
 import HavaDurumuDetayScreen from "../screens/HavaDurumuDetayScreen";
 import HavaKalitesiDetayScreen from "../screens/HavaKalitesiDetayScreen";
+import KaziDetayScreen from "../screens/KaziDetayScreen";
 import MapScreen from "../screens/MapScreen";
 import MeclisGundemleriScreen from "../screens/MeclisGundemleriScreen";
 import MeclisKararlariScreen from "../screens/MeclisKararlariScreen";
@@ -27,6 +31,7 @@ import NobetciEczanelerScreen from "../screens/NobetciEczanelerScreen";
 import OtobusTakipScreen from "../screens/OtobusTakipScreen";
 import RandevuAlScreen from "../screens/RandevuAlScreen";
 import SuHizmetleriScreen from "../screens/SuHizmetleriScreen";
+import SuKesintisiDetayScreen from "../screens/SuKesintisiDetayScreen";
 import TaleplerimScreen from "../screens/TaleplerimScreen";
 import UlasimHizmetleriScreen from "../screens/UlasimHizmetleriScreen";
 import YardimMerkeziScreen from "../screens/YardimMerkeziScreen";
@@ -54,6 +59,8 @@ const RootStack = createNativeStackNavigator({
     Ayarlar: AyarlarScreen,
     FaturaOdeme: FaturaOdemeScreen,
     SuHizmetleri: SuHizmetleriScreen,
+    ElektrikKesintileri: ElektrikKesintileriScreen,
+    ElektrikVeSuKesintileri: ElektrikVeSuKesintileriScreen,
     RandevuAl: RandevuAlScreen,
     BasvuruForm: BasvuruFormScreen,
     BasvuruTuruDetay: BasvuruTuruDetayScreen,
@@ -73,6 +80,9 @@ const RootStack = createNativeStackNavigator({
     HavaKalitesiDetay: HavaKalitesiDetayScreen,
     HaberlerVeEtkinlikler: HaberlerVeEtkinliklerScreen,
     MeclisKararlari: MeclisKararlariScreen,
+    KaziDetay: KaziDetayScreen,
+    SuKesintisiDetay: SuKesintisiDetayScreen,
+    ElektrikKesintisiDetay: ElektrikKesintisiDetayScreen,
   },
 });
 

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateHaberDto } from './dto/create-haber.dto';
 import { UpdateHaberDto } from './dto/update-haber.dto';
 import { Haber, HaberDocument } from './schemas/haber.schema';
@@ -29,6 +30,7 @@ export class AdminHaberlerService {
   constructor(
     @InjectModel(Haber.name)
     private readonly haberModel: Model<HaberDocument>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(): Promise<AdminHaber[]> {
@@ -52,6 +54,12 @@ export class AdminHaberlerService {
       ...dto,
       updatedBy,
     })) as unknown as TimestampedHaber;
+
+    await this.notificationsService.sendBroadcast(
+      'guncel',
+      created.baslik,
+      'Yeni içerik yayınlandı, incelemek için uygulamayı açın.',
+    );
 
     return this.toAdmin(created);
   }

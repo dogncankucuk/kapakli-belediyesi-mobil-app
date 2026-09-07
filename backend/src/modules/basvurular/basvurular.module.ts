@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { NotificationsModule } from '../notifications/notifications.module';
 import { AdminBasvuruTurleriController } from './admin-basvuru-turleri.controller';
 import { AdminBasvuruTurleriService } from './admin-basvuru-turleri.service';
 import { AdminBasvurularController } from './admin-basvurular.controller';
@@ -18,6 +19,7 @@ import { Basvuru, BasvuruSchema } from './schemas/basvuru.schema';
       { name: BasvuruTuru.name, schema: BasvuruTuruSchema },
       { name: Basvuru.name, schema: BasvuruSchema },
     ]),
+    NotificationsModule,
   ],
   controllers: [
     BasvuruTurleriController,

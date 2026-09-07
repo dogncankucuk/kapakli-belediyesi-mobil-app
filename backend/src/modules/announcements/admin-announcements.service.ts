@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
 import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
 import {
@@ -33,6 +34,7 @@ export class AdminAnnouncementsService {
   constructor(
     @InjectModel(Announcement.name)
     private readonly announcementModel: Model<AnnouncementDocument>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(): Promise<AdminAnnouncement[]> {
@@ -61,6 +63,12 @@ export class AdminAnnouncementsService {
       ...dto,
       updatedBy,
     })) as unknown as TimestampedAnnouncement;
+
+    await this.notificationsService.sendBroadcast(
+      'guncel',
+      created.baslik,
+      'Yeni içerik yayınlandı, incelemek için uygulamayı açın.',
+    );
 
     return this.toAdmin(created);
   }

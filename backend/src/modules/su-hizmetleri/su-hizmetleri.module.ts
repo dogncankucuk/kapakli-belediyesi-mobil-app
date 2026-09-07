@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { NotificationsModule } from '../notifications/notifications.module';
 import { Baraj, BarajSchema } from './schemas/baraj.schema';
 import {
   PlanliKesinti,
@@ -29,6 +30,7 @@ import { SuHizmetleriKaynakService } from './su-hizmetleri-kaynak.service';
       { name: PlanliKesinti.name, schema: PlanliKesintiSchema },
       { name: SuHizmetleriAyarlari.name, schema: SuHizmetleriAyarlariSchema },
     ]),
+    NotificationsModule,
   ],
   controllers: [
     SuHizmetleriController,

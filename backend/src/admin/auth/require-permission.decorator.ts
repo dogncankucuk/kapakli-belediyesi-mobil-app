@@ -26,6 +26,8 @@ export type AdminResource =
   | 'ulasimHatlari'
   | 'atikRehberi'
   | 'suHizmetleri'
+  | 'kaziCalismalari'
+  | 'elektrikKesintileri'
   | 'asevi'
   | 'camiler'
   | 'onemliKurumlar'
@@ -37,7 +39,8 @@ export type AdminResource =
   | 'basvurular'
   | 'users'
   | 'roles'
-  | 'adminUsers';
+  | 'adminUsers'
+  | 'notifications';
 
 // Admin panelin izin matrisi UI'inda kullanilan tam kaynak listesi -
 // PermissionsService.getPermissionMap ve migrasyon script'i de bunu kullanir.
@@ -67,6 +70,8 @@ export const ALL_ADMIN_RESOURCES: AdminResource[] = [
   'ulasimHatlari',
   'atikRehberi',
   'suHizmetleri',
+  'kaziCalismalari',
+  'elektrikKesintileri',
   'asevi',
   'camiler',
   'onemliKurumlar',
@@ -79,6 +84,7 @@ export const ALL_ADMIN_RESOURCES: AdminResource[] = [
   'users',
   'roles',
   'adminUsers',
+  'notifications',
 ];
 export type AdminAction = 'list' | 'show' | 'create' | 'edit' | 'delete';
 

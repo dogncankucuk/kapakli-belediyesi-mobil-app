@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateIhaleDto } from './dto/create-ihale.dto';
 import { UpdateIhaleDto } from './dto/update-ihale.dto';
 import { Ihale, IhaleDocument } from './schemas/ihale.schema';
@@ -29,6 +30,7 @@ export class AdminIhalelerService {
   constructor(
     @InjectModel(Ihale.name)
     private readonly ihaleModel: Model<IhaleDocument>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(): Promise<AdminIhale[]> {
@@ -52,6 +54,12 @@ export class AdminIhalelerService {
       ...dto,
       updatedBy,
     })) as unknown as TimestampedIhale;
+
+    await this.notificationsService.sendBroadcast(
+      'guncel',
+      created.baslik,
+      'Yeni içerik yayınlandı, incelemek için uygulamayı açın.',
+    );
 
     return this.toAdmin(created);
   }

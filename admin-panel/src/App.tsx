@@ -27,6 +27,8 @@ import MeclisKararlariPage from './MeclisKararlariPage';
 import VefatEdenlerPage from './VefatEdenlerPage';
 import WifiNoktalariPage from './WifiNoktalariPage';
 import SuHizmetleriPage from './SuHizmetleriPage';
+import FenIsleriPage from './FenIsleriPage';
+import ElektrikPage from './ElektrikPage';
 import AseviPage from './AseviPage';
 import CamilerPage from './CamilerPage';
 import OnemliKurumlarPage from './OnemliKurumlarPage';
@@ -40,6 +42,7 @@ import MapEditorPage from './MapEditorPage';
 import UsersPage from './UsersPage';
 import RolesPage from './RolesPage';
 import AdminUsersPage from './AdminUsersPage';
+import NotificationsPage from './NotificationsPage';
 import './App.css';
 
 import {
@@ -301,6 +304,8 @@ function App() {
         {page === 'vefatEdenler' && <VefatEdenlerPage canManage={canManage('vefatEdenler')} />}
         {page === 'wifiNoktalari' && <WifiNoktalariPage canManage={canManage('wifiNoktalari')} />}
         {page === 'suHizmetleri' && <SuHizmetleriPage canManage={canManage('suHizmetleri')} />}
+        {page === 'fenIsleri' && <FenIsleriPage canManage={canManage('kaziCalismalari')} />}
+        {page === 'elektrik' && <ElektrikPage canManage={canManage('elektrikKesintileri')} />}
         {page === 'asevi' && <AseviPage canManage={canManage('asevi')} />}
         {page === 'camiler' && <CamilerPage canManage={canManage('camiler')} />}
         {page === 'onemliKurumlar' && (
@@ -324,6 +329,9 @@ function App() {
         {page === 'users' && <UsersPage canManage={canManage('users')} />}
         {page === 'roles' && <RolesPage canManage={canManage('roles')} />}
         {page === 'adminUsers' && <AdminUsersPage canManage={canManage('adminUsers')} />}
+        {page === 'notifications' && (
+          <NotificationsPage canManage={canManage('notifications')} />
+        )}
       </main>
     </div>
   );

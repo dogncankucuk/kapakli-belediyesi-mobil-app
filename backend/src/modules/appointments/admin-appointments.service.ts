@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+import { NotificationsService } from '../notifications/notifications.service';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { Appointment, AppointmentDocument } from './schemas/appointment.schema';
 
@@ -27,6 +28,7 @@ export class AdminAppointmentsService {
   constructor(
     @InjectModel(Appointment.name)
     private readonly appointmentModel: Model<AppointmentDocument>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(): Promise<AdminAppointment[]> {
@@ -50,10 +52,28 @@ export class AdminAppointmentsService {
   ): Promise<AdminAppointment | null> {
     if (!Types.ObjectId.isValid(id)) return null;
 
+    const oncekiDurum = (await this.appointmentModel.findById(id).exec())
+      ?.durum;
+
     const doc = await this.appointmentModel
       .findByIdAndUpdate(id, { ...dto, updatedBy }, { new: true })
       .exec();
-    return doc ? this.toAdmin(doc as unknown as TimestampedAppointment) : null;
+    if (!doc) return null;
+
+    if (doc.durum !== oncekiDurum && doc.userId) {
+      const govde =
+        doc.durum === 'onaylandi'
+          ? 'Randevunuz onaylandı, detaylar için uygulamayı açın.'
+          : 'Randevunuzun durumu güncellendi, detaylar için uygulamayı açın.';
+      await this.notificationsService.sendToUser(
+        doc.userId,
+        'randevu',
+        'Randevunuz güncellendi',
+        govde,
+      );
+    }
+
+    return this.toAdmin(doc as unknown as TimestampedAppointment);
   }
 
   private toAdmin(doc: TimestampedAppointment): AdminAppointment {

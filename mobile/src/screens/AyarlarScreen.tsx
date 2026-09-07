@@ -1,11 +1,27 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useMemo, useState } from "react";
-import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { deletePushToken, registerPushToken } from "../api/notifications";
 import { Card } from "../components";
+import { KvkkMetniContent } from "../components/KvkkMetniContent";
 import { useTranslation } from "../i18n/LocaleContext";
+import {
+  clearStoredPushToken,
+  getStoredPushToken,
+  requestPermissionsAndGetToken,
+  setStoredPushToken,
+} from "../services/pushNotifications";
 import { Colors, shape, spacing, typography, useTheme } from "../theme";
 
 export default function AyarlarScreen() {
@@ -13,7 +29,31 @@ export default function AyarlarScreen() {
   const { locale, setLocale, t } = useTranslation();
   const { mode, setMode, colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [kvkkModalVisible, setKvkkModalVisible] = useState(false);
+
+  useEffect(() => {
+    getStoredPushToken().then((token) => setNotificationsEnabled(!!token));
+  }, []);
+
+  async function handleNotificationsToggle(value: boolean) {
+    setNotificationsEnabled(value);
+    if (value) {
+      const token = await requestPermissionsAndGetToken();
+      if (!token) {
+        setNotificationsEnabled(false);
+        return;
+      }
+      await setStoredPushToken(token);
+      await registerPushToken(token, Platform.OS as "ios" | "android");
+    } else {
+      const token = await getStoredPushToken();
+      if (token) {
+        await deletePushToken(token);
+        await clearStoredPushToken();
+      }
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -157,7 +197,7 @@ export default function AyarlarScreen() {
           </Text>
           <Card style={styles.notificationCard}>
             <View style={styles.notificationText}>
-              <Text style={styles.optionLabel}>
+              <Text style={styles.notificationTitle}>
                 {t("ayarlar_pushNotifications")}
               </Text>
               <Text style={styles.notificationSubtitle}>
@@ -166,7 +206,7 @@ export default function AyarlarScreen() {
             </View>
             <Switch
               value={notificationsEnabled}
-              onValueChange={setNotificationsEnabled}
+              onValueChange={(value) => void handleNotificationsToggle(value)}
               trackColor={{
                 false: colors.outlineVariant,
                 true: colors.secondaryContainer,
@@ -178,7 +218,10 @@ export default function AyarlarScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t("ayarlar_supportSection")}</Text>
-          <Pressable accessibilityRole="button">
+          <Pressable
+            onPress={() => setKvkkModalVisible(true)}
+            accessibilityRole="button"
+          >
             <Card style={styles.linkCard}>
               <MaterialIcons
                 name="privacy-tip"
@@ -211,6 +254,14 @@ export default function AyarlarScreen() {
           </Pressable>
         </View>
       </View>
+
+      <Modal
+        visible={kvkkModalVisible}
+        animationType="slide"
+        onRequestClose={() => setKvkkModalVisible(false)}
+      >
+        <KvkkMetniContent onBack={() => setKvkkModalVisible(false)} />
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -299,6 +350,11 @@ const createStyles = (colors: Colors) =>
     },
     notificationText: {
       flex: 1,
+      gap: 2,
+    },
+    notificationTitle: {
+      ...typography.bodyMd,
+      color: colors.onBackground,
     },
     notificationSubtitle: {
       ...typography.labelSm,

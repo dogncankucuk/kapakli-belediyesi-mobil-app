@@ -22,6 +22,7 @@ import { createBasvuru } from "../api/basvurular";
 import { BasvuruTuru } from "../api/types";
 import { Card, PrimaryButton } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
+import { useAppShell } from "../navigation/AppShellContext";
 import { basvuruIdEkle } from "../storage/basvuruStorage";
 import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
 
@@ -37,6 +38,7 @@ export default function BasvuruFormScreen() {
   const { t } = useTranslation();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const { user } = useAppShell();
 
   const [kimlikNo, setKimlikNo] = useState("");
   const [adSoyad, setAdSoyad] = useState("");
@@ -267,6 +269,7 @@ export default function BasvuruFormScreen() {
             ): belge is { etiket: string; base64: string; mimeType: string } =>
               belge !== null,
           ),
+        userId: user?.id ?? null,
       });
       await basvuruIdEkle(basvuru.id);
       Alert.alert(t("basvuruForm_successTitle"), t("basvuruForm_successMessage"));

@@ -53,6 +53,21 @@ export class User {
 
   @Prop({ default: 0 })
   passwordResetAttempts: number;
+
+  // Kategori bazinda bildirim acik/kapali tercihi. Bir kategori burada
+  // bulunmuyorsa varsayilan acik kabul edilir (bkz. NotificationsService -
+  // "!== false" kontrolu).
+  @Prop({ type: Object, default: {} })
+  bildirimTercihleri: Record<string, boolean>;
+
+  @Prop({ trim: true })
+  mahalle?: string;
+
+  @Prop({ trim: true })
+  adres?: string;
+
+  @Prop()
+  profilFotografiUrl?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

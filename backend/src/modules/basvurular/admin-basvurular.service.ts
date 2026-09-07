@@ -5,6 +5,7 @@ import { Model, Types } from 'mongoose';
 import { join } from 'path';
 
 import { UPLOADS_DIR } from '../../uploads-dir';
+import { NotificationsService } from '../notifications/notifications.service';
 import { UpdateBasvuruDto } from './dto/update-basvuru.dto';
 import {
   Basvuru,
@@ -44,6 +45,7 @@ export class AdminBasvurularService {
   constructor(
     @InjectModel(Basvuru.name)
     private readonly basvuruModel: Model<BasvuruDocument>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(): Promise<AdminBasvuru[]> {
@@ -69,6 +71,8 @@ export class AdminBasvurularService {
   ): Promise<AdminBasvuru | null> {
     if (!Types.ObjectId.isValid(id)) return null;
 
+    const oncekiDurum = (await this.basvuruModel.findById(id).exec())?.durum;
+
     const updatePayload: Record<string, unknown> = { updatedBy };
 
     if (dto.durum !== undefined) {
@@ -91,7 +95,18 @@ export class AdminBasvurularService {
     const doc = await this.basvuruModel
       .findByIdAndUpdate(id, updatePayload, { new: true })
       .exec();
-    return doc ? this.toAdmin(doc as unknown as TimestampedBasvuru) : null;
+    if (!doc) return null;
+
+    if (doc.durum !== oncekiDurum && doc.userId) {
+      await this.notificationsService.sendToUser(
+        doc.userId,
+        'basvuruDurumu',
+        'Başvurunuz güncellendi',
+        'Başvurunuzun durumu güncellendi, detaylar için uygulamayı açın.',
+      );
+    }
+
+    return this.toAdmin(doc as unknown as TimestampedBasvuru);
   }
 
   async remove(id: string): Promise<boolean> {
