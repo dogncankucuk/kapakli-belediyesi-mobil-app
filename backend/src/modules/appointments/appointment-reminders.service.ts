@@ -9,10 +9,12 @@ import { Appointment, AppointmentDocument } from './schemas/appointment.schema';
 const ISTANBUL_UTC_OFFSET_SAAT = 3; // Europe/Istanbul 2016'dan beri yaz saati uygulamiyor, sabit UTC+3.
 const YIRMI_DORT_SAAT_MS = 24 * 60 * 60 * 1000;
 // "iptal"/"reddedildi" gibi bir son-durum kavraminin appointments'ta sabit
-// bir enum'u yok (durum admin panelde serbest metin, bkz. AppointmentsPage.tsx) -
-// bu yuzden bilinen aktif durumlari allowlist'e aliyoruz, olceksiz bir
-// durum degeri (iptal vb.) otomatik olarak disarida kaliyor.
-const HATIRLATMA_GONDERILECEK_DURUMLAR = ['beklemede', 'onaylandi'];
+// bir enum'u yok (durum admin panelde serbest metin, bkz. AppointmentsPage.tsx).
+// Allowlist yerine denylist kullaniliyor - admin "Onaylandi"/"onaylandı" gibi
+// varyasyonlar yazsa bile hatirlatma sessizce durmasin diye, sadece bilinen
+// iptal/red kelimelerini (buyuk/kucuk harf ve Turkce karakter farkindan
+// bagimsiz) iceren durumlar disarida birakiliyor, geri kalan HER SEY dahil.
+const HATIRLATMA_DISLANACAK_DURUM_DESENI = /iptal|red/i;
 
 // Mobilde su an randevu olusturma akisi canli degil, bu cron ileride akis
 // acilinca devreye girecek - bu normal, hata degil.
@@ -63,7 +65,7 @@ export class AppointmentRemindersService {
     const adaylar = await this.appointmentModel
       .find({
         hatirlatmaGonderildiMi: { $ne: true },
-        durum: { $in: HATIRLATMA_GONDERILECEK_DURUMLAR },
+        durum: { $not: HATIRLATMA_DISLANACAK_DURUM_DESENI },
         tarih: {
           $gte: new Date(simdi.getTime() - YIRMI_DORT_SAAT_MS),
           $lte: new Date(simdi.getTime() + YIRMI_DORT_SAAT_MS),

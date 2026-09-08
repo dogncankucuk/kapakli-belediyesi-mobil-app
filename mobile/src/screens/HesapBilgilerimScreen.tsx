@@ -81,22 +81,34 @@ export default function HesapBilgilerimScreen() {
     }
   }
 
+  // Stale-closure'dan kacinmak icin "sunucuda bilinen son deger" ve "en son
+  // yazilan deger" birer ref'te tutuluyor - unmount/debounce gibi gecikmeli
+  // callback'ler her zaman GUNCEL degerleri okusun diye (React state/context
+  // closure'lari degil).
   const adresRef = useRef(adres);
+  const sonKaydedilenAdresRef = useRef(user?.adres ?? "");
   const adresDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     adresRef.current = adres;
   }, [adres]);
 
+  useEffect(() => {
+    sonKaydedilenAdresRef.current = user?.adres ?? "";
+  }, [user?.adres]);
+
   async function saveAdres(deger: string) {
-    if (!user || deger === (user.adres ?? "")) return;
+    if (deger === sonKaydedilenAdresRef.current) return;
+    const oncekiDeger = sonKaydedilenAdresRef.current;
+    sonKaydedilenAdresRef.current = deger;
     try {
       const updatedUser = await updateProfile({ adres: deger });
       updateUser(updatedUser);
     } catch (err) {
+      sonKaydedilenAdresRef.current = oncekiDeger;
       const mesaj = err instanceof Error ? err.message : "Bir hata oluştu";
       Alert.alert("Hata", mesaj);
-      setAdres(user.adres ?? "");
+      setAdres(oncekiDeger);
     }
   }
 
@@ -115,7 +127,8 @@ export default function HesapBilgilerimScreen() {
   useEffect(() => {
     return () => {
       // Ekran kapanirken bekleyen bir degisiklik varsa son kez kaydetmeyi dene.
-      if (user && adresRef.current !== (user.adres ?? "")) {
+      if (adresRef.current !== sonKaydedilenAdresRef.current) {
+        sonKaydedilenAdresRef.current = adresRef.current;
         void updateProfile({ adres: adresRef.current }).catch(() => {});
       }
     };

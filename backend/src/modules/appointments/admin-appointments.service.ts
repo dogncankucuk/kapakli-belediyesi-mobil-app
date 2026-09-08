@@ -52,13 +52,23 @@ export class AdminAppointmentsService {
   ): Promise<AdminAppointment | null> {
     if (!Types.ObjectId.isValid(id)) return null;
 
-    const oncekiDurum = (await this.appointmentModel.findById(id).exec())
-      ?.durum;
+    const oncekiKayit = await this.appointmentModel.findById(id).exec();
+    const oncekiDurum = oncekiKayit?.durum;
 
     const updatePayload: Record<string, unknown> = { ...dto, updatedBy };
-    // Randevu ileri/farkli bir tarihe alinirsa eski hatirlatma gonderilmis
-    // olsa bile yeni tarih icin tekrar hatirlatma gitmeli.
-    if (dto.tarih !== undefined || dto.saat !== undefined) {
+    // Randevu GERCEKTEN farkli bir tarih/saate alinirsa eski hatirlatma
+    // gonderilmis olsa bile yeniden gitmeli - ama admin formu her kaydetmede
+    // tarih+saat'i degismese bile birlikte gonderdigi icin, sadece alanin
+    // PATCH'te bulunmasina degil GERCEKTEN degismis olmasina bakiyoruz
+    // (aksi halde her durum-only guncellemede bayrak sifirlanip mukerrer
+    // hatirlatma push'u atiliyordu).
+    const tarihDegisti =
+      dto.tarih !== undefined &&
+      oncekiKayit &&
+      new Date(dto.tarih).getTime() !== oncekiKayit.tarih.getTime();
+    const saatDegisti =
+      dto.saat !== undefined && oncekiKayit && dto.saat !== oncekiKayit.saat;
+    if (tarihDegisti || saatDegisti) {
       updatePayload.hatirlatmaGonderildiMi = false;
     }
 
