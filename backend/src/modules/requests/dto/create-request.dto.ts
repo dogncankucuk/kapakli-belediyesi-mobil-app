@@ -83,8 +83,4 @@ export class CreateRequestDto {
   @Min(0)
   @Max(3)
   yogunluk?: number;
-
-  @IsOptional()
-  @IsString()
-  userId?: string | null;
 }

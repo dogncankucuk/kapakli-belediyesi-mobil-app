@@ -55,8 +55,15 @@ export class AdminAppointmentsService {
     const oncekiDurum = (await this.appointmentModel.findById(id).exec())
       ?.durum;
 
+    const updatePayload: Record<string, unknown> = { ...dto, updatedBy };
+    // Randevu ileri/farkli bir tarihe alinirsa eski hatirlatma gonderilmis
+    // olsa bile yeni tarih icin tekrar hatirlatma gitmeli.
+    if (dto.tarih !== undefined || dto.saat !== undefined) {
+      updatePayload.hatirlatmaGonderildiMi = false;
+    }
+
     const doc = await this.appointmentModel
-      .findByIdAndUpdate(id, { ...dto, updatedBy }, { new: true })
+      .findByIdAndUpdate(id, updatePayload, { new: true })
       .exec();
     if (!doc) return null;
 

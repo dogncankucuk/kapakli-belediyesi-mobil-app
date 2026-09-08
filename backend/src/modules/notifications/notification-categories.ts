@@ -12,7 +12,7 @@ export const SISTEM_BILDIRIM_KATEGORILERI = [
   'randevu',
 ] as const;
 
-// İleride kullanılacak, henüz hiçbir modülden gönderilmeyen kategoriler.
+// Kazı/su/elektrik kesintisi modüllerinden sendToMahalle ile gönderilir.
 export const PLANLANAN_BILDIRIM_KATEGORILERI = [
   'kaziCalismasi',
   'suKesintisi',

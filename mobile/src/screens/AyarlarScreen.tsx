@@ -2,6 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useEffect, useMemo, useState } from "react";
 import {
+  Alert,
   Modal,
   Platform,
   Pressable,
@@ -20,6 +21,7 @@ import {
   clearStoredPushToken,
   getStoredPushToken,
   requestPermissionsAndGetToken,
+  setNotificationsDisabledByUser,
   setStoredPushToken,
 } from "../services/pushNotifications";
 import { Colors, shape, spacing, typography, useTheme } from "../theme";
@@ -38,20 +40,28 @@ export default function AyarlarScreen() {
 
   async function handleNotificationsToggle(value: boolean) {
     setNotificationsEnabled(value);
-    if (value) {
-      const token = await requestPermissionsAndGetToken();
-      if (!token) {
-        setNotificationsEnabled(false);
-        return;
+    try {
+      if (value) {
+        const token = await requestPermissionsAndGetToken();
+        if (!token) {
+          setNotificationsEnabled(false);
+          return;
+        }
+        await setStoredPushToken(token);
+        await registerPushToken(token, Platform.OS as "ios" | "android");
+        await setNotificationsDisabledByUser(false);
+      } else {
+        const token = await getStoredPushToken();
+        if (token) {
+          await deletePushToken(token);
+          await clearStoredPushToken();
+        }
+        await setNotificationsDisabledByUser(true);
       }
-      await setStoredPushToken(token);
-      await registerPushToken(token, Platform.OS as "ios" | "android");
-    } else {
-      const token = await getStoredPushToken();
-      if (token) {
-        await deletePushToken(token);
-        await clearStoredPushToken();
-      }
+    } catch (err) {
+      setNotificationsEnabled(!value);
+      const mesaj = err instanceof Error ? err.message : "Bir hata oluştu";
+      Alert.alert("Hata", mesaj);
     }
   }
 

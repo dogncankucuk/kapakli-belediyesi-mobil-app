@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, QueryFilter, Types } from 'mongoose';
 
@@ -25,6 +25,8 @@ function iliskiliData(
 
 @Injectable()
 export class NotificationsService {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(
     @InjectModel(Notification.name)
     private readonly notificationModel: Model<NotificationDocument>,
@@ -55,6 +57,8 @@ export class NotificationsService {
 
   // govde asla hassas veri icermemeli (TCKN, talep no, red sebebi vb.) -
   // bu metodu cagiran kod her zaman genel/anonim metin gecmelidir.
+  // userId disaridan (ör. eski/bozuk bir kayittan) gecersiz gelebilir -
+  // findById'nin CastError firlatmasini onlemek icin once formatini dogrula.
   async sendToUser(
     userId: string,
     kategori: string,
@@ -63,27 +67,36 @@ export class NotificationsService {
     iliskiliTip?: string,
     iliskiliId?: string,
   ): Promise<void> {
-    const user = await this.userModel.findById(userId).exec();
-    if (!user || user.bildirimTercihleri?.[kategori] === false) {
-      return;
+    if (!userId || !Types.ObjectId.isValid(userId)) return;
+
+    try {
+      const user = await this.userModel
+        .findById(userId)
+        .select('_id bildirimTercihleri')
+        .exec();
+      if (!user || user.bildirimTercihleri?.[kategori] === false) {
+        return;
+      }
+
+      await this.notificationModel.create({
+        userId,
+        kategori,
+        baslik,
+        govde,
+        iliskiliTip: iliskiliTip ?? null,
+        iliskiliId: iliskiliId ?? null,
+      });
+
+      const tokens = await this.pushTokenModel.find({ userId }).exec();
+      await this.pushService.sendToTokens(
+        tokens.map((t) => t.token),
+        baslik,
+        govde,
+        iliskiliData(iliskiliTip, iliskiliId),
+      );
+    } catch (err) {
+      this.logger.error('sendToUser basarisiz', err as Error);
     }
-
-    await this.notificationModel.create({
-      userId,
-      kategori,
-      baslik,
-      govde,
-      iliskiliTip: iliskiliTip ?? null,
-      iliskiliId: iliskiliId ?? null,
-    });
-
-    const tokens = await this.pushTokenModel.find({ userId }).exec();
-    await this.pushService.sendToTokens(
-      tokens.map((t) => t.token),
-      baslik,
-      govde,
-      iliskiliData(iliskiliTip, iliskiliId),
-    );
   }
 
   // govde asla hassas veri icermemeli (bkz. sendToUser). Kullanici sayisi
@@ -99,11 +112,13 @@ export class NotificationsService {
     let lastId: Types.ObjectId | undefined;
 
     for (;;) {
-      const filter: QueryFilter<UserDocument> = lastId
-        ? { _id: { $gt: lastId } }
-        : {};
+      const filter: QueryFilter<UserDocument> = {
+        disabled: { $ne: true },
+        ...(lastId ? { _id: { $gt: lastId } } : {}),
+      };
       const batch = await this.userModel
         .find(filter)
+        .select('_id bildirimTercihleri')
         .sort({ _id: 1 })
         .limit(BATCH_SIZE)
         .exec();
@@ -111,21 +126,85 @@ export class NotificationsService {
       if (batch.length === 0) break;
       lastId = batch[batch.length - 1]._id;
 
-      const kabulEdenler = batch.filter(
-        (user) => user.bildirimTercihleri?.[kategori] !== false,
-      );
+      try {
+        const kabulEdenler = batch.filter(
+          (user) => user.bildirimTercihleri?.[kategori] !== false,
+        );
 
-      if (kabulEdenler.length > 0) {
-        const userIds = kabulEdenler.map((u) => u._id.toString());
+        if (kabulEdenler.length > 0) {
+          const userIds = kabulEdenler.map((u) => u._id.toString());
+
+          await this.notificationModel.insertMany(
+            userIds.map((userId) => ({
+              userId,
+              kategori,
+              baslik,
+              govde,
+              iliskiliTip: iliskiliTip ?? null,
+              iliskiliId: iliskiliId ?? null,
+            })),
+          );
+
+          const tokens = await this.pushTokenModel
+            .find({ userId: { $in: userIds } })
+            .exec();
+          await this.pushService.sendToTokens(
+            tokens.map((t) => t.token),
+            baslik,
+            govde,
+            iliskiliData(iliskiliTip, iliskiliId),
+          );
+        }
+      } catch (err) {
+        this.logger.error('sendBroadcast batch basarisiz', err as Error);
+      }
+
+      if (batch.length < BATCH_SIZE) break;
+    }
+  }
+
+  // Admin panelden birden fazla kategori secilerek gonderilen bildirimlerde
+  // ayni kullaniciya (birden fazla kategoriye aciksa) tekrar tekrar
+  // gonderilmesini onlemek icin sendBroadcast'ten ayri: kullanici sorgusu
+  // "en az bir kategori kapatilmamis" mantigiyla TEK Mongo sorgusunda ($or)
+  // yapilir, her kullaniciya sadece bir kez gonderilir.
+  async sendBroadcastToAnyCategory(
+    kategoriler: string[],
+    baslik: string,
+    govde: string,
+  ): Promise<void> {
+    if (kategoriler.length === 0) return;
+
+    const kategoriEtiketi = kategoriler.join(',');
+    let lastId: Types.ObjectId | undefined;
+
+    for (;;) {
+      const filter: QueryFilter<UserDocument> = {
+        disabled: { $ne: true },
+        $or: kategoriler.map((kategori) => ({
+          [`bildirimTercihleri.${kategori}`]: { $ne: false },
+        })),
+        ...(lastId ? { _id: { $gt: lastId } } : {}),
+      };
+      const batch = await this.userModel
+        .find(filter)
+        .select('_id')
+        .sort({ _id: 1 })
+        .limit(BATCH_SIZE)
+        .exec();
+
+      if (batch.length === 0) break;
+      lastId = batch[batch.length - 1]._id;
+
+      try {
+        const userIds = batch.map((u) => u._id.toString());
 
         await this.notificationModel.insertMany(
           userIds.map((userId) => ({
             userId,
-            kategori,
+            kategori: kategoriEtiketi,
             baslik,
             govde,
-            iliskiliTip: iliskiliTip ?? null,
-            iliskiliId: iliskiliId ?? null,
           })),
         );
 
@@ -136,7 +215,11 @@ export class NotificationsService {
           tokens.map((t) => t.token),
           baslik,
           govde,
-          iliskiliData(iliskiliTip, iliskiliId),
+        );
+      } catch (err) {
+        this.logger.error(
+          'sendBroadcastToAnyCategory batch basarisiz',
+          err as Error,
         );
       }
 
@@ -159,11 +242,14 @@ export class NotificationsService {
     let lastId: Types.ObjectId | undefined;
 
     for (;;) {
-      const filter: QueryFilter<UserDocument> = lastId
-        ? { mahalle, _id: { $gt: lastId } }
-        : { mahalle };
+      const filter: QueryFilter<UserDocument> = {
+        mahalle,
+        disabled: { $ne: true },
+        ...(lastId ? { _id: { $gt: lastId } } : {}),
+      };
       const batch = await this.userModel
         .find(filter)
+        .select('_id bildirimTercihleri')
         .sort({ _id: 1 })
         .limit(BATCH_SIZE)
         .exec();
@@ -171,33 +257,37 @@ export class NotificationsService {
       if (batch.length === 0) break;
       lastId = batch[batch.length - 1]._id;
 
-      const kabulEdenler = batch.filter(
-        (user) => user.bildirimTercihleri?.[kategori] !== false,
-      );
+      try {
+        const kabulEdenler = batch.filter(
+          (user) => user.bildirimTercihleri?.[kategori] !== false,
+        );
 
-      if (kabulEdenler.length > 0) {
-        const userIds = kabulEdenler.map((u) => u._id.toString());
+        if (kabulEdenler.length > 0) {
+          const userIds = kabulEdenler.map((u) => u._id.toString());
 
-        await this.notificationModel.insertMany(
-          userIds.map((userId) => ({
-            userId,
-            kategori,
+          await this.notificationModel.insertMany(
+            userIds.map((userId) => ({
+              userId,
+              kategori,
+              baslik,
+              govde,
+              iliskiliTip: iliskiliTip ?? null,
+              iliskiliId: iliskiliId ?? null,
+            })),
+          );
+
+          const tokens = await this.pushTokenModel
+            .find({ userId: { $in: userIds } })
+            .exec();
+          await this.pushService.sendToTokens(
+            tokens.map((t) => t.token),
             baslik,
             govde,
-            iliskiliTip: iliskiliTip ?? null,
-            iliskiliId: iliskiliId ?? null,
-          })),
-        );
-
-        const tokens = await this.pushTokenModel
-          .find({ userId: { $in: userIds } })
-          .exec();
-        await this.pushService.sendToTokens(
-          tokens.map((t) => t.token),
-          baslik,
-          govde,
-          iliskiliData(iliskiliTip, iliskiliId),
-        );
+            iliskiliData(iliskiliTip, iliskiliId),
+          );
+        }
+      } catch (err) {
+        this.logger.error('sendToMahalle batch basarisiz', err as Error);
       }
 
       if (batch.length < BATCH_SIZE) break;

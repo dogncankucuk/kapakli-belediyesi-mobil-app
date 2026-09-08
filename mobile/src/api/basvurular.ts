@@ -1,3 +1,4 @@
+import { getStoredToken } from "./authStorage";
 import { BASE_URL, resolveMediaUrl } from "./client";
 import { Basvuru, BasvuruTuru, CreateBasvuruBody } from "./types";
 
@@ -30,9 +31,16 @@ export async function getBasvuruTurleri(): Promise<BasvuruTuru[]> {
 export async function createBasvuru(
   body: CreateBasvuruBody,
 ): Promise<Basvuru> {
+  // Oturum acik olan kullanicinin basvurusu kendi hesabina baglanabilsin diye
+  // (durum degisikligi bildirimi icin) - token yoksa misafir akisi olarak
+  // Authorization header'i olmadan gonderilir, backend bunu userId=null kabul eder.
+  const token = await getStoredToken();
   const response = await fetch(`${BASE_URL}/basvurular`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: JSON.stringify(body),
   });
 

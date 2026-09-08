@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { createKazi, deleteKazi, getKaziCalismalari, updateKazi } from './api';
 import type { KaziInput } from './api';
+import { KAPAKLI_MAHALLELERI } from './constants/mahalleler';
 import { bugununTarihi } from './tarih';
 import TelefonOnizleme from './TelefonOnizleme';
 import type { AdminKazi } from './types';
@@ -100,12 +101,18 @@ function FenIsleriPage({ canManage }: Props) {
           <h3>Yeni Kazı Çalışması</h3>
           <label>
             Mahalle
-            <input
+            <select
               value={form.mahalle}
               onChange={(e) => setForm({ ...form, mahalle: e.target.value })}
-              placeholder="Lütfen veri girişi yapınız"
               required
-            />
+            >
+              <option value="">Mahalle seçiniz</option>
+              {KAPAKLI_MAHALLELERI.map((mahalle) => (
+                <option key={mahalle} value={mahalle}>
+                  {mahalle}
+                </option>
+              ))}
+            </select>
           </label>
           <label>
             Başlangıç Tarihi
@@ -172,10 +179,17 @@ function FenIsleriPage({ canManage }: Props) {
                     <div className="edit-row">
                       <label>
                         Mahalle
-                        <input
+                        <select
                           value={editForm.mahalle}
                           onChange={(e) => setEditForm({ ...editForm, mahalle: e.target.value })}
-                        />
+                        >
+                          <option value="">Mahalle seçiniz</option>
+                          {KAPAKLI_MAHALLELERI.map((mahalle) => (
+                            <option key={mahalle} value={mahalle}>
+                              {mahalle}
+                            </option>
+                          ))}
+                        </select>
                       </label>
                       <label>
                         Başlangıç Tarihi

@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActionSheetIOS,
   Alert,
@@ -81,16 +81,50 @@ export default function HesapBilgilerimScreen() {
     }
   }
 
-  async function handleAdresBlur() {
-    if (!user || adres === (user.adres ?? "")) return;
+  const adresRef = useRef(adres);
+  const adresDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    adresRef.current = adres;
+  }, [adres]);
+
+  async function saveAdres(deger: string) {
+    if (!user || deger === (user.adres ?? "")) return;
     try {
-      const updatedUser = await updateProfile({ adres });
+      const updatedUser = await updateProfile({ adres: deger });
       updateUser(updatedUser);
     } catch (err) {
       const mesaj = err instanceof Error ? err.message : "Bir hata oluştu";
       Alert.alert("Hata", mesaj);
       setAdres(user.adres ?? "");
     }
+  }
+
+  // onBlur Android'de donanim geri tusu gibi bazi odak-kaybi senaryolarinda
+  // guvenilir sekilde tetiklenmiyor - yazma durduktan kisa sure sonra
+  // otomatik kaydeden bir debounce ile yedekleniyor.
+  useEffect(() => {
+    const zamanlayici = setTimeout(() => {
+      void saveAdres(adres);
+    }, 800);
+    adresDebounceRef.current = zamanlayici;
+    return () => clearTimeout(zamanlayici);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adres]);
+
+  useEffect(() => {
+    return () => {
+      // Ekran kapanirken bekleyen bir degisiklik varsa son kez kaydetmeyi dene.
+      if (user && adresRef.current !== (user.adres ?? "")) {
+        void updateProfile({ adres: adresRef.current }).catch(() => {});
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function handleAdresBlur() {
+    if (adresDebounceRef.current) clearTimeout(adresDebounceRef.current);
+    void saveAdres(adres);
   }
 
   async function handleFotografYukle(base64: string) {
@@ -328,6 +362,7 @@ export default function HesapBilgilerimScreen() {
                 onBlur={handleAdresBlur}
                 placeholder="Adres giriniz"
                 placeholderTextColor={colors.outline}
+                maxLength={500}
                 multiline
               />
             </View>

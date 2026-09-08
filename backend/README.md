@@ -76,7 +76,7 @@ Aşağıdaki uç noktalar auth gerektirmez (misafir erişimi) ve mobil uygulaman
 | Uç nokta | Açıklama |
 |---|---|
 | `GET /announcements` | Yayınlanmış duyuru/haber listesini döner |
-| `POST /appointments` | Yeni randevu talebi oluşturur (`hizmetTuru`, `tarih`, `saat`, opsiyonel `userId`) |
+| `POST /appointments` | Yeni randevu talebi oluşturur (`hizmetTuru`, `tarih`, `saat`); `userId` istemciden alınmaz — geçerli bir JWT varsa `OptionalJwtAuthGuard` üzerinden token'dan türetilir, yoksa misafir randevusu olarak `null` kalır |
 
 > Not: Bu uç noktalarda henüz rate limiting yok — production öncesi eklenmesi gereken bilinen bir eksik (bkz. `architecture.md` §10).
 

@@ -23,12 +23,15 @@ export class AppointmentsService {
     private readonly appointmentModel: Model<AppointmentDocument>,
   ) {}
 
-  async create(dto: CreateAppointmentDto): Promise<PublicAppointment> {
+  async create(
+    dto: CreateAppointmentDto,
+    userId: string | null,
+  ): Promise<PublicAppointment> {
     const created = (await this.appointmentModel.create({
       hizmetTuru: dto.hizmetTuru,
       tarih: dto.tarih,
       saat: dto.saat,
-      userId: dto.userId ?? null,
+      userId,
       durum: 'beklemede',
     })) as unknown as AppointmentDocument & {
       createdAt: Date;

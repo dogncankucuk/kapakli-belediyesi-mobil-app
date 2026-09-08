@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import Expo from 'expo-server-sdk';
 
 import { JwtAuthGuard } from '../users/jwt-auth.guard';
 import type { AuthenticatedRequest } from '../users/jwt-auth.guard';
@@ -15,6 +24,9 @@ export class PushTokensController {
     @Body() dto: RegisterPushTokenDto,
     @Req() request: AuthenticatedRequest,
   ): Promise<void> {
+    if (!Expo.isExpoPushToken(dto.token)) {
+      throw new BadRequestException('Gecersiz push token formati');
+    }
     return this.notificationsService.registerPushToken(
       request.userId,
       dto.token,

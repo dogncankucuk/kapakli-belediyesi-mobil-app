@@ -5,6 +5,7 @@ import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
 const PUSH_TOKEN_KEY = "@kapakli/push_token";
+const NOTIFICATIONS_DISABLED_BY_USER_KEY = "notifications_disabled_by_user";
 
 export function getStoredPushToken(): Promise<string | null> {
   return AsyncStorage.getItem(PUSH_TOKEN_KEY);
@@ -16,6 +17,20 @@ export function setStoredPushToken(token: string): Promise<void> {
 
 export function clearStoredPushToken(): Promise<void> {
   return AsyncStorage.removeItem(PUSH_TOKEN_KEY);
+}
+
+export function setNotificationsDisabledByUser(
+  disabled: boolean,
+): Promise<void> {
+  return AsyncStorage.setItem(
+    NOTIFICATIONS_DISABLED_BY_USER_KEY,
+    disabled ? "true" : "false",
+  );
+}
+
+export async function getNotificationsDisabledByUser(): Promise<boolean> {
+  const value = await AsyncStorage.getItem(NOTIFICATIONS_DISABLED_BY_USER_KEY);
+  return value === "true";
 }
 
 export async function requestPermissionsAndGetToken(): Promise<string | null> {

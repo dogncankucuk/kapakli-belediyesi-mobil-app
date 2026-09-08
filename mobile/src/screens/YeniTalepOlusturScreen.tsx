@@ -41,7 +41,6 @@ import {
   useThemeColors,
 } from "../theme";
 import { useTranslation } from "../i18n/LocaleContext";
-import { useAppShell } from "../navigation/AppShellContext";
 import { takipNumarasiEkle } from "../storage/talepStorage";
 
 const MAX_LENGTH = 500;
@@ -55,7 +54,6 @@ export default function YeniTalepOlusturScreen() {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const kategoriTanimlari = useMemo(() => buildTalepKategoriTanimlari(t), [t]);
-  const { user } = useAppShell();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [kategori, setKategori] = useState<TalepKategorisi | null>(null);
@@ -158,7 +156,6 @@ export default function YeniTalepOlusturScreen() {
         lng: location.lng ?? undefined,
         adres: location.adres.trim() || undefined,
         fotograflar: photos.map((p) => p.base64),
-        userId: user?.id ?? null,
       });
       await takipNumarasiEkle(talep.id);
       Alert.alert(t("yeniTalep_successTitle"), t("yeniTalep_successMessage"));

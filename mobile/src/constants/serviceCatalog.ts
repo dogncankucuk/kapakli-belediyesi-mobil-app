@@ -141,7 +141,7 @@ export const VISIBLE_SERVICE_CATALOG: ServiceDefinition[] =
 
 export const DEFAULT_QUICK_ACTION_IDS: ServiceId[] = [
   "nobetci-eczane",
-  "etkinlik-tarihleri",
+  "elektrik-ve-su-kesintileri",
 ];
 
 export function getServiceDefinition(

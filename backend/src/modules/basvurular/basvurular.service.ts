@@ -98,7 +98,10 @@ export class BasvurularService {
     }
   }
 
-  async create(dto: CreateBasvuruDto): Promise<PublicBasvuru> {
+  async create(
+    dto: CreateBasvuruDto,
+    userId: string | null,
+  ): Promise<PublicBasvuru> {
     if (!Types.ObjectId.isValid(dto.basvuruTuruId)) {
       throw new BadRequestException('Gecersiz basvuru turu');
     }
@@ -132,7 +135,7 @@ export class BasvurularService {
     let created: TimestampedBasvuru;
     try {
       created = (await this.basvuruModel.create({
-        userId: dto.userId ?? null,
+        userId,
         basvuruTuruId: dto.basvuruTuruId,
         basvuruTuruAdi: basvuruTuru.baslik,
         adSoyad: dto.adSoyad,

@@ -88,7 +88,10 @@ export class RequestsService {
     return urller;
   }
 
-  async create(dto: CreateRequestDto): Promise<PublicRequest> {
+  async create(
+    dto: CreateRequestDto,
+    userId: string | null,
+  ): Promise<PublicRequest> {
     const [talepNo, fotograflar] = await Promise.all([
       this.nextTalepNo(dto.kategori),
       this.fotograflariKaydet(dto.fotograflar ?? []),
@@ -105,7 +108,7 @@ export class RequestsService {
       adres: dto.adres ?? null,
       fotograflar,
       yogunluk: dto.yogunluk ?? null,
-      userId: dto.userId ?? null,
+      userId,
       durum: 'beklemede',
     })) as unknown as TimestampedRequest;
 

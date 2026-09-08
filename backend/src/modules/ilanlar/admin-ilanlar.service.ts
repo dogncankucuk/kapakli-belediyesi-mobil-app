@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
@@ -27,6 +27,8 @@ type TimestampedIlan = IlanDocument & {
 
 @Injectable()
 export class AdminIlanlarService {
+  private readonly logger = new Logger(AdminIlanlarService.name);
+
   constructor(
     @InjectModel(Ilan.name)
     private readonly ilanModel: Model<IlanDocument>,
@@ -55,11 +57,15 @@ export class AdminIlanlarService {
       updatedBy,
     })) as unknown as TimestampedIlan;
 
-    await this.notificationsService.sendBroadcast(
-      'guncel',
-      created.baslik,
-      'Yeni içerik yayınlandı, incelemek için uygulamayı açın.',
-    );
+    // 1000+ kullaniciyla senkron await dakikalarca surup istegi timeout'a
+    // dusurebilir - admin tekrar dener, icerik iki kez olusur. Fire-and-forget.
+    void this.notificationsService
+      .sendBroadcast(
+        'guncel',
+        created.baslik,
+        'Yeni içerik yayınlandı, incelemek için uygulamayı açın.',
+      )
+      .catch((err) => this.logger.error('Broadcast basarisiz', err));
 
     return this.toAdmin(created);
   }

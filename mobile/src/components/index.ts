@@ -13,7 +13,6 @@ export { default as PrimaryButton } from "./PrimaryButton";
 export { default as SecondaryButton } from "./SecondaryButton";
 export { default as SegmentedControl } from "./SegmentedControl";
 export { default as ServiceGridCard } from "./ServiceGridCard";
-export { default as SeveritySlider } from "./SeveritySlider";
 export { default as StatusStepper } from "./StatusStepper";
 export type { StatusStep } from "./StatusStepper";
 export { default as StepProgressBar } from "./StepProgressBar";

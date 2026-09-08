@@ -82,6 +82,7 @@ Bu teyit alınana kadar bu madde **açık risk** olarak işaretlenmiştir (bkz. 
 - Rate limiting: özellikle giriş, şifre sıfırlama, ödeme başlatma endpoint'lerinde brute-force koruması
 - HTTPS zorunlu, HTTP tamamen kapalı
 - Rol bazlı yetkilendirme: misafir / vatandaş / admin
+- **Auth guard'sız public create endpoint'lerinde (`POST /basvurular`, `/requests`, `/appointments`) istemciden gelen `userId` asla doğrudan güvenilmez** — DTO'larda `userId` alanı yok; `OptionalJwtAuthGuard` (`backend/src/modules/users/optional-jwt-auth.guard.ts`) geçerli bir Bearer token varsa `userId`'yi token'dan türetir, yoksa isteği reddetmeden misafir akışı için `null` bırakır. Bu, hem başkası adına sahte bildirim tetiklemeyi hem de geçersiz bir `userId` ile arka plan cron işlerinin (örn. randevu hatırlatma) çökmesini engeller.
 
 ### Sır yönetimi
 - API anahtarları ve DB bağlantı string'i koda gömülmez; `.env` + hosting sağlayıcısının secret manager'ı kullanılır
@@ -93,6 +94,8 @@ Bu teyit alınana kadar bu madde **açık risk** olarak işaretlenmiştir (bkz. 
 - Bildirim tetikleyen olaylar: yeni duyuru/haber yayınlandığında, talep durumu değiştiğinde, randevu onaylandığında/hatırlatma
 - Cihaz push token'ı `users` koleksiyonunda tutulur; bildirim tercihleri (aç/kapa, kategori bazlı) Ayarlar ekranından yönetilir
 - Bildirim içeriğinde asla hassas veri (T.C. kimlik no, tutar detayı vb.) gönderilmez — sadece "Talebiniz güncellendi, uygulamayı açın" gibi genel metin
+- Admin panelden tetiklenen toplu bildirimler **fire-and-forget** gönderilir (admin isteği bildirim gönderimini `await` etmez) — kullanıcı sayısı arttıkça admin isteğinin timeout'a düşmesini engellemek için; gönderim öncesi dondurulmuş kullanıcılar filtrelenir ve sorgular yalnızca gerekli alanları çeker
+- `notifications` koleksiyonunda 90 günlük TTL index vardır (`schemas/notification.schema.ts`) — koleksiyonun sınırsız büyümesini engellemek için eski kayıtlar otomatik silinir, arşivleme ihtiyacı yoktur
 
 ## 6. Offline / Cache Stratejisi
 

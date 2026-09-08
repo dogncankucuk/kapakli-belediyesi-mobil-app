@@ -372,10 +372,15 @@ export default function GirisEkraniScreen() {
                   placeholder={t("girisEkrani_telefonPlaceholder")}
                   placeholderTextColor={colors.outline}
                   keyboardType="number-pad"
-                  maxLength={10}
                   value={telefon}
                   onChangeText={(text) => {
-                    const sadeceRakam = text.replace(/\D/g, "").slice(0, 10);
+                    // maxLength kasitli olarak KULLANILMIYOR - native karakter
+                    // siniri, rakam-disi karakterler temizlenmeden ONCE
+                    // uygulanip yapistirilan/karisik metinlerde rakam
+                    // kaybina yol acabiliyor (orn. "0532..." veya harf
+                    // iceren yapistirma). Sinirlama sadece asagidaki
+                    // .slice(0,11) ile, temizlenmis rakamlar uzerinde yapiliyor.
+                    const sadeceRakam = text.replace(/\D/g, "").slice(0, 11);
                     setTelefon(sadeceRakam);
                     if (telefonHata) setTelefonHata(null);
                   }}
@@ -456,7 +461,11 @@ export default function GirisEkraniScreen() {
           <SecondaryButton
             label={t("girisEkrani_googleButton")}
             onPress={handleGoogle}
-            disabled={!googleRequest || isSubmitting}
+            disabled={
+              !googleRequest ||
+              isSubmitting ||
+              (mode === "kayit" && !sartlarKabul)
+            }
           />
 
           {error && <Text style={styles.errorText}>{error}</Text>}

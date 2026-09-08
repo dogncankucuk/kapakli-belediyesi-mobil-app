@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
@@ -26,6 +26,8 @@ type TimestampedKazi = KaziDocument & {
 
 @Injectable()
 export class AdminKaziService {
+  private readonly logger = new Logger(AdminKaziService.name);
+
   constructor(
     @InjectModel(Kazi.name)
     private readonly kaziModel: Model<KaziDocument>,
@@ -56,14 +58,16 @@ export class AdminKaziService {
       updatedBy,
     })) as unknown as TimestampedKazi;
 
-    await this.notificationsService.sendToMahalle(
-      dto.mahalle,
-      'kaziCalismasi',
-      'Kazı Çalışması Bildirimi',
-      'Bölgenizde bir kazı çalışması planlandı, detaylar için uygulamayı açın.',
-      'kaziCalismasi',
-      created.id,
-    );
+    void this.notificationsService
+      .sendToMahalle(
+        dto.mahalle,
+        'kaziCalismasi',
+        'Kazı Çalışması Bildirimi',
+        'Bölgenizde bir kazı çalışması planlandı, detaylar için uygulamayı açın.',
+        'kaziCalismasi',
+        created.id,
+      )
+      .catch((err) => this.logger.error('Broadcast basarisiz', err));
 
     return this.toAdmin(created);
   }

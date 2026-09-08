@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -60,7 +61,11 @@ export default function ElektrikVeSuKesintileriScreen() {
         </Text>
       </View>
 
-      <View style={styles.content}>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <MaterialIcons
@@ -176,7 +181,7 @@ export default function ElektrikVeSuKesintileriScreen() {
               </Pressable>
             ))}
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -201,6 +206,8 @@ const createStyles = (colors: Colors) =>
     },
     content: {
       flex: 1,
+    },
+    contentContainer: {
       padding: spacing.containerMargin,
       gap: spacing.stackGap * 1.5,
     },

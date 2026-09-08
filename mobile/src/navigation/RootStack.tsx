@@ -12,7 +12,6 @@ import BasvuruFormScreen from "../screens/BasvuruFormScreen";
 import BasvuruTuruDetayScreen from "../screens/BasvuruTuruDetayScreen";
 import BasvurularimScreen from "../screens/BasvurularimScreen";
 import BizeUlasinScreen from "../screens/BizeUlasinScreen";
-import ElektrikKesintileriScreen from "../screens/ElektrikKesintileriScreen";
 import ElektrikKesintisiDetayScreen from "../screens/ElektrikKesintisiDetayScreen";
 import ElektrikVeSuKesintileriScreen from "../screens/ElektrikVeSuKesintileriScreen";
 import EngelliYasliHizmetleriScreen from "../screens/EngelliYasliHizmetleriScreen";
@@ -30,7 +29,6 @@ import MeclisKararlariScreen from "../screens/MeclisKararlariScreen";
 import NobetciEczanelerScreen from "../screens/NobetciEczanelerScreen";
 import OtobusTakipScreen from "../screens/OtobusTakipScreen";
 import RandevuAlScreen from "../screens/RandevuAlScreen";
-import SuHizmetleriScreen from "../screens/SuHizmetleriScreen";
 import SuKesintisiDetayScreen from "../screens/SuKesintisiDetayScreen";
 import TaleplerimScreen from "../screens/TaleplerimScreen";
 import UlasimHizmetleriScreen from "../screens/UlasimHizmetleriScreen";
@@ -58,8 +56,6 @@ const RootStack = createNativeStackNavigator({
     BizeUlasin: BizeUlasinScreen,
     Ayarlar: AyarlarScreen,
     FaturaOdeme: FaturaOdemeScreen,
-    SuHizmetleri: SuHizmetleriScreen,
-    ElektrikKesintileri: ElektrikKesintileriScreen,
     ElektrikVeSuKesintileri: ElektrikVeSuKesintileriScreen,
     RandevuAl: RandevuAlScreen,
     BasvuruForm: BasvuruFormScreen,

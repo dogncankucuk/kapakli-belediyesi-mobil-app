@@ -55,13 +55,6 @@ const talepKategorisiSubtitleKeys: Record<TalepKategorisi, TranslationKey> = {
   "gorus-oneri": "talepKategorisi_gorusOneri",
 };
 
-// Koku/gürültü/kirlilik yoğunluk seçicisi sadece bu kategorilerde anlamlı.
-export const YOGUNLUK_GOSTEREN_KATEGORILER: TalepKategorisi[] = [
-  "cevre",
-  "hava",
-  "gurultu",
-];
-
 export type TalepKategoriTanimi = {
   value: TalepKategorisi;
   label: string;

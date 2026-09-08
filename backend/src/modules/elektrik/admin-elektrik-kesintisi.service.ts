@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
@@ -27,6 +27,8 @@ type TimestampedElektrikKesintisi = ElektrikKesintisiDocument & {
 
 @Injectable()
 export class AdminElektrikKesintisiService {
+  private readonly logger = new Logger(AdminElektrikKesintisiService.name);
+
   constructor(
     @InjectModel(ElektrikKesintisi.name)
     private readonly elektrikKesintisiModel: Model<ElektrikKesintisiDocument>,
@@ -60,14 +62,16 @@ export class AdminElektrikKesintisiService {
       updatedBy,
     })) as unknown as TimestampedElektrikKesintisi;
 
-    await this.notificationsService.sendToMahalle(
-      dto.mahalle,
-      'elektrikKesintisi',
-      'Planlı Elektrik Kesintisi',
-      'Bölgenizde planlı bir elektrik kesintisi var, detaylar için uygulamayı açın.',
-      'elektrikKesintisi',
-      created.id,
-    );
+    void this.notificationsService
+      .sendToMahalle(
+        dto.mahalle,
+        'elektrikKesintisi',
+        'Planlı Elektrik Kesintisi',
+        'Bölgenizde planlı bir elektrik kesintisi var, detaylar için uygulamayı açın.',
+        'elektrikKesintisi',
+        created.id,
+      )
+      .catch((err) => this.logger.error('Broadcast basarisiz', err));
 
     return this.toAdmin(created);
   }

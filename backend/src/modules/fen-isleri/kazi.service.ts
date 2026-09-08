@@ -20,13 +20,23 @@ export class KaziService {
     private readonly kaziModel: Model<KaziDocument>,
   ) {}
 
-  // Sadece bugun ve sonrasinda baslayan kazi calismalari gosterilir.
+  // Henuz baslamamis ya da sureGun'e gore hala devam eden kazi calismalari gosterilir.
   async findUpcoming(): Promise<PublicKazi[]> {
     const bugunBasi = new Date();
     bugunBasi.setHours(0, 0, 0, 0);
+    const MS_PER_GUN = 24 * 60 * 60 * 1000;
 
     const kazilar = await this.kaziModel
-      .find({ baslangicTarihi: { $gte: bugunBasi } })
+      .find({
+        $expr: {
+          $gte: [
+            {
+              $add: ['$baslangicTarihi', { $multiply: ['$sureGun', MS_PER_GUN] }],
+            },
+            bugunBasi,
+          ],
+        },
+      })
       .sort({ baslangicTarihi: 1 })
       .exec();
 

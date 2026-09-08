@@ -67,6 +67,9 @@ export class UsersController {
     return this.usersService.findById(request.userId);
   }
 
+  // Profil guncelleme (ozellikle fotograf yuklemesi) spam'ini ve disk
+  // sisirmesini sinirlar: ayni IP'den 10 dakikada en fazla 10 istek.
+  @Throttle({ default: { limit: 10, ttl: 600_000 } })
   @UseGuards(JwtAuthGuard)
   @Patch('me')
   updateMe(

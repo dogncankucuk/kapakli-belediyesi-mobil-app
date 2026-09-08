@@ -13,6 +13,7 @@ import { CurrentUser, getSessionUser, logout } from "../api/auth";
 import { deletePushToken, registerPushToken } from "../api/notifications";
 import {
   clearStoredPushToken,
+  getNotificationsDisabledByUser,
   getStoredPushToken,
   requestPermissionsAndGetToken,
   setStoredPushToken,
@@ -22,7 +23,8 @@ import {
   onboardingGorulduIsaretle,
 } from "../storage/onboardingStorage";
 
-function registerPushNotifications() {
+async function registerPushNotifications() {
+  if (await getNotificationsDisabledByUser()) return;
   requestPermissionsAndGetToken()
     .then((token) => {
       if (!token) return;

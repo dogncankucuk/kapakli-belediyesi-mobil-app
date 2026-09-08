@@ -24,7 +24,13 @@ const ILISKILI_TIP_EKRANI: Record<string, string> = {
   elektrikKesintisi: "ElektrikKesintisiDetay",
 };
 
+const islenenBildirimIdleri = new Set<string>();
+
 function bildirimTiklamasiniIsle(response: Notifications.NotificationResponse) {
+  const bildirimId = response.notification.request.identifier;
+  if (islenenBildirimIdleri.has(bildirimId)) return;
+  islenenBildirimIdleri.add(bildirimId);
+
   const data = response.notification.request.content.data as {
     iliskiliTip?: string;
     iliskiliId?: string;

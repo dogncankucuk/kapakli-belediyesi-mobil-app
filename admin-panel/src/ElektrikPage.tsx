@@ -7,6 +7,7 @@ import {
   updateElektrikKesintisi,
 } from './api';
 import type { ElektrikKesintisiInput } from './api';
+import { KAPAKLI_MAHALLELERI } from './constants/mahalleler';
 import { bugununTarihi } from './tarih';
 import TelefonOnizleme from './TelefonOnizleme';
 import type { AdminElektrikKesintisi } from './types';
@@ -100,12 +101,18 @@ function ElektrikPage({ canManage }: Props) {
           <h3>Yeni Elektrik Kesintisi</h3>
           <label>
             Mahalle
-            <input
+            <select
               value={form.mahalle}
               onChange={(e) => setForm({ ...form, mahalle: e.target.value })}
-              placeholder="Lütfen veri girişi yapınız"
               required
-            />
+            >
+              <option value="">Mahalle seçiniz</option>
+              {KAPAKLI_MAHALLELERI.map((mahalle) => (
+                <option key={mahalle} value={mahalle}>
+                  {mahalle}
+                </option>
+              ))}
+            </select>
           </label>
           <label>
             Tarih
@@ -150,10 +157,17 @@ function ElektrikPage({ canManage }: Props) {
                     <div className="edit-row">
                       <label>
                         Mahalle
-                        <input
+                        <select
                           value={editForm.mahalle}
                           onChange={(e) => setEditForm({ ...editForm, mahalle: e.target.value })}
-                        />
+                        >
+                          <option value="">Mahalle seçiniz</option>
+                          {KAPAKLI_MAHALLELERI.map((mahalle) => (
+                            <option key={mahalle} value={mahalle}>
+                              {mahalle}
+                            </option>
+                          ))}
+                        </select>
                       </label>
                       <label>
                         Tarih

@@ -33,3 +33,7 @@ export const NotificationSchema = SchemaFactory.createForClass(Notification);
 // siralanacak (bkz. mobil entegrasyon subtask'i) - request.schema.ts'deki
 // createdAt indexiyle ayni gerekce.
 NotificationSchema.index({ userId: 1, createdAt: -1 });
+
+// Koleksiyon sinirsiz buyumesin diye 90 gunden eski bildirimler otomatik
+// silinir (TTL index) - eski bildirimlerin arsivlenmesi gerekmiyor.
+NotificationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 7776000 });

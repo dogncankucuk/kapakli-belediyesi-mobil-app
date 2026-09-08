@@ -1,5 +1,5 @@
 import { randomInt, randomUUID } from 'crypto';
-import { writeFile } from 'fs/promises';
+import { unlink, writeFile } from 'fs/promises';
 import { join } from 'path';
 
 import {
@@ -73,6 +73,24 @@ export class UsersService {
       adres: user.adres ?? null,
       profilFotografiUrl: user.profilFotografiUrl ?? null,
     };
+  }
+
+  // Base64'u decode etmeden guvenilir bir icerik kontrolu yapilamiyor - decode
+  // sonrasi "magic bytes" (dosyanin ilk birkac byte'i) ile JPEG/PNG disinda
+  // bir seyin (ornegin calistirilabilir bir dosya) yuklenmesi engelleniyor.
+  private gorselGecerliMi(buffer: Buffer): boolean {
+    const jpeg =
+      buffer.length >= 3 &&
+      buffer[0] === 0xff &&
+      buffer[1] === 0xd8 &&
+      buffer[2] === 0xff;
+    const png =
+      buffer.length >= 4 &&
+      buffer[0] === 0x89 &&
+      buffer[1] === 0x50 &&
+      buffer[2] === 0x4e &&
+      buffer[3] === 0x47;
+    return jpeg || png;
   }
 
   private toAuthResponse(user: UserDocument): AuthResponse {
@@ -168,12 +186,19 @@ export class UsersService {
       {};
     if (dto.mahalle !== undefined) update.mahalle = dto.mahalle;
     if (dto.adres !== undefined) update.adres = dto.adres;
+
+    let eskiFotografUrl: string | undefined;
     if (dto.profilFotografiBase64) {
+      const buffer = Buffer.from(dto.profilFotografiBase64, 'base64');
+      if (!this.gorselGecerliMi(buffer)) {
+        throw new BadRequestException('Geçersiz görsel formatı');
+      }
+
+      const mevcutKullanici = await this.userModel.findById(userId);
+      eskiFotografUrl = mevcutKullanici?.profilFotografiUrl ?? undefined;
+
       const dosyaAdi = `${randomUUID()}.jpg`;
-      await writeFile(
-        join(UPLOADS_DIR, dosyaAdi),
-        Buffer.from(dto.profilFotografiBase64, 'base64'),
-      );
+      await writeFile(join(UPLOADS_DIR, dosyaAdi), buffer);
       update.profilFotografiUrl = `/uploads/${dosyaAdi}`;
     }
 
@@ -183,6 +208,13 @@ export class UsersService {
     if (!user) {
       throw new UnauthorizedException();
     }
+
+    if (eskiFotografUrl) {
+      await unlink(
+        join(UPLOADS_DIR, eskiFotografUrl.replace('/uploads/', '')),
+      ).catch(() => {});
+    }
+
     return this.toPublicUser(user);
   }
 

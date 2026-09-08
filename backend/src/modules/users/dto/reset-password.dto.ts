@@ -17,8 +17,12 @@ export class ResetPasswordDto {
 
   @IsString()
   @MinLength(8, { message: 'Şifre en az 8 karakter olmalı' })
-  @Matches(/(?=.*[A-Za-zÇĞİÖŞÜçğıöşü])(?=.*\d)/, {
-    message: 'Şifre en az bir harf ve bir rakam içermeli',
-  })
+  @Matches(
+    /^(?=.*[a-zçğıöşü])(?=.*[A-ZÇĞİÖŞÜ])(?=.*\d)(?=.*[^\wçğıöşüÇĞİÖŞÜ\s]).{8,}$/,
+    {
+      message:
+        'Şifre en az 8 karakter olmalı, en az 1 büyük harf, 1 küçük harf, 1 rakam ve 1 noktalama işareti içermeli',
+    },
+  )
   newPassword: string;
 }

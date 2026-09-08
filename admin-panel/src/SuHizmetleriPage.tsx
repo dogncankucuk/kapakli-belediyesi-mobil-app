@@ -14,6 +14,7 @@ import {
   updateSuHizmetleriAyarlari,
 } from './api';
 import type { BarajInput, PlanliKesintiInput, SuHizmetleriAyarlariInput } from './api';
+import { KAPAKLI_MAHALLELERI } from './constants/mahalleler';
 import { bugununTarihi } from './tarih';
 import TelefonOnizleme from './TelefonOnizleme';
 import type { Baraj, PlanliKesinti } from './types';
@@ -357,12 +358,18 @@ function SuHizmetleriPage({ canManage }: Props) {
           </label>
           <label>
             İlçe / Mahalle
-            <input
+            <select
               value={kesintiForm.ilce}
               onChange={(e) => setKesintiForm({ ...kesintiForm, ilce: e.target.value })}
-              placeholder="Lütfen veri girişi yapınız"
               required
-            />
+            >
+              <option value="">Mahalle seçiniz</option>
+              {KAPAKLI_MAHALLELERI.map((mahalle) => (
+                <option key={mahalle} value={mahalle}>
+                  {mahalle}
+                </option>
+              ))}
+            </select>
           </label>
           <label>
             Açıklama
@@ -403,12 +410,19 @@ function SuHizmetleriPage({ canManage }: Props) {
                     </label>
                     <label>
                       İlçe / Mahalle
-                      <input
+                      <select
                         value={editKesintiForm.ilce}
                         onChange={(e) =>
                           setEditKesintiForm({ ...editKesintiForm, ilce: e.target.value })
                         }
-                      />
+                      >
+                        <option value="">Mahalle seçiniz</option>
+                        {KAPAKLI_MAHALLELERI.map((mahalle) => (
+                          <option key={mahalle} value={mahalle}>
+                            {mahalle}
+                          </option>
+                        ))}
+                      </select>
                     </label>
                     <label>
                       Açıklama
