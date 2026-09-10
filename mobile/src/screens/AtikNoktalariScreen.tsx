@@ -18,7 +18,7 @@ import { AtikNoktasi, AtikRehberiIcerik, AtikTuru } from "../api/types";
 import { Card } from "../components";
 import { ATIK_TURLERI } from "../constants/atikTurleri";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 type FilterValue = "hepsi" | AtikTuru;
 
@@ -30,7 +30,11 @@ export default function AtikNoktalariScreen() {
   )?.initialFilter;
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [noktalar, setNoktalar] = useState<AtikNoktasi[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -83,16 +87,6 @@ export default function AtikNoktalariScreen() {
           {t("atik_summary").replace("{count}", String(noktalar.length))}
         </Text>
       </View>
-
-      <Pressable
-        onPress={() => navigation.navigate("AtikSiniflandirma" as never)}
-        accessibilityRole="button"
-        accessibilityLabel={t("atik_aiButton")}
-        style={styles.aiButton}
-      >
-        <MaterialIcons name="photo-camera" size={22} color={colors.onPrimary} />
-        <Text style={styles.aiButtonText}>{t("atik_aiButton")}</Text>
-      </Pressable>
 
       <ScrollView
         horizontal
@@ -200,7 +194,7 @@ export default function AtikNoktalariScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -241,21 +235,6 @@ const createStyles = (colors: Colors) =>
       ...typography.labelLg,
       color: colors.onBackground,
       flexShrink: 1,
-    },
-    aiButton: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: spacing.stackGap / 2,
-      minHeight: spacing.touchTargetMin,
-      marginHorizontal: spacing.containerMargin,
-      marginTop: spacing.stackGap,
-      borderRadius: shape.rounded,
-      backgroundColor: colors.primaryContainer,
-    },
-    aiButtonText: {
-      ...typography.labelLg,
-      color: colors.onPrimary,
     },
     filterScroll: {
       flexGrow: 0,

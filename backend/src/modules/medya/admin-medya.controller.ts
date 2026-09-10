@@ -1,11 +1,13 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Delete,
   Get,
   NotFoundException,
   Param,
   Post,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -39,8 +41,8 @@ export class AdminMedyaController {
 
   @Get()
   @RequirePermission('medya', 'list')
-  findAll(): Promise<AdminMedya[]> {
-    return this.adminMedyaService.findAll();
+  findAll(@Query('klasorId') klasorId?: string): Promise<AdminMedya[]> {
+    return this.adminMedyaService.findAll(klasorId);
   }
 
   @Post()
@@ -53,12 +55,17 @@ export class AdminMedyaController {
   )
   create(
     @UploadedFile() file: Express.Multer.File,
+    @Body('klasorId') klasorId: string | undefined,
     @Req() req: Request,
   ): Promise<AdminMedya> {
     if (!file) {
       throw new BadRequestException('Dosya gerekli');
     }
-    return this.adminMedyaService.create(file, req.session.adminUser!.email);
+    return this.adminMedyaService.create(
+      file,
+      klasorId,
+      req.session.adminUser!.email,
+    );
   }
 
   @Delete(':id')

@@ -14,6 +14,7 @@ export interface AdminMedya {
   mimeType: string;
   boyut: number;
   url: string;
+  klasorId: string | null;
   updatedBy: string | null;
   createdAt: string;
 }
@@ -27,13 +28,25 @@ export class AdminMedyaService {
     private readonly medyaModel: Model<MedyaDocument>,
   ) {}
 
-  async findAll(): Promise<AdminMedya[]> {
-    const kayitlar = await this.medyaModel.find().sort({ createdAt: -1 }).exec();
+  // klasorId: verilmezse tumu, "root" ise klasorsuz (Genel) dosyalar,
+  // aksi halde o klasordeki dosyalar donuyor.
+  async findAll(klasorId?: string): Promise<AdminMedya[]> {
+    const filtre =
+      klasorId === undefined
+        ? {}
+        : klasorId === 'root'
+          ? { klasorId: null }
+          : { klasorId };
+    const kayitlar = await this.medyaModel
+      .find(filtre)
+      .sort({ createdAt: -1 })
+      .exec();
     return kayitlar.map((doc) => this.toAdmin(doc as unknown as TimestampedMedya));
   }
 
   async create(
     file: Express.Multer.File,
+    klasorId: string | undefined,
     updatedBy: string,
   ): Promise<AdminMedya> {
     const created = (await this.medyaModel.create({
@@ -42,6 +55,7 @@ export class AdminMedyaService {
       mimeType: file.mimetype,
       boyut: file.size,
       url: `/uploads/${file.filename}`,
+      klasorId: klasorId || undefined,
       updatedBy,
     })) as unknown as TimestampedMedya;
     return this.toAdmin(created);
@@ -67,6 +81,7 @@ export class AdminMedyaService {
       mimeType: doc.mimeType,
       boyut: doc.boyut,
       url: doc.url,
+      klasorId: doc.klasorId ?? null,
       updatedBy: doc.updatedBy ?? null,
       createdAt: doc.createdAt.toISOString(),
     };

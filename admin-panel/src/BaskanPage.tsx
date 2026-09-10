@@ -4,6 +4,7 @@ import { getBaskan, updateBaskan } from './api';
 import type { BaskanInput } from './api';
 import MedyaSecici from './MedyaSecici';
 import { BaskanOnizleme, TelefonOnizleme } from './MobilOnizleme';
+import ZenginMetinEditor from './ZenginMetinEditor';
 
 interface Props {
   canManage: boolean;
@@ -101,9 +102,9 @@ function BaskanPage({ canManage }: Props) {
         </label>
         <label>
           Giriş Metni
-          <textarea
+          <ZenginMetinEditor
             value={form.introText}
-            onChange={(e) => setForm({ ...form, introText: e.target.value })}
+            onChange={(introText) => setForm({ ...form, introText })}
             disabled={!canManage}
           />
         </label>
@@ -118,9 +119,9 @@ function BaskanPage({ canManage }: Props) {
         </label>
         <label>
           Kapanış Metni
-          <textarea
+          <ZenginMetinEditor
             value={form.kapanisText}
-            onChange={(e) => setForm({ ...form, kapanisText: e.target.value })}
+            onChange={(kapanisText) => setForm({ ...form, kapanisText })}
             disabled={!canManage}
           />
         </label>

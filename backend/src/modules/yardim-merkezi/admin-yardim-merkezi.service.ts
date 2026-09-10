@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+import { zenginMetinTemizle } from '../../zengin-metin-sanitize';
 import { CreateYardimMerkeziSoruDto } from './dto/create-yardim-merkezi-soru.dto';
 import { UpdateYardimMerkeziSoruDto } from './dto/update-yardim-merkezi-soru.dto';
 import {
@@ -48,6 +49,7 @@ export class AdminYardimMerkeziService {
   ): Promise<AdminYardimMerkeziSoru> {
     const created = (await this.soruModel.create({
       ...dto,
+      cevap: zenginMetinTemizle(dto.cevap),
       updatedBy,
     })) as unknown as TimestampedSoru;
 
@@ -62,7 +64,15 @@ export class AdminYardimMerkeziService {
     if (!Types.ObjectId.isValid(id)) return null;
 
     const doc = await this.soruModel
-      .findByIdAndUpdate(id, { ...dto, updatedBy }, { new: true })
+      .findByIdAndUpdate(
+        id,
+        {
+          ...dto,
+          ...(dto.cevap !== undefined && { cevap: zenginMetinTemizle(dto.cevap) }),
+          updatedBy,
+        },
+        { new: true },
+      )
       .exec();
     return doc ? this.toAdmin(doc as unknown as TimestampedSoru) : null;
   }

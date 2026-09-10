@@ -16,13 +16,17 @@ import { getPlanliKesintiler } from "../api/suHizmetleri";
 import { ElektrikKesintisi, PlanliKesinti } from "../api/types";
 import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 export default function ElektrikVeSuKesintileriScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
 
   const [suKesintileri, setSuKesintileri] = useState<PlanliKesinti[]>([]);
   const [suYukleniyor, setSuYukleniyor] = useState(true);
@@ -186,7 +190,7 @@ export default function ElektrikVeSuKesintileriScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

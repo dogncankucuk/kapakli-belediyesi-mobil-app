@@ -15,13 +15,17 @@ import { HavaDurumu } from "../api/types";
 import { Card } from "../components";
 import { havaDurumuIkonu } from "../constants/havaDurumu";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 export default function HavaDurumuDetayScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [veri, setVeri] = useState<HavaDurumu | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -134,7 +138,7 @@ export default function HavaDurumuDetayScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

@@ -6,6 +6,10 @@ import {
   updateCami,
   getOnemliKurumlar,
   updateOnemliKurum,
+  getEgitimKurumlari,
+  updateEgitimKurumu,
+  getSaglikKurumlari,
+  updateSaglikKurumu,
   getParklar,
   updatePark,
   getTarihiYerler,
@@ -19,6 +23,14 @@ import {
 interface Props {
   canManage: boolean;
 }
+
+// Kent Rehberi (GiSoftGis) - belediyenin resmi CBS sistemi. Mobil uygulamada
+// Harita ekranindaki "Kent Rehberi" sekmesinde de ayni kaynak gömülü
+// (mobile/src/screens/MapScreen.tsx). Buradaki amac: admin konum
+// duzenlerken (asagidaki OSM tabanli editor) resmi kaynakla capraz kontrol
+// edebilsin - GiSoftGis'in kendi API'si dokumante/genel erisime acik
+// olmadigi icin veri buradan otomatik cekilemiyor, sadece referans linki.
+const KENT_REHBERI_URL = 'https://cbs.kapakli.bel.tr/GiSoftGis/#/cityguidepublic';
 
 type MapItem = { id: string; ad: string; lat: number; lng: number };
 
@@ -46,6 +58,22 @@ const CATEGORIES: {
     get: async () => (await getOnemliKurumlar()).map(toMapItem),
     update: async (id, lat, lng) => {
       await updateOnemliKurum(id, { lat, lng });
+    },
+  },
+  {
+    value: 'egitim',
+    label: 'Eğitim',
+    get: async () => (await getEgitimKurumlari()).map(toMapItem),
+    update: async (id, lat, lng) => {
+      await updateEgitimKurumu(id, { lat, lng });
+    },
+  },
+  {
+    value: 'saglik',
+    label: 'Sağlık',
+    get: async () => (await getSaglikKurumlari()).map(toMapItem),
+    update: async (id, lat, lng) => {
+      await updateSaglikKurumu(id, { lat, lng });
     },
   },
   {
@@ -177,6 +205,14 @@ function MapEditorPage({ canManage }: Props) {
       <p>
         Bir kategori ve kayıt seçin, ardından haritada tıklayarak veya
         işaretçiyi sürükleyerek konumu güncelleyin.
+      </p>
+      <p className="map-editor-cbs-note">
+        Konumu belirlerken belediyenin resmi Coğrafi Bilgi Sistemi'nden
+        (mobil uygulamadaki "Kent Rehberi" ile aynı kaynak) çapraz kontrol
+        edebilirsiniz:{' '}
+        <a href={KENT_REHBERI_URL} target="_blank" rel="noopener noreferrer">
+          Resmi CBS Haritasını Görüntüle ↗
+        </a>
       </p>
       {error && <p className="error-message">{error}</p>}
       {success && <p className="success-message">{success}</p>}

@@ -14,7 +14,7 @@ import { getElektrikKesintileri } from "../api/elektrikKesintileri";
 import { ElektrikKesintisi } from "../api/types";
 import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 export default function ElektrikKesintisiDetayScreen() {
   const navigation = useNavigation();
@@ -22,7 +22,11 @@ export default function ElektrikKesintisiDetayScreen() {
   const { id } = route.params as { id: string };
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [kesinti, setKesinti] = useState<ElektrikKesintisi | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -46,14 +50,14 @@ export default function ElektrikKesintisiDetayScreen() {
           <MaterialIcons name="arrow-back" size={24} color={colors.onPrimary} />
         </Pressable>
         <Text style={styles.headerTitle} numberOfLines={1}>
-          Elektrik Kesintisi
+          {t("elektrikKesintisiDetay_title")}
         </Text>
       </View>
       <View style={styles.content}>
         {isLoading && <ActivityIndicator color={colors.primaryContainer} />}
 
         {!isLoading && !kesinti && (
-          <Text style={styles.emptyText}>Kayıt bulunamadı</Text>
+          <Text style={styles.emptyText}>{t("common_recordNotFound")}</Text>
         )}
 
         {!isLoading && kesinti && (
@@ -80,7 +84,7 @@ export default function ElektrikKesintisiDetayScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

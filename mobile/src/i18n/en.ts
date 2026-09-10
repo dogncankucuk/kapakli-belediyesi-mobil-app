@@ -7,6 +7,7 @@ export const en: Record<TranslationKey, string> = {
   common_cancel: "Cancel",
   common_loading: "Loading…",
   common_error: "Something went wrong",
+  common_errorTitle: "Error",
   common_retry: "Retry",
   common_save: "Save",
   common_appName: "Kapaklı Municipality",
@@ -87,6 +88,24 @@ export const en: Record<TranslationKey, string> = {
   hesapBilgilerim_telefon: "Phone Number",
   hesapBilgilerim_security: "Security",
   hesapBilgilerim_changePassword: "Change Password",
+  hesapBilgilerim_changePhoto: "Change Photo",
+  hesapBilgilerim_mahalle: "Neighborhood",
+  hesapBilgilerim_mahalleSeciniz: "Select neighborhood",
+  hesapBilgilerim_mahalleModalTitle: "Select Neighborhood",
+  hesapBilgilerim_mahalleSuffix: "Neighborhood",
+  hesapBilgilerim_adres: "Address",
+  hesapBilgilerim_adresPlaceholder: "Enter address",
+  hesapBilgilerim_currentPasswordLabel: "Current Password",
+  hesapBilgilerim_newPasswordLabel: "New Password",
+  hesapBilgilerim_newPasswordAgainLabel: "New Password (Again)",
+  hesapBilgilerim_passwordMismatch: "Passwords do not match",
+  hesapBilgilerim_changePasswordSubmit: "Submit",
+  hesapBilgilerim_changePasswordSuccessTitle: "Success",
+  hesapBilgilerim_changePasswordSuccessBody:
+    "Your password has been updated successfully.",
+  hesapBilgilerim_currentPasswordWrong: "Your current password is incorrect",
+  hesapBilgilerim_googleAccountNoPassword:
+    "Password cannot be changed for a Google account",
 
   ayarlar_title: "Settings",
   ayarlar_languageSection: "Language",
@@ -95,9 +114,17 @@ export const en: Record<TranslationKey, string> = {
   ayarlar_themeSection: "Theme",
   ayarlar_lightMode: "Light Mode",
   ayarlar_darkMode: "Dark Mode",
+  ayarlar_fontSizeSection: "Text Size",
+  ayarlar_fontSizeSmall: "Small",
+  ayarlar_fontSizeNormal: "Normal",
+  ayarlar_fontSizeLarge: "Large",
+  ayarlar_fontSizeExtraLarge: "Extra Large",
   ayarlar_notificationsSection: "Notifications",
   ayarlar_pushNotifications: "Push Notifications",
   ayarlar_pushNotificationsSubtitle: "Announcement and news notifications",
+  ayarlar_notificationErrorTitle: "Error",
+  ayarlar_notificationNotConfigured:
+    "The notification service isn't fully set up yet, so it can't be turned on right now. Please try again later.",
   ayarlar_supportSection: "Support & Info",
   ayarlar_privacyPolicy: "Privacy Policy",
   ayarlar_helpCenter: "Help Center",
@@ -224,13 +251,12 @@ export const en: Record<TranslationKey, string> = {
 
   map_heading: "What's Where?",
   map_parklar: "Parks",
-  map_tarihiYerler: "Historical Sites",
+  map_hastaneler: "Hospitals",
   map_eczaneler: "Pharmacies",
   map_wifi: "Wi-Fi",
   map_camiler: "Mosques",
   map_kurumlar: "Institutions",
   map_atikNoktalari: "Waste Points",
-  map_kentRehberi: "City Guide",
   map_close: "Close",
   map_openInGoogleMaps: "Open in Google Maps",
 
@@ -370,8 +396,6 @@ export const en: Record<TranslationKey, string> = {
   ulasim_kartTuruButton: "Show Card Types",
   ulasim_kartTuruButtonHide: "Hide Card Types",
   ulasim_bakiyeButton: "Top Up Card Balance",
-  ulasim_bakiyeYakindaTitle: "Coming Soon",
-  ulasim_bakiyeYakindaMesaj: "This feature will be available soon.",
   ulasim_aramaLabel: "Search Lines",
   ulasim_aramaPlaceholder: "Search by line name or route",
   ulasim_aramaEmpty: "No line matches your search.",
@@ -381,6 +405,8 @@ export const en: Record<TranslationKey, string> = {
   ulasim_gidisSaatleri: "Outbound",
   ulasim_donusSaatleri: "Return",
   ulasim_saatYok: "No departure times have been entered yet.",
+  ulasim_haftaIci: "Weekdays",
+  ulasim_haftaSonu: "Weekends",
   ulasim_canliKonumlar: "Live Bus Locations",
   ulasim_canliBosluk: "No live location data available right now.",
   ulasim_geriDon: "Back to Search",
@@ -397,40 +423,14 @@ export const en: Record<TranslationKey, string> = {
   atik_error: "Waste points could not be loaded.",
   atik_empty: "No points in this category yet.",
   atik_filterAll: "All",
-  atik_aiButton: "Identify Waste with AI",
 
-  atikAi_title: "Identify Waste",
-  atikAi_instructions:
-    "Take a photo of the item or pick one from your gallery, and AI will classify it as plastic, paper, or glass.",
   atikAi_takePhoto: "Take Photo",
   atikAi_pickFromGallery: "Pick from Gallery",
-  atikAi_analyzing: "Analyzing...",
-  atikAi_confidence: "Confidence",
-  atikAi_showPoints: "See Points for This Type",
-  atikAi_tryAgain: "Try Again",
-  atikAi_error: "Could not identify the item, please try again.",
-  atikAi_permissionTitle: "Permission Required",
-  atikAi_permissionMessage:
-    "You need to grant permission to take/pick a photo.",
-  atikAi_showNearest: "Show Nearest Point",
-  atikAi_locating: "Finding your location and the nearest point...",
-  atikAi_locationPermissionMessage:
-    "You need to grant location permission to find the nearest waste point.",
-  atikAi_locationError:
-    "Could not get your location, please check location services and try again.",
-  atikAi_noNearbyPoint:
-    "No registered waste point of this type was found near you.",
 
   atikRehberi_title: "Waste Guide",
   atikRehberi_subtitle: "{n} categories",
   atikRehberi_searchPlaceholder: 'Try "where does a battery go?"',
-  atikRehberi_aiBadge: "AI",
-  atikRehberi_aiTitle: "Point your camera at your waste",
-  atikRehberi_aiDescription:
-    "Instantly learn the right bin — battery, plastic, glass all differ.",
   atikRehberi_kategoriler: "Categories",
-  atikRehberi_statLabel: "This week in Kapaklı",
-  atikRehberi_statHint: "recycled (estimated)",
 
   talepKategorisi_arizaBakim: "Malfunction/Maintenance",
   talepKategorisi_sikayet: "Complaint",
@@ -503,4 +503,54 @@ export const en: Record<TranslationKey, string> = {
   yanMenu_settings: "Settings",
   yanMenu_logout: "Log Out",
   yanMenu_footer: "© 2026 All Rights Reserved",
+  yanMenu_closeMenu: "Close menu",
+
+  common_recordNotFound: "Record not found",
+  common_close: "Close",
+
+  topBar_openMenu: "Open menu",
+
+  onboarding_skip: "Skip",
+  onboarding_getStarted: "Get Started",
+  onboarding_continue: "Continue",
+
+  createActionSheet_yeniTalepLabel: "Create New Request",
+  createActionSheet_yeniTalepDescription:
+    "Report a malfunction, complaint or suggestion",
+
+  kvkkMetni_title: "Privacy Policy and Terms of Use",
+  kvkkMetni_tabKvkk: "KVKK Privacy Notice",
+  kvkkMetni_tabSartlar: "Terms of Use",
+
+  girisEkrani_tcKimlikGecersiz: "Enter a valid National ID number",
+  sifreKurali_minKarakter: "At least 8 characters",
+  sifreKurali_buyukHarf: "At least 1 uppercase letter",
+  sifreKurali_kucukHarf: "At least 1 lowercase letter",
+  sifreKurali_rakam: "At least 1 number",
+  sifreKurali_noktalama: "At least 1 punctuation mark",
+  girisEkrani_telefonGecersiz:
+    "Enter a valid phone number (e.g. 5321234567)",
+  girisEkrani_telefonIpucu:
+    "Enter your 10-digit number starting with 5, without the leading 0 (e.g. 5321234567)",
+  girisEkrani_sartlarPrefix: "I have read and accept the ",
+  girisEkrani_sartlarLinkMetni: "Terms of Use and KVKK Privacy Notice",
+  girisEkrani_sartlarSuffix: ".",
+
+  kaziDetay_title: "Excavation Work",
+  kaziDetay_sureGun: "{gun} days",
+  suKesintisiDetay_title: "Water Outage",
+  elektrikKesintisiDetay_title: "Power Outage",
+
+  map_wifiSubtitle: "Free Wi-Fi - {kategori}",
+  map_camiSubtitle: "Open during prayer times",
+
+  locationPreview_label: "Location",
+  locationPreview_autoGps: "Automatic GPS",
+  locationPreview_permissionDenied: "Location permission denied",
+  locationPreview_locationUnavailable: "Could not get location",
+  locationPreview_adresLabel: "Address",
+  locationPreview_finding: "(finding...)",
+  locationPreview_adresPlaceholder: "You may enter your address here if you'd like",
+  locationPreview_adresHint:
+    "If the address is wrong or empty, you can correct or enter it.",
 };

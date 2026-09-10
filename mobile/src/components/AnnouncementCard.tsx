@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import Card from "./Card";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 type AnnouncementCardProps = {
   title: string;
@@ -23,7 +23,11 @@ export default function AnnouncementCard({
   onPress,
 }: AnnouncementCardProps) {
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
 
   return (
     <Pressable onPress={onPress} accessibilityRole="button">
@@ -66,7 +70,7 @@ export default function AnnouncementCard({
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     card: {
       flexDirection: "row",

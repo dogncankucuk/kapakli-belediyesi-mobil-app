@@ -18,6 +18,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { Model } from 'mongoose';
 
 import { UPLOADS_DIR } from '../../uploads-dir';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -343,5 +344,43 @@ export class UsersService {
     await user.save();
 
     return { message: 'Şifreniz başarıyla güncellendi' };
+  }
+
+  async changePassword(
+    userId: string,
+    dto: ChangePasswordDto,
+  ): Promise<AuthResponse & { message: string }> {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    if (!user.passwordHash) {
+      throw new BadRequestException(
+        'Google hesabınız için şifre değiştirilemez',
+      );
+    }
+
+    const passwordMatches = await bcrypt.compare(
+      dto.mevcutSifre,
+      user.passwordHash,
+    );
+    if (!passwordMatches) {
+      throw new UnauthorizedException('Mevcut şifreniz hatalı');
+    }
+
+    user.passwordHash = await bcrypt.hash(dto.yeniSifre, 10);
+    // Sifre degistiginde, calinmis olabilecek eski token'lari da gecersiz kil
+    // (resetPassword ile ayni gerekce) - ama burada kullanici HALEN oturum
+    // acik/kimligi dogrulanmis durumda oldugu icin (JwtAuthGuard), onu disari
+    // atmak yerine tv'nin yeni degeriyle imzalanmis TAZE bir token donuyoruz -
+    // sadece BASKA cihazlardaki eski token'lar gecersiz olur.
+    user.tokenVersion += 1;
+    await user.save();
+
+    return {
+      ...this.toAuthResponse(user),
+      message: 'Şifreniz başarıyla güncellendi',
+    };
   }
 }

@@ -53,7 +53,12 @@ export function IcerikKartiOnizleme({ baslik, icerik, resimUrlleri, tarih, dosya
     <div className="onizleme-kart">
       {kapakResmi && <img src={kapakResmi} className="onizleme-kart-resim" alt="" />}
       <div className="onizleme-kart-baslik">{baslik || 'Başlık'}</div>
-      {icerik && <div className="onizleme-kart-icerik">{icerik}</div>}
+      {icerik && (
+        <div
+          className="onizleme-kart-icerik"
+          dangerouslySetInnerHTML={{ __html: icerik }}
+        />
+      )}
       <div className="onizleme-kart-footer">
         <span className="onizleme-kart-tarih">
           {tarihFormatla(tarih)}
@@ -118,7 +123,9 @@ export function BaskanOnizleme({ ad, photoUrl, introText, maddeler, kapanisText 
         <div className="onizleme-baskan-ayrac" />
         <div className="onizleme-baskan-rol">KAPAKLI BELEDİYE BAŞKANI</div>
       </div>
-      {introText && <p className="onizleme-paragraf">{introText}</p>}
+      {introText && (
+        <div className="onizleme-paragraf" dangerouslySetInnerHTML={{ __html: introText }} />
+      )}
       {maddeler.length > 0 && (
         <div className="onizleme-baskan-bio">
           <div className="onizleme-bolum-basligi-kucuk">Özgeçmiş</div>
@@ -130,7 +137,9 @@ export function BaskanOnizleme({ ad, photoUrl, introText, maddeler, kapanisText 
           ))}
         </div>
       )}
-      {kapanisText && <p className="onizleme-paragraf">{kapanisText}</p>}
+      {kapanisText && (
+        <div className="onizleme-paragraf" dangerouslySetInnerHTML={{ __html: kapanisText }} />
+      )}
     </>
   );
 }
@@ -146,7 +155,12 @@ export function HakkimizdaOnizleme({ baskanOzetMetni, tarihceParagraflari, kurul
           <span>Başkanımız</span>
           <span className="onizleme-chevron-right">›</span>
         </div>
-        {baskanOzetMetni && <p className="onizleme-paragraf">{baskanOzetMetni}</p>}
+        {baskanOzetMetni && (
+          <div
+            className="onizleme-paragraf"
+            dangerouslySetInnerHTML={{ __html: baskanOzetMetni }}
+          />
+        )}
       </div>
       <div className="onizleme-kart onizleme-hakkimizda-kart">
         <div className="onizleme-kart-baslik-satir">

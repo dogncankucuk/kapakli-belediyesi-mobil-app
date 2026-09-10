@@ -8,7 +8,7 @@ import { Card, TopBar } from "../components";
 import { GuncelIcerikKategori } from "./GuncelIcerikScreen";
 import { useTranslation } from "../i18n/LocaleContext";
 import { TranslationKey } from "../i18n/tr";
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 type HubItem =
   | {
@@ -72,7 +72,11 @@ export default function AnnouncementsScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
 
   const handlePress = (item: HubItem) => {
     if (item.screen === "GuncelIcerik") {
@@ -126,7 +130,7 @@ export default function AnnouncementsScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

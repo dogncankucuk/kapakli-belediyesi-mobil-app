@@ -12,9 +12,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { getYardimMerkeziSorulari, YardimMerkeziSoru } from "../api/yardimMerkezi";
-import { Card } from "../components";
+import { Card, ZenginMetinGoster } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 type Props = {
   onBack: () => void;
@@ -23,7 +23,11 @@ type Props = {
 export function YardimMerkeziContent({ onBack }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [sorular, setSorular] = useState<YardimMerkeziSoru[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -89,9 +93,7 @@ export function YardimMerkeziContent({ onBack }: Props) {
                       color={colors.outline}
                     />
                   </View>
-                  {expanded && (
-                    <Text style={styles.answer}>{item.cevap}</Text>
-                  )}
+                  {expanded && <ZenginMetinGoster html={item.cevap} />}
                 </Card>
               </Pressable>
             );
@@ -108,7 +110,7 @@ export default function YardimMerkeziScreen() {
   return <YardimMerkeziContent onBack={() => navigation.goBack()} />;
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

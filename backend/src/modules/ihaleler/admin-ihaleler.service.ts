@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import { NotificationsService } from '../notifications/notifications.service';
+import { zenginMetinTemizle } from '../../zengin-metin-sanitize';
 import { CreateIhaleDto } from './dto/create-ihale.dto';
 import { UpdateIhaleDto } from './dto/update-ihale.dto';
 import { Ihale, IhaleDocument } from './schemas/ihale.schema';
@@ -54,6 +55,7 @@ export class AdminIhalelerService {
   async create(dto: CreateIhaleDto, updatedBy: string): Promise<AdminIhale> {
     const created = (await this.ihaleModel.create({
       ...dto,
+      icerik: zenginMetinTemizle(dto.icerik),
       updatedBy,
     })) as unknown as TimestampedIhale;
 
@@ -78,7 +80,15 @@ export class AdminIhalelerService {
     if (!Types.ObjectId.isValid(id)) return null;
 
     const doc = await this.ihaleModel
-      .findByIdAndUpdate(id, { ...dto, updatedBy }, { new: true })
+      .findByIdAndUpdate(
+        id,
+        {
+          ...dto,
+          ...(dto.icerik !== undefined && { icerik: zenginMetinTemizle(dto.icerik) }),
+          updatedBy,
+        },
+        { new: true },
+      )
       .exec();
     return doc ? this.toAdmin(doc as unknown as TimestampedIhale) : null;
   }

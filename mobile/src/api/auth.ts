@@ -149,6 +149,34 @@ export async function forgotPassword(identifier: string): Promise<string> {
   return data.message;
 }
 
+export async function changePassword(
+  mevcutSifre: string,
+  yeniSifre: string,
+): Promise<{ message: string } & AuthResponse> {
+  const token = await getStoredToken();
+  if (!token) throw new Error("Oturum bulunamadı");
+
+  const response = await fetch(`${BASE_URL}/auth/change-password`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ mevcutSifre, yeniSifre }),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  const data: { message: string } & AuthResponse = await response.json();
+  // Backend sifre degistirince tokenVersion'i artirip TAZE bir token donuyor
+  // (baska cihazlardaki eski token'lari gecersiz kilmak icin) - bu cihazda
+  // oturumun kesintisiz devam etmesi icin yeni token'i hemen sakla.
+  await setStoredToken(data.token);
+  return data;
+}
+
 export async function resetPassword(
   identifier: string,
   code: string,

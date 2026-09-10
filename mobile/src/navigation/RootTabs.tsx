@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { useMemo } from "react";
+import { ComponentProps, useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import HavaStack from "./HavaStack";
@@ -12,7 +12,21 @@ import { useTranslation } from "../i18n/LocaleContext";
 import { TranslationKey } from "../i18n/tr";
 import { Colors, useThemeColors } from "../theme";
 
-function TabLabel({ tKey, color }: { tKey: TranslationKey; color: string }) {
+// PersistentBottomBar (disariya sunulan, her ekranda sabit alt bar) bu
+// listeyi ve asagidaki iki bileseni RootTabs'in kendi native tab bar'i
+// (asagida tabBarStyle:{display:'none'} ile gizlendi) yerine kullanir.
+export const TAB_ITEMS: {
+  name: "Home" | "Hava" | "Services" | "Profile";
+  icon: ComponentProps<typeof MaterialIcons>["name"];
+  labelKey: TranslationKey;
+}[] = [
+  { name: "Home", icon: "home", labelKey: "tabs_home" },
+  { name: "Hava", icon: "air", labelKey: "tabs_hava" },
+  { name: "Services", icon: "apps", labelKey: "tabs_services" },
+  { name: "Profile", icon: "person", labelKey: "tabs_profile" },
+];
+
+export function TabLabel({ tKey, color }: { tKey: TranslationKey; color: string }) {
   const { t } = useTranslation();
   return (
     <Text
@@ -33,7 +47,7 @@ function EmptyFabScreen() {
   return null;
 }
 
-function FabTabButton() {
+export function FabTabButton() {
   const { openCreateSheet } = useAppShell();
   const colors = useThemeColors();
   const styles = useMemo(() => createFabStyles(colors), [colors]);
@@ -77,6 +91,11 @@ const createFabStyles = (colors: Colors) =>
 const RootTabs = createBottomTabNavigator({
   screenOptions: {
     headerShown: false,
+    // Native tab bar gizli - gorsel alt bar artik navigation/PersistentBottomBar.tsx
+    // tarafindan, tum ekranlarin (bu sekmelerin disindaki kok-stack ekranlari dahil)
+    // ustunde sabit olarak veriliyor. Sekme/stack yapisinin kendisi (her sekmenin
+    // kendi ic navigasyon gecmisini tutmasi) degismedi, sadece gorunen bar degisti.
+    tabBarStyle: { display: "none" },
   },
   screens: {
     Home: {

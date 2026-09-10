@@ -140,6 +140,24 @@ function RequestsPage({ canManage }: Props) {
     }
   }
 
+  async function handleFotoIndir(url: string, talepNo: string, index: number) {
+    try {
+      const yanit = await fetch(url);
+      const blob = await yanit.blob();
+      const uzanti = url.split('.').pop()?.split('?')[0] || 'jpg';
+      const nesneUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = nesneUrl;
+      a.download = `talep-${talepNo}-foto-${index + 1}.${uzanti}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(nesneUrl);
+    } catch {
+      setError('Fotoğraf indirilemedi');
+    }
+  }
+
   async function handleNotKaydet(item: TalepRequest) {
     const taslak = notTaslaklari[item.id] ?? {
       adminNotu: item.adminNotu ?? '',
@@ -374,12 +392,29 @@ function RequestsPage({ canManage }: Props) {
                                 <strong>Fotoğraflar:</strong>
                                 <div className="request-photo-row">
                                   {item.fotograflar.map((url, index) => (
-                                    <img
-                                      key={index}
-                                      src={url}
-                                      alt={`Talep fotoğrafı ${index + 1}`}
-                                      className="request-photo-thumb"
-                                    />
+                                    <div key={index} className="request-photo-item">
+                                      <img
+                                        src={url}
+                                        alt={`Talep fotoğrafı ${index + 1}`}
+                                        className="request-photo-thumb"
+                                      />
+                                      <div className="request-photo-actions">
+                                        <button
+                                          type="button"
+                                          onClick={() => window.open(url, '_blank', 'noopener')}
+                                        >
+                                          Görüntüle
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            handleFotoIndir(url, item.talepNo, index)
+                                          }
+                                        >
+                                          İndir
+                                        </button>
+                                      </div>
+                                    </div>
                                   ))}
                                 </div>
                               </div>

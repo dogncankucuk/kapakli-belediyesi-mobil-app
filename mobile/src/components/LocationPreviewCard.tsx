@@ -4,7 +4,8 @@ import { ActivityIndicator, StyleSheet, Text, TextInput, View } from "react-nati
 import WebView from "react-native-webview";
 
 import Card from "./Card";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { useTranslation } from "../i18n/LocaleContext";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 export type LocationValue = {
   lat: number | null;
@@ -65,8 +66,13 @@ export default function LocationPreviewCard({
   value,
   onChange,
 }: LocationPreviewCardProps) {
+  const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [status, setStatus] = useState<
     "loading" | "ready" | "denied" | "error"
   >("loading");
@@ -106,8 +112,8 @@ export default function LocationPreviewCard({
   return (
     <View>
       <View style={styles.headerRow}>
-        <Text style={styles.label}>Konum</Text>
-        <Text style={styles.hint}>Otomatik GPS</Text>
+        <Text style={styles.label}>{t("locationPreview_label")}</Text>
+        <Text style={styles.hint}>{t("locationPreview_autoGps")}</Text>
       </View>
       <Card style={styles.mapCard}>
         {status === "ready" && value.lat != null && value.lng != null ? (
@@ -124,8 +130,8 @@ export default function LocationPreviewCard({
             ) : (
               <Text style={styles.placeholderText}>
                 {status === "denied"
-                  ? "Konum izni verilmedi"
-                  : "Konum alınamadı"}
+                  ? t("locationPreview_permissionDenied")
+                  : t("locationPreview_locationUnavailable")}
               </Text>
             )}
           </View>
@@ -137,24 +143,23 @@ export default function LocationPreviewCard({
         </Text>
       )}
       <Text style={styles.adresLabel}>
-        Adres {adresYukleniyor ? "(bulunuyor...)" : ""}
+        {t("locationPreview_adresLabel")}{" "}
+        {adresYukleniyor ? t("locationPreview_finding") : ""}
       </Text>
       <TextInput
         style={styles.adresInput}
-        placeholder="Adres bulunamadı, elle girin"
+        placeholder={t("locationPreview_adresPlaceholder")}
         placeholderTextColor={colors.outline}
         value={value.adres}
         onChangeText={(adres) => onChange({ ...value, adres })}
         multiline
       />
-      <Text style={styles.adresHint}>
-        Konumun adresi yanlışsa veya boşsa düzeltebilir/girebilirsiniz.
-      </Text>
+      <Text style={styles.adresHint}>{t("locationPreview_adresHint")}</Text>
     </View>
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     headerRow: {
       flexDirection: "row",

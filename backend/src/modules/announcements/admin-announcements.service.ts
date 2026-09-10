@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import { NotificationsService } from '../notifications/notifications.service';
+import { zenginMetinTemizle } from '../../zengin-metin-sanitize';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
 import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
 import {
@@ -63,6 +64,7 @@ export class AdminAnnouncementsService {
   ): Promise<AdminAnnouncement> {
     const created = (await this.announcementModel.create({
       ...dto,
+      icerik: zenginMetinTemizle(dto.icerik),
       updatedBy,
     })) as unknown as TimestampedAnnouncement;
 
@@ -87,7 +89,15 @@ export class AdminAnnouncementsService {
     if (!Types.ObjectId.isValid(id)) return null;
 
     const doc = await this.announcementModel
-      .findByIdAndUpdate(id, { ...dto, updatedBy }, { new: true })
+      .findByIdAndUpdate(
+        id,
+        {
+          ...dto,
+          ...(dto.icerik !== undefined && { icerik: zenginMetinTemizle(dto.icerik) }),
+          updatedBy,
+        },
+        { new: true },
+      )
       .exec();
     return doc ? this.toAdmin(doc as unknown as TimestampedAnnouncement) : null;
   }

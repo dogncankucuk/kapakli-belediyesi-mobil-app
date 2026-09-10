@@ -44,7 +44,7 @@ const IZINLI_MIME_UZANTILARI: Record<string, string> = {
 
 // Bir basvuruda birden fazla belge (kimlik, dilekce vb.) ayni istekte
 // gonderilebiliyor - dosya basina limit, global 10mb govde limitiyle (bkz.
-// main.ts, atikSiniflandirma ile paylasilan) birlikte birkac belge bir arada
+// main.ts) birlikte birkac belge bir arada
 // gonderildiginde de govdenin sinira takilmamasi icin dusuk tutuluyor
 // (base64 kodlamasi boyutu ~%33 buyutuyor).
 const MAKS_BELGE_BOYUTU_BYTE = 3 * 1024 * 1024;

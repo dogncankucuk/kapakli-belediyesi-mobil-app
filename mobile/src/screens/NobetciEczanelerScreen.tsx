@@ -16,7 +16,7 @@ import { getNobetciEczaneler } from "../api/pharmacies";
 import { Pharmacy } from "../api/types";
 import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 const RESMI_SAYFA_URL = "https://www.teo.org.tr/nobetci-eczaneler";
 
@@ -48,7 +48,11 @@ export default function NobetciEczanelerScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [eczaneler, setEczaneler] = useState<Pharmacy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -169,7 +173,7 @@ export default function NobetciEczanelerScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

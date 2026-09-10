@@ -4,7 +4,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { KULLANIM_SARTLARI_METNI, KVKK_METNI } from "../content/kvkkMetni";
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { useTranslation } from "../i18n/LocaleContext";
+import { Colors, spacing, Typography, useThemeColors, useTypography } from "../theme";
 import SegmentedControl from "./SegmentedControl";
 
 type Sekme = "kvkk" | "sartlar";
@@ -14,8 +15,13 @@ type Props = {
 };
 
 export function KvkkMetniContent({ onBack }: Props) {
+  const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [sekme, setSekme] = useState<Sekme>("kvkk");
 
   return (
@@ -25,7 +31,7 @@ export function KvkkMetniContent({ onBack }: Props) {
           onPress={onBack}
           hitSlop={8}
           accessibilityRole="button"
-          accessibilityLabel="Geri"
+          accessibilityLabel={t("common_back")}
         >
           <MaterialIcons
             name="arrow-back"
@@ -33,15 +39,15 @@ export function KvkkMetniContent({ onBack }: Props) {
             color={colors.onBackground}
           />
         </Pressable>
-        <Text style={styles.headerTitle}>Gizlilik ve Kullanım Şartları</Text>
+        <Text style={styles.headerTitle}>{t("kvkkMetni_title")}</Text>
         <View style={{ width: 24 }} />
       </View>
 
       <View style={styles.tabWrapper}>
         <SegmentedControl
           options={[
-            { label: "KVKK Aydınlatma Metni", value: "kvkk" },
-            { label: "Kullanım Şartları", value: "sartlar" },
+            { label: t("kvkkMetni_tabKvkk"), value: "kvkk" },
+            { label: t("kvkkMetni_tabSartlar"), value: "sartlar" },
           ]}
           value={sekme}
           onChange={setSekme}
@@ -60,7 +66,7 @@ export function KvkkMetniContent({ onBack }: Props) {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

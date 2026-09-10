@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import { NotificationsService } from '../notifications/notifications.service';
+import { zenginMetinTemizle } from '../../zengin-metin-sanitize';
 import { CreateKaziDto } from './dto/create-kazi.dto';
 import { UpdateKaziDto } from './dto/update-kazi.dto';
 import { Kazi, KaziDocument } from './schemas/kazi.schema';
@@ -55,6 +56,7 @@ export class AdminKaziService {
   async create(dto: CreateKaziDto, updatedBy: string): Promise<AdminKazi> {
     const created = (await this.kaziModel.create({
       ...dto,
+      aciklama: zenginMetinTemizle(dto.aciklama),
       updatedBy,
     })) as unknown as TimestampedKazi;
 
@@ -79,7 +81,15 @@ export class AdminKaziService {
   ): Promise<AdminKazi | null> {
     if (!Types.ObjectId.isValid(id)) return null;
     const doc = await this.kaziModel
-      .findByIdAndUpdate(id, { ...dto, updatedBy }, { new: true })
+      .findByIdAndUpdate(
+        id,
+        {
+          ...dto,
+          ...(dto.aciklama !== undefined && { aciklama: zenginMetinTemizle(dto.aciklama) }),
+          updatedBy,
+        },
+        { new: true },
+      )
       .exec();
     return doc
       ? this.toAdmin(doc as unknown as TimestampedKazi)

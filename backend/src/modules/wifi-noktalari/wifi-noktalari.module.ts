@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { CbsModule } from '../cbs/cbs.module';
 import { WifiNoktasi, WifiNoktasiSchema } from './schemas/wifi-noktasi.schema';
 import { AdminWifiNoktalariController } from './admin-wifi-noktalari.controller';
 import { AdminWifiNoktalariService } from './admin-wifi-noktalari.service';
@@ -12,6 +13,7 @@ import { WifiNoktalariService } from './wifi-noktalari.service';
     MongooseModule.forFeature([
       { name: WifiNoktasi.name, schema: WifiNoktasiSchema },
     ]),
+    CbsModule,
   ],
   controllers: [WifiNoktalariController, AdminWifiNoktalariController],
   providers: [WifiNoktalariService, AdminWifiNoktalariService],

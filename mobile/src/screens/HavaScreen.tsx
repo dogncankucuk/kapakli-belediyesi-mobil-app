@@ -16,7 +16,7 @@ import { Card, SegmentedControl, TopBar } from "../components";
 import { havaDurumuIkonu } from "../constants/havaDurumu";
 import { useTranslation } from "../i18n/LocaleContext";
 import { useAppShell } from "../navigation/AppShellContext";
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 function formatSaat(iso: string): string {
   return new Date(iso).toLocaleTimeString("tr-TR", {
@@ -29,7 +29,11 @@ export default function HavaScreen() {
   const { openMenu } = useAppShell();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [segment, setSegment] = useState<"durum" | "kalite">("durum");
 
   const [durum, setDurum] = useState<HavaDurumu | null>(null);
@@ -212,7 +216,7 @@ export default function HavaScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

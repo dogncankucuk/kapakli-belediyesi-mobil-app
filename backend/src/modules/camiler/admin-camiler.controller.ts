@@ -15,6 +15,7 @@ import type { Request } from 'express';
 import { RbacGuard } from '../../admin/auth/rbac.guard';
 import { RequirePermission } from '../../admin/auth/require-permission.decorator';
 import { SessionAuthGuard } from '../../admin/auth/session-auth.guard';
+import { CbsSenkronizeSonucu } from '../cbs/cbs-kaynak.service';
 import { AdminCami, AdminCamilerService } from './admin-camiler.service';
 import { CreateCamiDto } from './dto/create-cami.dto';
 import { UpdateCamiDto } from './dto/update-cami.dto';
@@ -72,5 +73,11 @@ export class AdminCamilerController {
       throw new NotFoundException();
     }
     return { success: true };
+  }
+
+  @Post('cbs-senkronize')
+  @RequirePermission('camiler', 'create')
+  cbsSenkronize(@Req() req: Request): Promise<CbsSenkronizeSonucu> {
+    return this.adminCamilerService.cbsSenkronize(req.session.adminUser!.email);
   }
 }

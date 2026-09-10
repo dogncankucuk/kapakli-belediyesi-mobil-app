@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 type SegmentedControlOption<T extends string> = {
   label: string;
@@ -20,7 +20,11 @@ export default function SegmentedControl<T extends string>({
   onChange,
 }: SegmentedControlProps<T>) {
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
 
   return (
     <View style={styles.container}>
@@ -44,7 +48,7 @@ export default function SegmentedControl<T extends string>({
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flexDirection: "row",

@@ -10,7 +10,6 @@ import type {
   Appointment,
   AtikNoktasi,
   AtikRehberiIcerik,
-  Baraj,
   BasvuruDurumu,
   BasvuruHizmeti,
   Cami,
@@ -19,6 +18,7 @@ import type {
   AseviBasvuruDurumu,
   Baskan,
   BizeUlasinBilgisi,
+  EgitimKurumu,
   EkBilgiAlani,
   FaturaOdemeKurumu,
   FormBelgesi,
@@ -31,13 +31,14 @@ import type {
   MeclisGundemi,
   MeclisKarari,
   MedyaDosyasi,
+  MedyaKlasoru,
   OnemliKurum,
   Park,
   PlanliKesinti,
   Pharmacy,
-  SuHizmetleriAyarlari,
   PagedTalepRequests,
   ResourcePermission,
+  SaglikKurumu,
   TalepDurumu,
   TalepFiltreleri,
   TalepRequest,
@@ -656,27 +657,6 @@ export function deleteWifiNoktasi(id: string) {
   return request<{ success: boolean }>(`/wifi-noktalari/${id}`, { method: 'DELETE' });
 }
 
-export type BarajInput = {
-  ad: string;
-  doluluk: number;
-};
-
-export function getBarajlar() {
-  return request<Baraj[]>('/barajlar');
-}
-
-export function createBaraj(data: BarajInput) {
-  return request<Baraj>('/barajlar', { method: 'POST', body: JSON.stringify(data) });
-}
-
-export function updateBaraj(id: string, data: Partial<BarajInput>) {
-  return request<Baraj>(`/barajlar/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
-}
-
-export function deleteBaraj(id: string) {
-  return request<{ success: boolean }>(`/barajlar/${id}`, { method: 'DELETE' });
-}
-
 export type PlanliKesintiInput = {
   tarih: string;
   ilce: string;
@@ -703,29 +683,6 @@ export function updatePlanliKesinti(id: string, data: Partial<PlanliKesintiInput
 
 export function deletePlanliKesinti(id: string) {
   return request<{ success: boolean }>(`/planli-kesintiler/${id}`, { method: 'DELETE' });
-}
-
-export function getSuHizmetleriAyarlari() {
-  return request<SuHizmetleriAyarlari>('/su-hizmetleri-ayarlari');
-}
-
-export type SuHizmetleriAyarlariInput = {
-  kesintilerKaynakUrl: string;
-  kesintilerGoruntulemeUrl: string;
-};
-
-export function updateSuHizmetleriAyarlari(data: SuHizmetleriAyarlariInput) {
-  return request<SuHizmetleriAyarlari>('/su-hizmetleri-ayarlari', {
-    method: 'PATCH',
-    body: JSON.stringify(data),
-  });
-}
-
-export function kesintilerCek(url?: string) {
-  return request<{ bulunan: number; eklenen: number }>(
-    '/su-hizmetleri-ayarlari/kesintiler-cek',
-    { method: 'POST', body: JSON.stringify(url ? { url } : {}) },
-  );
 }
 
 export type KaziInput = {
@@ -788,16 +745,20 @@ export function deleteElektrikKesintisi(id: string) {
   });
 }
 
-export function getMedyaDosyalari() {
-  return request<MedyaDosyasi[]>('/medya');
+// klasorId: verilmezse tumu, 'root' ise klasorsuz (Genel) dosyalar, aksi
+// halde o klasordeki dosyalar.
+export function getMedyaDosyalari(klasorId?: string) {
+  const query = klasorId ? `?klasorId=${encodeURIComponent(klasorId)}` : '';
+  return request<MedyaDosyasi[]>(`/medya${query}`);
 }
 
 // FormData govdesi gonderdigi icin genel request() yardimcisini kullanmiyor
 // (o her zaman Content-Type: application/json ekliyor - multipart sinir
 // (boundary) degerini tarayicinin kendisinin ayarlamasi gerekiyor).
-export async function uploadMedya(dosya: File): Promise<MedyaDosyasi> {
+export async function uploadMedya(dosya: File, klasorId?: string): Promise<MedyaDosyasi> {
   const formData = new FormData();
   formData.append('dosya', dosya);
+  if (klasorId) formData.append('klasorId', klasorId);
   const res = await fetch(`${API_BASE}/medya`, {
     method: 'POST',
     credentials: 'include',
@@ -818,6 +779,23 @@ export async function uploadMedya(dosya: File): Promise<MedyaDosyasi> {
 
 export function deleteMedya(id: string) {
   return request<{ success: boolean }>(`/medya/${id}`, { method: 'DELETE' });
+}
+
+export function getMedyaKlasorleri() {
+  return request<MedyaKlasoru[]>('/medya-klasorleri');
+}
+
+export function createMedyaKlasoru(ad: string) {
+  return request<MedyaKlasoru>('/medya-klasorleri', {
+    method: 'POST',
+    body: JSON.stringify({ ad }),
+  });
+}
+
+export function deleteMedyaKlasoru(id: string) {
+  return request<{ success: boolean }>(`/medya-klasorleri/${id}`, {
+    method: 'DELETE',
+  });
 }
 
 export function getAseviBasvurulari() {
@@ -886,6 +864,104 @@ export function updateOnemliKurum(id: string, data: Partial<OnemliKurumInput>) {
 
 export function deleteOnemliKurum(id: string) {
   return request<{ success: boolean }>(`/onemli-kurumlar/${id}`, { method: 'DELETE' });
+}
+
+export interface CbsSenkronizeSonucu {
+  bulunan: number;
+  eklenen: number;
+  guncellenen: number;
+}
+
+export function cbsSenkronizeCamiler() {
+  return request<CbsSenkronizeSonucu>('/camiler/cbs-senkronize', { method: 'POST' });
+}
+
+export function cbsSenkronizeOnemliKurumlar() {
+  return request<CbsSenkronizeSonucu>('/onemli-kurumlar/cbs-senkronize', { method: 'POST' });
+}
+
+export function cbsSenkronizeEgitim() {
+  return request<CbsSenkronizeSonucu>('/egitim/cbs-senkronize', { method: 'POST' });
+}
+
+export function cbsSenkronizeSaglik() {
+  return request<CbsSenkronizeSonucu>('/saglik/cbs-senkronize', { method: 'POST' });
+}
+
+export function eczanelerdenIceAktar() {
+  return request<CbsSenkronizeSonucu>('/saglik/eczane-ice-aktar', { method: 'POST' });
+}
+
+export function cbsSenkronizeAtikNoktalari() {
+  return request<CbsSenkronizeSonucu>('/atik-noktalari/cbs-senkronize', { method: 'POST' });
+}
+
+export function cbsSenkronizePark() {
+  return request<CbsSenkronizeSonucu>('/parklar/cbs-senkronize', { method: 'POST' });
+}
+
+export function cbsSenkronizeWifiNoktalari() {
+  return request<CbsSenkronizeSonucu>('/wifi-noktalari/cbs-senkronize', { method: 'POST' });
+}
+
+export type EgitimKurumuInput = {
+  ad: string;
+  tur: string;
+  adres?: string;
+  lat: number;
+  lng: number;
+};
+
+export function getEgitimKurumlari() {
+  return request<EgitimKurumu[]>('/egitim');
+}
+
+export function createEgitimKurumu(data: EgitimKurumuInput) {
+  return request<EgitimKurumu>('/egitim', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateEgitimKurumu(id: string, data: Partial<EgitimKurumuInput>) {
+  return request<EgitimKurumu>(`/egitim/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteEgitimKurumu(id: string) {
+  return request<{ success: boolean }>(`/egitim/${id}`, { method: 'DELETE' });
+}
+
+export type SaglikKurumuInput = {
+  ad: string;
+  tur: string;
+  adres?: string;
+  lat: number;
+  lng: number;
+};
+
+export function getSaglikKurumlari() {
+  return request<SaglikKurumu[]>('/saglik');
+}
+
+export function createSaglikKurumu(data: SaglikKurumuInput) {
+  return request<SaglikKurumu>('/saglik', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateSaglikKurumu(id: string, data: Partial<SaglikKurumuInput>) {
+  return request<SaglikKurumu>(`/saglik/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteSaglikKurumu(id: string) {
+  return request<{ success: boolean }>(`/saglik/${id}`, { method: 'DELETE' });
 }
 
 export type AtikNoktasiInput = {
@@ -1148,9 +1224,9 @@ export function deleteAdminUser(id: string) {
   return request<{ success: boolean }>(`/admin-users/${id}`, { method: 'DELETE' });
 }
 
-export function sendManualNotification(baslik: string, govde: string, kategoriler: string[]) {
+export function sendManualNotification(baslik: string, govde: string, fotografUrl?: string) {
   return request<{ success: true }>('/notifications/send', {
     method: 'POST',
-    body: JSON.stringify({ baslik, govde, kategoriler }),
+    body: JSON.stringify({ baslik, govde, ...(fotografUrl ? { fotografUrl } : {}) }),
   });
 }

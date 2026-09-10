@@ -3,14 +3,7 @@ import { ComponentProps, useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import Card from "./Card";
-import {
-  CategoryAccent,
-  Colors,
-  shape,
-  spacing,
-  typography,
-  useThemeColors,
-} from "../theme";
+import { CategoryAccent, Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 type CategoryIconCardProps = {
   icon: ComponentProps<typeof MaterialIcons>["name"];
@@ -30,7 +23,11 @@ export default function CategoryIconCard({
   onPress,
 }: CategoryIconCardProps) {
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
 
   return (
     <Pressable
@@ -68,7 +65,7 @@ export default function CategoryIconCard({
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     flexItem: {
       flexGrow: 1,

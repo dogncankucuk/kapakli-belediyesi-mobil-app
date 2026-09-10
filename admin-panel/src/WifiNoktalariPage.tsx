@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import {
+  cbsSenkronizeWifiNoktalari,
   createWifiNoktasi,
   deleteWifiNoktasi,
   getWifiNoktalari,
   updateWifiNoktasi,
 } from './api';
 import type { WifiNoktasiInput } from './api';
+import CbsSenkronizeButonu from './CbsSenkronizeButonu';
 import KonumSecici from './KonumSecici';
 import type { WifiNoktasi } from './types';
 
@@ -89,6 +91,8 @@ function WifiNoktalariPage({ canManage }: Props) {
     <div className="page">
       <h2>Wi-Fi Noktaları</h2>
       {error && <p className="error-message">{error}</p>}
+
+      {canManage && <CbsSenkronizeButonu senkronizeEt={cbsSenkronizeWifiNoktalari} onTamamlandi={load} />}
 
       {canManage && (
         <form className="inline-form" onSubmit={handleCreate}>

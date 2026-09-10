@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { LoginDto } from './dto/login.dto';
@@ -77,5 +78,16 @@ export class UsersController {
     @Body() dto: UpdateProfileDto,
   ) {
     return this.usersService.updateProfile(request.userId, dto);
+  }
+
+  // Mevcut sifre tahmin etmeyi (brute-force) sinirlar - login ile ayni sikilikta.
+  @Throttle({ default: { limit: 10, ttl: 600_000 } })
+  @UseGuards(JwtAuthGuard)
+  @Patch('change-password')
+  changePassword(
+    @Req() request: AuthenticatedRequest,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    return this.usersService.changePassword(request.userId, dto);
   }
 }

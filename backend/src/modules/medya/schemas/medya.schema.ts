@@ -22,6 +22,11 @@ export class Medya {
 
   @Prop()
   updatedBy?: string;
+
+  // Bos/tanimsiz = "Genel" (kategorisiz kok) - departmanlara ozel klasorler
+  // MedyaKlasoru koleksiyonunda tutuluyor, burada sadece referans.
+  @Prop()
+  klasorId?: string;
 }
 
 export const MedyaSchema = SchemaFactory.createForClass(Medya);

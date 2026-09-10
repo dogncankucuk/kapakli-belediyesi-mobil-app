@@ -49,8 +49,12 @@ export async function requestPermissionsAndGetToken(): Promise<string | null> {
   const projectId = Constants.expoConfig?.extra?.eas?.projectId;
   if (!projectId) {
     // TODO: EAS projectId / Firebase FCM V1 service account henuz yapilandirilmadi - bkz. proje sahibiyle gorusulecek adim
+    // Sessizce null donmek yerine ozel bir hata firlatiliyor - AyarlarScreen
+    // bunu yakalayip kullaniciya "izin verildi ama sistem hazir degil"
+    // durumunu acikca gosterebilsin diye (aksi halde switch sebepsizce
+    // kapaniyormus gibi goruniyordu).
     console.warn("EAS projectId bulunamadi, push token alinamadi.");
-    return null;
+    throw new Error("PUSH_NOT_CONFIGURED");
   }
 
   const { data: token } = await Notifications.getExpoPushTokenAsync({

@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { getHavaDurumu } from "../api/havaDurumu";
 import { HavaDurumu } from "../api/types";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, typography, useThemeColors } from "../theme";
+import { Colors, Typography, useThemeColors, useTypography } from "../theme";
 
 type Props = {
   onSearchPress: () => void;
@@ -18,7 +18,11 @@ type Props = {
 export default function HavaVeAramaSag({ onSearchPress, searchActive }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [havaDurumu, setHavaDurumu] = useState<HavaDurumu | null>(null);
 
   useEffect(() => {
@@ -51,7 +55,7 @@ export default function HavaVeAramaSag({ onSearchPress, searchActive }: Props) {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     row: {
       flexDirection: "row",

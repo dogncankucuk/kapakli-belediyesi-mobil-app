@@ -163,27 +163,20 @@ export class NotificationsService {
     }
   }
 
-  // Admin panelden birden fazla kategori secilerek gonderilen bildirimlerde
-  // ayni kullaniciya (birden fazla kategoriye aciksa) tekrar tekrar
-  // gonderilmesini onlemek icin sendBroadcast'ten ayri: kullanici sorgusu
-  // "en az bir kategori kapatilmamis" mantigiyla TEK Mongo sorgusunda ($or)
-  // yapilir, her kullaniciya sadece bir kez gonderilir.
-  async sendBroadcastToAnyCategory(
-    kategoriler: string[],
+  // Admin panelden gonderilen serbest metinli/manuel duyurular icin: herhangi
+  // bir icerik kategorisine bagli olmadigindan (bkz. NotificationsPage.tsx'in
+  // artik kategori secimi sunmamasi) kategori tercihi kontrol edilmeden,
+  // sadece hesabi devre disi olmayan TUM kullanicilara gonderilir.
+  async sendBroadcastToAll(
     baslik: string,
     govde: string,
+    fotografUrl?: string,
   ): Promise<void> {
-    if (kategoriler.length === 0) return;
-
-    const kategoriEtiketi = kategoriler.join(',');
     let lastId: Types.ObjectId | undefined;
 
     for (;;) {
       const filter: QueryFilter<UserDocument> = {
         disabled: { $ne: true },
-        $or: kategoriler.map((kategori) => ({
-          [`bildirimTercihleri.${kategori}`]: { $ne: false },
-        })),
         ...(lastId ? { _id: { $gt: lastId } } : {}),
       };
       const batch = await this.userModel
@@ -202,9 +195,10 @@ export class NotificationsService {
         await this.notificationModel.insertMany(
           userIds.map((userId) => ({
             userId,
-            kategori: kategoriEtiketi,
+            kategori: 'manuel',
             baslik,
             govde,
+            fotografUrl: fotografUrl ?? null,
           })),
         );
 
@@ -215,12 +209,10 @@ export class NotificationsService {
           tokens.map((t) => t.token),
           baslik,
           govde,
+          fotografUrl ? { fotografUrl } : undefined,
         );
       } catch (err) {
-        this.logger.error(
-          'sendBroadcastToAnyCategory batch basarisiz',
-          err as Error,
-        );
+        this.logger.error('sendBroadcastToAll batch basarisiz', err as Error);
       }
 
       if (batch.length < BATCH_SIZE) break;

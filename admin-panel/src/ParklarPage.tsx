@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { createPark, deletePark, getParklar, updatePark } from './api';
+import { cbsSenkronizePark, createPark, deletePark, getParklar, updatePark } from './api';
 import type { ParkInput } from './api';
+import CbsSenkronizeButonu from './CbsSenkronizeButonu';
 import KonumSecici from './KonumSecici';
 import { parkTuruLabels } from './types';
 import type { Park } from './types';
@@ -79,6 +80,8 @@ function ParklarPage({ canManage }: Props) {
     <div className="page">
       <h2>Parklar</h2>
       {error && <p className="error-message">{error}</p>}
+
+      {canManage && <CbsSenkronizeButonu senkronizeEt={cbsSenkronizePark} onTamamlandi={load} />}
 
       {canManage && (
         <form className="inline-form" onSubmit={handleCreate}>

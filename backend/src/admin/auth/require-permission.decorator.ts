@@ -31,6 +31,8 @@ export type AdminResource =
   | 'asevi'
   | 'camiler'
   | 'onemliKurumlar'
+  | 'egitim'
+  | 'saglik'
   | 'parklar'
   | 'tarihiYerler'
   | 'formlar'
@@ -75,6 +77,8 @@ export const ALL_ADMIN_RESOURCES: AdminResource[] = [
   'asevi',
   'camiler',
   'onemliKurumlar',
+  'egitim',
+  'saglik',
   'parklar',
   'tarihiYerler',
   'formlar',

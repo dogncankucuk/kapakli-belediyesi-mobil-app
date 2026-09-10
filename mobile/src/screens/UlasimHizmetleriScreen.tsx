@@ -3,7 +3,6 @@ import { useNavigation } from "@react-navigation/native";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Linking,
   Pressable,
@@ -20,7 +19,7 @@ import { getCanliOtobusler, getUlasimHatlari } from "../api/ulasimHatlari";
 import { CanliOtobus, UlasimHatti } from "../api/types";
 import { Card, SecondaryButton } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 const KART_BASIM_ADRESI =
   "Cumhuriyet Mah. Kapaklı Kültür Merkezi Kapaklı/Tekirdağ";
@@ -100,7 +99,11 @@ export default function UlasimHizmetleriScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
 
   const [hatlar, setHatlar] = useState<UlasimHatti[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -240,9 +243,8 @@ export default function UlasimHizmetleriScreen() {
         <SecondaryButton
           label={t("ulasim_bakiyeButton")}
           onPress={() =>
-            Alert.alert(
-              t("ulasim_bakiyeYakindaTitle"),
-              t("ulasim_bakiyeYakindaMesaj"),
+            Linking.openURL(
+              "https://www.tekulas.com.tr/tekirdag-kart-bakiye-yukleme-islemi/",
             )
           }
         />
@@ -348,32 +350,52 @@ export default function UlasimHizmetleriScreen() {
                   {t("ulasim_saatYok")}
                 </Text>
               ) : (
-                <>
-                  <View style={styles.detaySatir}>
-                    <Text style={styles.detayEtiket}>
-                      {t("ulasim_gidisSaatleri")}
-                    </Text>
-                    <Text style={styles.detayDeger}>
-                      {seciliHat.kalkisSaatleri
-                        .filter((k) => k.yon === "gidis")
-                        .map((k) => k.saat)
-                        .sort()
-                        .join(", ") || "-"}
-                    </Text>
-                  </View>
-                  <View style={styles.detaySatir}>
-                    <Text style={styles.detayEtiket}>
-                      {t("ulasim_donusSaatleri")}
-                    </Text>
-                    <Text style={styles.detayDeger}>
-                      {seciliHat.kalkisSaatleri
-                        .filter((k) => k.yon === "donus")
-                        .map((k) => k.saat)
-                        .sort()
-                        .join(", ") || "-"}
-                    </Text>
-                  </View>
-                </>
+                (["gidis", "donus"] as const).flatMap((yon) => {
+                  const ilgili = seciliHat.kalkisSaatleri.filter(
+                    (k) => k.yon === yon,
+                  );
+                  const hergun = ilgili
+                    .filter((k) => k.gun === "hergun")
+                    .map((k) => k.saat)
+                    .sort();
+                  const haftaici = ilgili
+                    .filter((k) => k.gun === "haftaici")
+                    .map((k) => k.saat)
+                    .sort();
+                  const haftasonu = ilgili
+                    .filter((k) => k.gun === "haftasonu")
+                    .map((k) => k.saat)
+                    .sort();
+                  const baseLabel =
+                    yon === "gidis"
+                      ? t("ulasim_gidisSaatleri")
+                      : t("ulasim_donusSaatleri");
+                  const satirlar: { etiket: string; deger: string }[] = [];
+                  if (hergun.length > 0) {
+                    satirlar.push({ etiket: baseLabel, deger: hergun.join(", ") });
+                  }
+                  if (haftaici.length > 0) {
+                    satirlar.push({
+                      etiket: `${baseLabel} (${t("ulasim_haftaIci")})`,
+                      deger: haftaici.join(", "),
+                    });
+                  }
+                  if (haftasonu.length > 0) {
+                    satirlar.push({
+                      etiket: `${baseLabel} (${t("ulasim_haftaSonu")})`,
+                      deger: haftasonu.join(", "),
+                    });
+                  }
+                  if (satirlar.length === 0) {
+                    satirlar.push({ etiket: baseLabel, deger: "-" });
+                  }
+                  return satirlar.map((s, i) => (
+                    <View style={styles.detaySatir} key={`${yon}-${i}`}>
+                      <Text style={styles.detayEtiket}>{s.etiket}</Text>
+                      <Text style={styles.detayDeger}>{s.deger}</Text>
+                    </View>
+                  ));
+                })
               )}
 
               {seciliHat.canli && (
@@ -405,7 +427,7 @@ export default function UlasimHizmetleriScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

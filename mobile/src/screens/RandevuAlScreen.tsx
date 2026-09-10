@@ -16,13 +16,17 @@ import { getBasvuruTurleri } from "../api/basvurular";
 import { BasvuruTuru } from "../api/types";
 import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 export default function RandevuAlScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
 
   const [turler, setTurler] = useState<BasvuruTuru[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -146,7 +150,7 @@ export default function RandevuAlScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

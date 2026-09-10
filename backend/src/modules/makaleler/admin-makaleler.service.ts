@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import { NotificationsService } from '../notifications/notifications.service';
+import { zenginMetinTemizle } from '../../zengin-metin-sanitize';
 import { CreateMakaleDto } from './dto/create-makale.dto';
 import { UpdateMakaleDto } from './dto/update-makale.dto';
 import { Makale, MakaleDocument } from './schemas/makale.schema';
@@ -54,6 +55,7 @@ export class AdminMakalelerService {
   async create(dto: CreateMakaleDto, updatedBy: string): Promise<AdminMakale> {
     const created = (await this.makaleModel.create({
       ...dto,
+      icerik: zenginMetinTemizle(dto.icerik),
       updatedBy,
     })) as unknown as TimestampedMakale;
 
@@ -78,7 +80,15 @@ export class AdminMakalelerService {
     if (!Types.ObjectId.isValid(id)) return null;
 
     const doc = await this.makaleModel
-      .findByIdAndUpdate(id, { ...dto, updatedBy }, { new: true })
+      .findByIdAndUpdate(
+        id,
+        {
+          ...dto,
+          ...(dto.icerik !== undefined && { icerik: zenginMetinTemizle(dto.icerik) }),
+          updatedBy,
+        },
+        { new: true },
+      )
       .exec();
     return doc ? this.toAdmin(doc as unknown as TimestampedMakale) : null;
   }

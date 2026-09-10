@@ -26,7 +26,6 @@ import { TemaAyarlariModule } from './modules/tema-ayarlari/tema-ayarlari.module
 import { PanelTemasiModule } from './modules/panel-temasi/panel-temasi.module';
 import { AtikNoktalariModule } from './modules/atik-noktalari/atik-noktalari.module';
 import { AtikRehberiModule } from './modules/atik-rehberi/atik-rehberi.module';
-import { AtikSiniflandirmaModule } from './modules/atik-siniflandirma/atik-siniflandirma.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { RequestsModule } from './modules/requests/requests.module';
 import { PharmaciesModule } from './modules/pharmacies/pharmacies.module';
@@ -43,6 +42,8 @@ import { HavaDurumuModule } from './modules/hava-durumu/hava-durumu.module';
 import { AdminUsersModule } from './modules/admin-users/admin-users.module';
 import { CamilerModule } from './modules/camiler/camiler.module';
 import { OnemliKurumlarModule } from './modules/onemli-kurumlar/onemli-kurumlar.module';
+import { EgitimModule } from './modules/egitim/egitim.module';
+import { SaglikModule } from './modules/saglik/saglik.module';
 import { ParklarModule } from './modules/parklar/parklar.module';
 import { TarihiYerlerModule } from './modules/tarihi-yerler/tarihi-yerler.module';
 import { UsersModule } from './modules/users/users.module';
@@ -100,7 +101,6 @@ import { UPLOADS_DIR } from './uploads-dir';
     PanelTemasiModule,
     AtikNoktalariModule,
     AtikRehberiModule,
-    AtikSiniflandirmaModule,
     AppointmentsModule,
     RequestsModule,
     PharmaciesModule,
@@ -117,6 +117,8 @@ import { UPLOADS_DIR } from './uploads-dir';
     AdminUsersModule,
     CamilerModule,
     OnemliKurumlarModule,
+    EgitimModule,
+    SaglikModule,
     ParklarModule,
     TarihiYerlerModule,
     UsersModule,

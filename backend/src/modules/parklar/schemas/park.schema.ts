@@ -22,6 +22,12 @@ export class Park {
 
   @Prop()
   updatedBy?: string;
+
+  // CBS kaynagindaki park_id - ayni park adi birden fazla parkta tekrar
+  // edebildigi icin (ör. iki ayri "ÖZEN MENSUCAT" parki) senkronizasyonda
+  // dogru eslestirme icin kullaniliyor.
+  @Prop()
+  cbsPoiId?: string;
 }
 
 export const ParkSchema = SchemaFactory.createForClass(Park);

@@ -3,6 +3,12 @@ import { HydratedDocument } from 'mongoose';
 
 export type KalkisYonu = 'gidis' | 'donus';
 
+// Bazi hatlarin hafta ici/hafta sonu saatleri farkli (bkz. TREDAS/belediye
+// kaynakli CSV'ler) - "hergun" varsayilan deger, eskiden (bu alan
+// eklenmeden once) girilmis kayitlarin geriye donuk hafta ici/sonu ayrimi
+// olmadan her iki grupta da gosterilmesini saglar.
+export type KalkisGunu = 'hergun' | 'haftaici' | 'haftasonu';
+
 // Hatlarin kalkis saatleri duzenli araliklarla olmadigi icin (bkz. Tekulas
 // referans sayfasi), tek bir serbest metin yerine her biri yon etiketli
 // (gidis/donus) ayri saat kayitlari - admin panelinde eklenip/silinebilen ve
@@ -14,6 +20,9 @@ export class KalkisSaati {
 
   @Prop({ required: true })
   yon: KalkisYonu;
+
+  @Prop({ required: true, default: 'hergun' })
+  gun: KalkisGunu;
 }
 
 export const KalkisSaatiSchema = SchemaFactory.createForClass(KalkisSaati);

@@ -1,14 +1,15 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { ComponentProps, useMemo } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { resolveMediaUrl } from "../api/client";
 import { Card, HavaVeAramaSag, PrimaryButton, TopBar } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { TranslationKey } from "../i18n/tr";
 import { useAppShell } from "../navigation/AppShellContext";
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 type MenuItem = {
   key: "HesapBilgilerim" | "Ayarlar";
@@ -32,7 +33,11 @@ export default function ProfileScreen() {
   const { openMenu, user, exitApp } = useAppShell();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
 
   const handleMenuPress = (item: MenuItem) => {
     if (item.key === "HesapBilgilerim" && !user) {
@@ -66,7 +71,14 @@ export default function ProfileScreen() {
       <View style={styles.content}>
         <View style={styles.identity}>
           <View style={styles.avatar}>
-            <MaterialIcons name="person" size={40} color={colors.onPrimary} />
+            {user?.profilFotografiUrl ? (
+              <Image
+                source={{ uri: resolveMediaUrl(user.profilFotografiUrl) }}
+                style={styles.avatarImage}
+              />
+            ) : (
+              <MaterialIcons name="person" size={40} color={colors.onPrimary} />
+            )}
           </View>
           {user ? (
             <>
@@ -130,7 +142,7 @@ export default function ProfileScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -153,6 +165,11 @@ const createStyles = (colors: Colors) =>
       alignItems: "center",
       justifyContent: "center",
       marginBottom: spacing.stackGap / 2,
+      overflow: "hidden",
+    },
+    avatarImage: {
+      width: 72,
+      height: 72,
     },
     name: {
       ...typography.titleMd,

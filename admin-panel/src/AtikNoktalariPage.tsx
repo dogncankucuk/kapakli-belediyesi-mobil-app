@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import {
+  cbsSenkronizeAtikNoktalari,
   createAtikNoktasi,
   deleteAtikNoktasi,
   getAtikNoktalari,
   updateAtikNoktasi,
 } from './api';
 import type { AtikNoktasiInput } from './api';
+import CbsSenkronizeButonu from './CbsSenkronizeButonu';
 import KonumSecici from './KonumSecici';
 import { atikTuruLabels } from './types';
 import type { AtikNoktasi } from './types';
@@ -88,12 +90,16 @@ function AtikNoktalariPage({ canManage }: Props) {
 
   return (
     <div className="page">
-      <h2>Atık Konumları</h2>
+      <h2>Atık Toplama</h2>
       <p>
         Mobil uygulamadaki "Atık Rehberi" ekranında atık türü seçildiğinde
         listelenen noktaları buradan yönetin.
       </p>
       {error && <p className="error-message">{error}</p>}
+
+      {canManage && (
+        <CbsSenkronizeButonu senkronizeEt={cbsSenkronizeAtikNoktalari} onTamamlandi={load} />
+      )}
 
       {canManage && (
         <form className="inline-form" onSubmit={handleCreate}>

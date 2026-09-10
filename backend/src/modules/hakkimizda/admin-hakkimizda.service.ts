@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { zenginMetinTemizle } from '../../zengin-metin-sanitize';
 import { UpdateHakkimizdaDto } from './dto/update-hakkimizda.dto';
 import { Hakkimizda, HakkimizdaDocument } from './schemas/hakkimizda.schema';
 
@@ -32,7 +33,17 @@ export class AdminHakkimizdaService {
     updatedBy: string,
   ): Promise<AdminHakkimizda> {
     const doc = await this.hakkimizdaModel
-      .findOneAndUpdate({}, { ...dto, updatedBy }, { new: true, upsert: true })
+      .findOneAndUpdate(
+        {},
+        {
+          ...dto,
+          ...(dto.baskanOzetMetni !== undefined && {
+            baskanOzetMetni: zenginMetinTemizle(dto.baskanOzetMetni),
+          }),
+          updatedBy,
+        },
+        { new: true, upsert: true },
+      )
       .exec();
     return this.toAdmin(doc);
   }

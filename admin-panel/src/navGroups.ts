@@ -30,10 +30,11 @@ export type Page =
   | 'wifiNoktalari'
   | 'suHizmetleri'
   | 'fenIsleri'
-  | 'elektrik'
   | 'asevi'
   | 'camiler'
   | 'onemliKurumlar'
+  | 'egitim'
+  | 'saglik'
   | 'parklar'
   | 'tarihiYerler'
   | 'formlar'
@@ -95,12 +96,10 @@ export const NAV_GROUPS: NavGroup[] = [
     heading: 'Hizmetler',
     items: [
       { page: 'faturaOdeme', label: 'Fatura Ödeme' },
-      { page: 'suHizmetleri', label: 'Su Hizmetleri' },
+      { page: 'suHizmetleri', label: 'Su ve Elektrik Kesintileri' },
       { page: 'fenIsleri', label: 'Kazı Çalışmaları' },
-      { page: 'elektrik', label: 'Elektrik Kesintileri' },
       { page: 'formlar', label: 'Formlar ve Dilekçeler' },
       { page: 'ulasimHizmetleri', label: 'Ulaşım Hizmetleri' },
-      { page: 'atikRehberi', label: 'Atık Rehberi' },
       { page: 'pharmacies', label: 'Nöbetçi Eczaneler' },
     ],
   },
@@ -119,13 +118,13 @@ export const NAV_GROUPS: NavGroup[] = [
     heading: 'Harita Konumları',
     items: [
       { page: 'mapEditor', label: 'Harita Editörü' },
-      { page: 'atikNoktalari', label: 'Atık Konumları' },
-      { page: 'camiler', label: 'Camiler' },
-      { page: 'onemliKurumlar', label: 'Önemli Kurumlar' },
-      { page: 'parklar', label: 'Parklar' },
-      { page: 'tarihiYerler', label: 'Tarihi Yerler' },
+      { page: 'camiler', label: 'Dini Tesis' },
+      { page: 'onemliKurumlar', label: 'Resmi Kurum' },
+      { page: 'egitim', label: 'Eğitim' },
+      { page: 'saglik', label: 'Sağlık' },
+      { page: 'atikNoktalari', label: 'Atık Toplama' },
       { page: 'wifiNoktalari', label: 'Wi-Fi Noktaları' },
-      { page: 'pharmacies', label: 'Nöbetçi Eczaneler' },
+      { page: 'parklar', label: 'Parklar' },
     ],
   },
   {
@@ -152,6 +151,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { page: 'appointments', label: 'Randevular' },
       { page: 'vefatEdenler', label: 'Vefat Edenler' },
+      { page: 'atikRehberi', label: 'Atık Rehberi' },
     ],
   },
 ];
@@ -161,6 +161,8 @@ export const NAV_GROUPS: NavGroup[] = [
 export const MAP_EDITOR_RESOURCES = [
   'camiler',
   'onemliKurumlar',
+  'egitim',
+  'saglik',
   'parklar',
   'tarihiYerler',
   'wifiNoktalari',
@@ -176,6 +178,5 @@ export function pageResource(page: Page): string | null {
   // duzenleyemez ya da tam tersi olur.
   if (page === 'ulasimHizmetleri') return 'ulasimHatlari';
   if (page === 'fenIsleri') return 'kaziCalismalari';
-  if (page === 'elektrik') return 'elektrikKesintileri';
   return page;
 }

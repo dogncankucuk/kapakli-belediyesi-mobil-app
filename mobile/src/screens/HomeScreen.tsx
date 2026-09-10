@@ -32,7 +32,7 @@ import {
   getSeciliHizliIslemler,
   seciliHizliIslemleriKaydet,
 } from "../storage/quickActionsStorage";
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 function formatHaberDate(item: Haber): string {
   return new Date(item.yayinTarihi).toLocaleDateString("tr-TR", {
@@ -47,7 +47,11 @@ export default function HomeScreen() {
   const { openMenu } = useAppShell();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [haberler, setHaberler] = useState<Haber[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -177,7 +181,7 @@ export default function HomeScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

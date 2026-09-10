@@ -15,7 +15,7 @@ import WebView from "react-native-webview";
 import { BizeUlasinBilgisi, getBizeUlasin } from "../api/bizeUlasin";
 import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 // MapScreen.tsx'teki Leaflet WebView deseniyle ayni ancak sabit/etkilesimsiz:
 // zoom/surukleme kapali, tek marker - "konum sabit gozuksun" istegi icin.
@@ -68,7 +68,11 @@ type Props = {
 export function BizeUlasinContent({ onBack, onNavigateToMap }: Props) {
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [bilgi, setBilgi] = useState<BizeUlasinBilgisi | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -207,7 +211,7 @@ export default function BizeUlasinScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

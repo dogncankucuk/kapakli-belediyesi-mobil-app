@@ -19,10 +19,11 @@ import { getHaberler } from "../api/haberler";
 import { getIhaleler } from "../api/ihaleler";
 import { getIlanlar } from "../api/ilanlar";
 import { getMakaleler } from "../api/makaleler";
-import { Card } from "../components";
+import { Card, ZenginMetinGoster } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { TranslationKey } from "../i18n/tr";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
+import { htmlToDuzMetin } from "../utils/html";
 import { extractYoutubeId } from "../utils/youtube";
 
 export type GuncelIcerikKategori =
@@ -110,7 +111,11 @@ export default function GuncelIcerikScreen() {
     .kategori;
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [kayitlar, setKayitlar] = useState<IcerikKaydi[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -179,12 +184,13 @@ export default function GuncelIcerikScreen() {
                     {item.baslik}
                   </Text>
                   {item.icerik ? (
-                    <Text
-                      style={styles.itemSummary}
-                      numberOfLines={expanded ? undefined : 2}
-                    >
-                      {item.icerik}
-                    </Text>
+                    expanded ? (
+                      <ZenginMetinGoster html={item.icerik} />
+                    ) : (
+                      <Text style={styles.itemSummary} numberOfLines={2}>
+                        {htmlToDuzMetin(item.icerik)}
+                      </Text>
+                    )
                   ) : null}
                   {expanded &&
                     item.youtubeUrl &&
@@ -243,7 +249,7 @@ export default function GuncelIcerikScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

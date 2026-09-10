@@ -5,6 +5,7 @@ export const tr = {
   common_cancel: "İptal",
   common_loading: "Yükleniyor…",
   common_error: "Bir hata oluştu",
+  common_errorTitle: "Hata",
   common_retry: "Tekrar Dene",
   common_save: "Kaydet",
   common_appName: "Kapaklı Belediyesi",
@@ -86,6 +87,23 @@ export const tr = {
   hesapBilgilerim_telefon: "Telefon Numarası",
   hesapBilgilerim_security: "Güvenlik",
   hesapBilgilerim_changePassword: "Şifre Değiştir",
+  hesapBilgilerim_changePhoto: "Fotoğraf Değiştir",
+  hesapBilgilerim_mahalle: "Mahalle",
+  hesapBilgilerim_mahalleSeciniz: "Mahalle seçiniz",
+  hesapBilgilerim_mahalleModalTitle: "Mahalle Seçiniz",
+  hesapBilgilerim_mahalleSuffix: "Mahallesi",
+  hesapBilgilerim_adres: "Adres",
+  hesapBilgilerim_adresPlaceholder: "Adres giriniz",
+  hesapBilgilerim_currentPasswordLabel: "Mevcut Şifre",
+  hesapBilgilerim_newPasswordLabel: "Yeni Şifre",
+  hesapBilgilerim_newPasswordAgainLabel: "Yeni Şifre (Tekrar)",
+  hesapBilgilerim_passwordMismatch: "Şifreler eşleşmiyor",
+  hesapBilgilerim_changePasswordSubmit: "Gönder",
+  hesapBilgilerim_changePasswordSuccessTitle: "Başarılı",
+  hesapBilgilerim_changePasswordSuccessBody: "Şifreniz başarıyla güncellendi.",
+  hesapBilgilerim_currentPasswordWrong: "Mevcut şifreniz hatalı",
+  hesapBilgilerim_googleAccountNoPassword:
+    "Google hesabınız için şifre değiştirilemez",
 
   ayarlar_title: "Ayarlar",
   ayarlar_languageSection: "Dil Seçimi",
@@ -94,9 +112,17 @@ export const tr = {
   ayarlar_themeSection: "Tema Tercihi",
   ayarlar_lightMode: "Açık Mod",
   ayarlar_darkMode: "Koyu Mod",
+  ayarlar_fontSizeSection: "Yazı Boyutu",
+  ayarlar_fontSizeSmall: "Küçük",
+  ayarlar_fontSizeNormal: "Normal",
+  ayarlar_fontSizeLarge: "Büyük",
+  ayarlar_fontSizeExtraLarge: "Çok Büyük",
   ayarlar_notificationsSection: "Bildirimler",
   ayarlar_pushNotifications: "Anlık Bildirimler",
   ayarlar_pushNotificationsSubtitle: "Duyuru ve haber bildirimleri",
+  ayarlar_notificationErrorTitle: "Hata",
+  ayarlar_notificationNotConfigured:
+    "Bildirim servisi henüz tam olarak yapılandırılmadı, bu yüzden şu anda açılamıyor. Lütfen daha sonra tekrar deneyin.",
   ayarlar_supportSection: "Destek ve Bilgi",
   ayarlar_privacyPolicy: "Gizlilik Politikası",
   ayarlar_helpCenter: "Yardım Merkezi",
@@ -222,13 +248,12 @@ export const tr = {
 
   map_heading: "Ne Nerede?",
   map_parklar: "Parklar",
-  map_tarihiYerler: "Tarihi Yerler",
+  map_hastaneler: "Hastaneler",
   map_eczaneler: "Eczaneler",
   map_wifi: "Wi-Fi",
   map_camiler: "Camiler",
   map_kurumlar: "Kurumlar",
   map_atikNoktalari: "Atık Noktaları",
-  map_kentRehberi: "Kent Rehberi",
   map_close: "Kapat",
   map_openInGoogleMaps: "Google Haritalar'da Aç",
 
@@ -368,8 +393,6 @@ export const tr = {
   ulasim_kartTuruButton: "Kart Tiplerini Göster",
   ulasim_kartTuruButtonHide: "Kart Tiplerini Gizle",
   ulasim_bakiyeButton: "Karta Bakiye Yükleme",
-  ulasim_bakiyeYakindaTitle: "Yakında",
-  ulasim_bakiyeYakindaMesaj: "Bu özellik yakında aktif olacak.",
   ulasim_aramaLabel: "Hat Ara",
   ulasim_aramaPlaceholder: "Hat adı veya güzergah ara",
   ulasim_aramaEmpty: "Aramanızla eşleşen bir hat bulunamadı.",
@@ -379,6 +402,8 @@ export const tr = {
   ulasim_gidisSaatleri: "Gidiş",
   ulasim_donusSaatleri: "Dönüş",
   ulasim_saatYok: "Henüz saat bilgisi girilmedi.",
+  ulasim_haftaIci: "Hafta İçi",
+  ulasim_haftaSonu: "Hafta Sonu",
   ulasim_canliKonumlar: "Canlı Otobüs Konumları",
   ulasim_canliBosluk: "Şu anda canlı konum verisi bulunmuyor.",
   ulasim_geriDon: "Aramaya Dön",
@@ -395,40 +420,14 @@ export const tr = {
   atik_error: "Atık noktaları yüklenemedi.",
   atik_empty: "Bu kategoride nokta bulunmuyor.",
   atik_filterAll: "Tümü",
-  atik_aiButton: "Yapay Zeka ile Atık Tanı",
 
-  atikAi_title: "Atık Tanı",
-  atikAi_instructions:
-    "Atığın fotoğrafını çek veya galeriden seç, yapay zeka plastik, kağıt veya cam olarak sınıflandırsın.",
   atikAi_takePhoto: "Fotoğraf Çek",
   atikAi_pickFromGallery: "Galeriden Seç",
-  atikAi_analyzing: "Analiz ediliyor...",
-  atikAi_confidence: "Güven",
-  atikAi_showPoints: "Bu Türdeki Noktaları Gör",
-  atikAi_tryAgain: "Tekrar Dene",
-  atikAi_error: "Atık tanınamadı, lütfen tekrar deneyin.",
-  atikAi_permissionTitle: "İzin Gerekli",
-  atikAi_permissionMessage:
-    "Fotoğraf çekmek/seçmek için izin vermen gerekiyor.",
-  atikAi_showNearest: "En Yakın Noktayı Göster",
-  atikAi_locating: "Konumun ve en yakın nokta bulunuyor...",
-  atikAi_locationPermissionMessage:
-    "En yakın atık noktasını bulabilmek için konum izni vermen gerekiyor.",
-  atikAi_locationError:
-    "Konumun alınamadı, lütfen konum servislerini kontrol edip tekrar dene.",
-  atikAi_noNearbyPoint:
-    "Bu türde yakınında kayıtlı bir atık noktası bulunamadı.",
 
   atikRehberi_title: "Atık Rehberi",
   atikRehberi_subtitle: "{n} kategori",
   atikRehberi_searchPlaceholder: '"Pil nereye atılır?" gibi sorgu',
-  atikRehberi_aiBadge: "Yapay Zeka",
-  atikRehberi_aiTitle: "Atığınızı kameraya tutun",
-  atikRehberi_aiDescription:
-    "Anında doğru kutuyu öğrenin — pil, plastik, cam fark eder.",
   atikRehberi_kategoriler: "Kategoriler",
-  atikRehberi_statLabel: "Bu hafta Kapaklı'da",
-  atikRehberi_statHint: "geri dönüştürüldü (tahmini)",
 
   talepKategorisi_arizaBakim: "Arıza/Bakım",
   talepKategorisi_sikayet: "Şikayet",
@@ -500,6 +499,55 @@ export const tr = {
   yanMenu_settings: "Ayarlar",
   yanMenu_logout: "Çıkış Yap",
   yanMenu_footer: "© 2026 Tüm Hakları Saklıdır",
+  yanMenu_closeMenu: "Menüyü kapat",
+
+  common_recordNotFound: "Kayıt bulunamadı",
+  common_close: "Kapat",
+
+  topBar_openMenu: "Menüyü aç",
+
+  onboarding_skip: "Atla",
+  onboarding_getStarted: "Hemen Başla",
+  onboarding_continue: "Devam Et",
+
+  createActionSheet_yeniTalepLabel: "Yeni Talep Oluştur",
+  createActionSheet_yeniTalepDescription: "Arıza, şikayet veya öneri bildir",
+
+  kvkkMetni_title: "Gizlilik ve Kullanım Şartları",
+  kvkkMetni_tabKvkk: "KVKK Aydınlatma Metni",
+  kvkkMetni_tabSartlar: "Kullanım Şartları",
+
+  girisEkrani_tcKimlikGecersiz: "Geçerli bir T.C. Kimlik No girin",
+  sifreKurali_minKarakter: "En az 8 karakter",
+  sifreKurali_buyukHarf: "En az 1 büyük harf",
+  sifreKurali_kucukHarf: "En az 1 küçük harf",
+  sifreKurali_rakam: "En az 1 rakam",
+  sifreKurali_noktalama: "En az 1 noktalama işareti",
+  girisEkrani_telefonGecersiz:
+    "Geçerli bir telefon numarası girin (örn. 5321234567)",
+  girisEkrani_telefonIpucu:
+    "Başında 0 olmadan, 5 ile başlayan 10 haneli numaranızı girin (örn. 5321234567)",
+  girisEkrani_sartlarPrefix: "",
+  girisEkrani_sartlarLinkMetni: "Kullanım Şartları ve KVKK Aydınlatma Metni",
+  girisEkrani_sartlarSuffix: "'ni okudum, kabul ediyorum",
+
+  kaziDetay_title: "Kazı Çalışması",
+  kaziDetay_sureGun: "{gun} gün",
+  suKesintisiDetay_title: "Su Kesintisi",
+  elektrikKesintisiDetay_title: "Elektrik Kesintisi",
+
+  map_wifiSubtitle: "Ücretsiz Wi-Fi - {kategori}",
+  map_camiSubtitle: "Namaz vakitlerinde açık",
+
+  locationPreview_label: "Konum",
+  locationPreview_autoGps: "Otomatik GPS",
+  locationPreview_permissionDenied: "Konum izni verilmedi",
+  locationPreview_locationUnavailable: "Konum alınamadı",
+  locationPreview_adresLabel: "Adres",
+  locationPreview_finding: "(bulunuyor...)",
+  locationPreview_adresPlaceholder: "Dilerseniz adresinizi buraya yazabilirsiniz",
+  locationPreview_adresHint:
+    "Konumun adresi yanlışsa veya boşsa düzeltebilir/girebilirsiniz.",
 } as const;
 
 export type TranslationKey = keyof typeof tr;

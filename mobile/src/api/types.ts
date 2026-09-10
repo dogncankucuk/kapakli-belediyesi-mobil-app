@@ -208,6 +208,17 @@ export type OnemliKurum = {
   lng: number;
 };
 
+export type SaglikTuru = "Hastane" | "Eczane";
+
+export type SaglikKurumu = {
+  id: string;
+  ad: string;
+  tur: SaglikTuru;
+  adres: string | null;
+  lat: number;
+  lng: number;
+};
+
 export type AtikTuru =
   | "Kağıt/Karton/Plastik/Metal"
   | "Elektronik (AEEE)"
@@ -233,20 +244,6 @@ export type AtikNoktasi = {
   lng: number;
 };
 
-export type AtikKategori = "Plastik" | "Kağıt" | "Cam" | "Belirsiz";
-
-export type AtikSiniflandirmaSonucu = {
-  kategori: AtikKategori;
-  guven: "Yüksek" | "Orta" | "Düşük";
-  aciklama: string;
-  ilgiliAtikTuru: AtikTuru | null;
-};
-
-export type AtikTaramaIstatistigi = {
-  taramaSayisi: number;
-  tahminiKg: number;
-};
-
 export type ParkTuru = "Park" | "Bahçe";
 
 export type Park = {
@@ -268,12 +265,6 @@ export type TarihiYer = {
   adres: string | null;
   lat: number;
   lng: number;
-};
-
-export type Baraj = {
-  id: string;
-  ad: string;
-  doluluk: number;
 };
 
 export type PlanliKesinti = {
@@ -397,10 +388,12 @@ export type UlasimSecenegi = {
 };
 
 export type KalkisYonu = "gidis" | "donus";
+export type KalkisGunu = "hergun" | "haftaici" | "haftasonu";
 
 export type KalkisSaati = {
   saat: string;
   yon: KalkisYonu;
+  gun: KalkisGunu;
 };
 
 export type UlasimHatti = {

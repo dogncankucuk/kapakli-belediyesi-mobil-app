@@ -23,6 +23,9 @@ export class Notification {
   @Prop({ type: String, default: null })
   iliskiliId?: string | null;
 
+  @Prop({ type: String, default: null })
+  fotografUrl?: string | null;
+
   @Prop({ default: false })
   okunduMu: boolean;
 }

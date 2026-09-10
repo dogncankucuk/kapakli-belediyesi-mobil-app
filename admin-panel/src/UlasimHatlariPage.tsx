@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import type { FormEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import {
   createUlasimHatti,
   deleteUlasimHatti,
@@ -7,8 +7,10 @@ import {
   updateUlasimHatti,
 } from './api';
 import type { UlasimHattiInput } from './api';
+import { csvIndir } from './csvExport';
+import { csvOku } from './csvImport';
 import TelefonOnizleme from './TelefonOnizleme';
-import type { KalkisSaati, KalkisYonu, UlasimHatti } from './types';
+import type { KalkisGunu, KalkisSaati, KalkisYonu, UlasimHatti } from './types';
 
 interface Props {
   canManage: boolean;
@@ -24,6 +26,93 @@ const emptyForm: UlasimHattiInput = {
   fiyatIndirimli: '',
   kalkisSaatleri: [],
 };
+
+// Belediyenin gercek kaynak dosyalarindaki (ör. TREDAS/otobus hat listesi)
+// sutun sirasi - "Canlı Takip"/"Tekulaş Hat Kodu" bu kaynaklarda hic yok,
+// bunlar sadece admin panelden manuel olarak sonradan isaretlenen alanlar.
+const CSV_BASLIKLAR = [
+  'Hat Adı',
+  'Hat Numarası',
+  'Güzergah Bilgisi',
+  'Tam Kart Fiyatı',
+  'İndirimli Kart Fiyatı',
+  'Gidiş Saatleri',
+  'Dönüş Saatleri',
+];
+
+// Kaynak dosyalarda hafta ici/hafta sonu saatleri ayri listeler halinde
+// geliyor: "Hafta İçi: 07:15; 07:25 | Hafta Sonu: 07:15; 07:30" gibi. Etiket
+// yoksa (eski/basit format) tum liste "hergun" kabul edilir.
+function saatGrubunuMetneCevir(kalkislar: KalkisSaati[], yon: KalkisYonu): string {
+  const ilgili = kalkislar.filter((k) => k.yon === yon);
+  const hergun = ilgili.filter((k) => k.gun === 'hergun').map((k) => k.saat);
+  const haftaici = ilgili.filter((k) => k.gun === 'haftaici').map((k) => k.saat);
+  const haftasonu = ilgili.filter((k) => k.gun === 'haftasonu').map((k) => k.saat);
+  const parcalar: string[] = [];
+  if (hergun.length > 0) parcalar.push(hergun.join(';'));
+  if (haftaici.length > 0) parcalar.push(`Hafta İçi: ${haftaici.join(';')}`);
+  if (haftasonu.length > 0) parcalar.push(`Hafta Sonu: ${haftasonu.join(';')}`);
+  return parcalar.join(' | ');
+}
+
+function saatGrubunuCevir(metin: string, yon: KalkisYonu): KalkisSaati[] {
+  if (!metin.trim()) return [];
+  const sonuc: KalkisSaati[] = [];
+  const bolumler = metin.split('|').map((b) => b.trim()).filter(Boolean);
+  for (const bolum of bolumler) {
+    const eslesme = bolum.match(/^(Hafta\s*İçi|Hafta\s*Sonu|Her\s*G[üu]n)\s*:\s*(.*)$/i);
+    let gun: KalkisGunu = 'hergun';
+    let saatlerMetni = bolum;
+    if (eslesme) {
+      const etiket = eslesme[1].toLocaleLowerCase('tr-TR').replace(/\s+/g, '');
+      if (etiket.includes('haftaiçi') || etiket.includes('haftaici')) gun = 'haftaici';
+      else if (etiket.includes('haftasonu')) gun = 'haftasonu';
+      saatlerMetni = eslesme[2];
+    }
+    for (const saat of saatlerMetni.split(';').map((s) => s.trim()).filter(Boolean)) {
+      sonuc.push({ saat, yon, gun });
+    }
+  }
+  return sonuc;
+}
+
+function csvSatiriHazirla(item: UlasimHattiInput): (string | number)[] {
+  return [
+    item.hatAdi,
+    item.hatNumarasi ?? '',
+    item.guzergah,
+    item.fiyatTam ?? '',
+    item.fiyatIndirimli ?? '',
+    saatGrubunuMetneCevir(item.kalkisSaatleri ?? [], 'gidis'),
+    saatGrubunuMetneCevir(item.kalkisSaatleri ?? [], 'donus'),
+  ];
+}
+
+interface CsvSatirHatasi {
+  satirNo: number;
+  mesaj: string;
+}
+
+// Canlı Takip/Hat Kodu kaynak dosyada yok - CSV ile eklenen hatlar varsayilan
+// olarak canli:false gelir, admin panelinden gerekirse sonradan isaretlenir.
+function csvSatiriniHattaCevir(hucreler: string[]): UlasimHattiInput | null {
+  const hatAdi = (hucreler[0] ?? '').trim();
+  const guzergah = (hucreler[2] ?? '').trim();
+  if (!hatAdi || !guzergah) return null;
+
+  const gidisSaatleri = saatGrubunuCevir(hucreler[5] ?? '', 'gidis');
+  const donusSaatleri = saatGrubunuCevir(hucreler[6] ?? '', 'donus');
+
+  return {
+    hatAdi,
+    hatNumarasi: (hucreler[1] ?? '').trim() || undefined,
+    guzergah,
+    canli: false,
+    fiyatTam: (hucreler[3] ?? '').trim() || undefined,
+    fiyatIndirimli: (hucreler[4] ?? '').trim() || undefined,
+    kalkisSaatleri: [...gidisSaatleri, ...donusSaatleri],
+  };
+}
 
 function ozetKalkis(kalkislar: KalkisSaati[]): string {
   if (kalkislar.length === 0) return '-';
@@ -48,13 +137,26 @@ interface KalkisSaatleriEditorProps {
   onChange: (value: KalkisSaati[]) => void;
 }
 
+const GUN_ETIKET: Record<KalkisGunu, string> = {
+  hergun: 'Her Gün',
+  haftaici: 'Hafta İçi',
+  haftasonu: 'Hafta Sonu',
+};
+
+function gunSonraki(gun: KalkisGunu): KalkisGunu {
+  if (gun === 'hergun') return 'haftaici';
+  if (gun === 'haftaici') return 'haftasonu';
+  return 'hergun';
+}
+
 function KalkisSaatleriEditor({ value, onChange }: KalkisSaatleriEditorProps) {
   const [yeniSaat, setYeniSaat] = useState('');
   const [yeniYon, setYeniYon] = useState<KalkisYonu>('gidis');
+  const [yeniGun, setYeniGun] = useState<KalkisGunu>('haftaici');
 
   function ekle() {
     if (!yeniSaat) return;
-    onChange([...value, { saat: yeniSaat, yon: yeniYon }]);
+    onChange([...value, { saat: yeniSaat, yon: yeniYon, gun: yeniGun }]);
     setYeniSaat('');
   }
 
@@ -67,6 +169,12 @@ function KalkisSaatleriEditor({ value, onChange }: KalkisSaatleriEditorProps) {
       value.map((k, i) =>
         i === index ? { ...k, yon: k.yon === 'gidis' ? 'donus' : 'gidis' } : k,
       ),
+    );
+  }
+
+  function gunDegistir(index: number) {
+    onChange(
+      value.map((k, i) => (i === index ? { ...k, gun: gunSonraki(k.gun) } : k)),
     );
   }
 
@@ -89,6 +197,14 @@ function KalkisSaatleriEditor({ value, onChange }: KalkisSaatleriEditorProps) {
         >
           <option value="gidis">Gidiş</option>
           <option value="donus">Dönüş</option>
+        </select>
+        <select
+          value={yeniGun}
+          onChange={(e) => setYeniGun(e.target.value as KalkisGunu)}
+        >
+          <option value="haftaici">Hafta İçi</option>
+          <option value="haftasonu">Hafta Sonu</option>
+          <option value="hergun">Her Gün</option>
         </select>
         <button type="button" onClick={ekle}>
           + Ekle
@@ -116,6 +232,14 @@ function KalkisSaatleriEditor({ value, onChange }: KalkisSaatleriEditorProps) {
                   </button>
                   <button
                     type="button"
+                    className="kalkis-chip-gun"
+                    onClick={() => gunDegistir(k.index)}
+                    title="Günü değiştirmek için tıklayın"
+                  >
+                    {GUN_ETIKET[k.gun]}
+                  </button>
+                  <button
+                    type="button"
                     className="kalkis-chip-sil"
                     onClick={() => sil(k.index)}
                     aria-label="Sil"
@@ -139,6 +263,9 @@ function UlasimHatlariPage({ canManage }: Props) {
   const [form, setForm] = useState<UlasimHattiInput>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<UlasimHattiInput>(emptyForm);
+  const [csvYukleniyor, setCsvYukleniyor] = useState(false);
+  const [csvSonuc, setCsvSonuc] = useState<string | null>(null);
+  const csvInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     load();
@@ -204,6 +331,84 @@ function UlasimHatlariPage({ canManage }: Props) {
     }
   }
 
+  function handleSablonIndir() {
+    const ornekSatirlar =
+      items.length > 0
+        ? items.map((item) => csvSatiriHazirla(item))
+        : [
+            csvSatiriHazirla({
+              hatAdi: 'Merkez - Otogar',
+              hatNumarasi: '14',
+              guzergah: 'Merkez; Cumhuriyet Mah.; Otogar',
+              canli: false,
+              kalkisSaatleri: [
+                { saat: '07:00', yon: 'gidis', gun: 'haftaici' },
+                { saat: '08:00', yon: 'gidis', gun: 'haftasonu' },
+                { saat: '18:00', yon: 'donus', gun: 'haftaici' },
+                { saat: '19:00', yon: 'donus', gun: 'haftasonu' },
+              ],
+            }),
+          ];
+    csvIndir('ulasim-hatlari-sablon.csv', CSV_BASLIKLAR, ornekSatirlar);
+  }
+
+  async function handleCsvSec(e: ChangeEvent<HTMLInputElement>) {
+    const dosya = e.target.files?.[0];
+    e.target.value = '';
+    if (!dosya) return;
+
+    setError(null);
+    setCsvSonuc(null);
+    setCsvYukleniyor(true);
+    try {
+      const icerik = await dosya.text();
+      const satirlar = csvOku(icerik).slice(1); // ilk satir baslik
+      const hatalar: CsvSatirHatasi[] = [];
+      const gecerliHatlar: UlasimHattiInput[] = [];
+
+      satirlar.forEach((hucreler, index) => {
+        const hat = csvSatiriniHattaCevir(hucreler);
+        if (!hat) {
+          hatalar.push({
+            satirNo: index + 2,
+            mesaj: 'Hat Adı ve Güzergah zorunludur',
+          });
+        } else {
+          gecerliHatlar.push(hat);
+        }
+      });
+
+      let basarili = 0;
+      for (const hat of gecerliHatlar) {
+        try {
+          await createUlasimHatti(hat);
+          basarili++;
+        } catch (err) {
+          hatalar.push({
+            satirNo: 0,
+            mesaj: `${hat.hatAdi}: ${err instanceof Error ? err.message : 'oluşturulamadı'}`,
+          });
+        }
+      }
+
+      const parcalar = [`${basarili} kayıt eklendi.`];
+      if (hatalar.length > 0) {
+        parcalar.push(
+          `${hatalar.length} satır atlandı: ` +
+            hatalar
+              .map((h) => (h.satirNo > 0 ? `satır ${h.satirNo} (${h.mesaj})` : h.mesaj))
+              .join('; '),
+        );
+      }
+      setCsvSonuc(parcalar.join(' '));
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'CSV dosyası okunamadı');
+    } finally {
+      setCsvYukleniyor(false);
+    }
+  }
+
   return (
     <div className="page">
       <h2>Ulaşım Hizmetleri</h2>
@@ -217,6 +422,42 @@ function UlasimHatlariPage({ canManage }: Props) {
       <div className="guncel-sayfa-govde">
       <div className="guncel-sol">
       {canManage && <h3 className="bolum-baslik">1. Bölüm: Ekleme</h3>}
+      {canManage && (
+        <details className="disable-blok">
+          <summary>CSV ile Toplu Ekle</summary>
+          <div className="inline-form">
+            <p>
+              Gidiş/Dönüş Saatleri sütunlarında saatler noktalı virgülle
+              ayrılır; hafta içi ve hafta sonu farklıysa
+              "Hafta İçi: 07:00;07:30 | Hafta Sonu: 08:00;08:30" biçiminde
+              yazın (etiket yoksa tüm saatler her gün için kabul edilir).
+              "Canlı Takip" ve "Tekulaş Hat Kodu" CSV'de yer almaz, gerekiyorsa
+              eklendikten sonra "Düzenle" ile ayarlanır.
+            </p>
+            <div className="row-actions">
+              <button type="button" onClick={handleSablonIndir}>
+                Şablonu İndir
+              </button>
+              <button
+                type="button"
+                onClick={() => csvInputRef.current?.click()}
+                disabled={csvYukleniyor}
+              >
+                {csvYukleniyor ? 'İçe Aktarılıyor...' : 'CSV Seç ve İçe Aktar'}
+              </button>
+              <input
+                ref={csvInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                onChange={handleCsvSec}
+                hidden
+              />
+            </div>
+            {csvSonuc && <p className="success-message">{csvSonuc}</p>}
+          </div>
+        </details>
+      )}
+
       {canManage && (
           <form className="inline-form" onSubmit={handleCreate}>
             <h3>Yeni Hat</h3>

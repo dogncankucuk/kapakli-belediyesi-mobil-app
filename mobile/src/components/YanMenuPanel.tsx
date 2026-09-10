@@ -10,7 +10,7 @@ import { useTranslation } from "../i18n/LocaleContext";
 import { TranslationKey } from "../i18n/tr";
 import { useAppShell } from "../navigation/AppShellContext";
 import { navigationRef } from "../navigation/navigationRef";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 type MenuItem = {
   labelKey: TranslationKey;
@@ -62,7 +62,11 @@ export default function YanMenuPanel() {
   const { isMenuOpen, closeMenu, exitApp } = useAppShell();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [havaDurumu, setHavaDurumu] = useState<HavaDurumu | null>(null);
 
   useEffect(() => {
@@ -90,7 +94,7 @@ export default function YanMenuPanel() {
         style={styles.backdrop}
         onPress={closeMenu}
         accessibilityRole="button"
-        accessibilityLabel="Menüyü kapat"
+        accessibilityLabel={t("yanMenu_closeMenu")}
       />
       <SafeAreaView style={styles.panel} edges={["top", "bottom"]}>
         <View style={styles.header}>
@@ -98,7 +102,7 @@ export default function YanMenuPanel() {
             onPress={closeMenu}
             hitSlop={8}
             accessibilityRole="button"
-            accessibilityLabel="Menüyü kapat"
+            accessibilityLabel={t("yanMenu_closeMenu")}
             style={styles.closeButton}
           >
             <MaterialIcons name="close" size={24} color={colors.onBackground} />
@@ -157,7 +161,7 @@ export default function YanMenuPanel() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     backdrop: {
       ...StyleSheet.absoluteFill,

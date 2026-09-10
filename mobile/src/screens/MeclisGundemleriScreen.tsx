@@ -14,9 +14,10 @@ import WebView from "react-native-webview";
 
 import { getMeclisGundemleri } from "../api/meclisGundemleri";
 import { MeclisGundemi } from "../api/types";
-import { Card, SegmentedControl } from "../components";
+import { Card, SegmentedControl, ZenginMetinGoster } from "../components";
+import { htmlToDuzMetin } from "../utils/html";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 import { extractYoutubeId } from "../utils/youtube";
 
 function yilFromTarih(tarih: string): string {
@@ -27,7 +28,11 @@ export default function MeclisGundemleriScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [gundemler, setGundemler] = useState<MeclisGundemi[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -102,12 +107,13 @@ export default function MeclisGundemleriScreen() {
                         {item.baslik}
                       </Text>
                       {item.icerik ? (
-                        <Text
-                          style={styles.itemSummary}
-                          numberOfLines={expanded ? undefined : 2}
-                        >
-                          {item.icerik}
-                        </Text>
+                        expanded ? (
+                          <ZenginMetinGoster html={item.icerik} />
+                        ) : (
+                          <Text style={styles.itemSummary} numberOfLines={2}>
+                            {htmlToDuzMetin(item.icerik)}
+                          </Text>
+                        )
                       ) : null}
                       {expanded &&
                         item.youtubeUrl &&
@@ -155,7 +161,7 @@ export default function MeclisGundemleriScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

@@ -14,7 +14,7 @@ import { getHavaKalitesi } from "../api/havaKalitesi";
 import { HavaKalitesi } from "../api/types";
 import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 function formatSaat(iso: string): string {
   return new Date(iso).toLocaleTimeString("tr-TR", {
@@ -27,7 +27,11 @@ export default function HavaKalitesiDetayScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [veri, setVeri] = useState<HavaKalitesi | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -123,7 +127,7 @@ export default function HavaKalitesiDetayScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

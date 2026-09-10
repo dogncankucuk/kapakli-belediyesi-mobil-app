@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import { NotificationsService } from '../notifications/notifications.service';
+import { zenginMetinTemizle } from '../../zengin-metin-sanitize';
 import { CreateMeclisGundemiDto } from './dto/create-meclis-gundemi.dto';
 import { UpdateMeclisGundemiDto } from './dto/update-meclis-gundemi.dto';
 import {
@@ -61,6 +62,7 @@ export class AdminMeclisGundemleriService {
   ): Promise<AdminMeclisGundemi> {
     const created = (await this.meclisGundemiModel.create({
       ...dto,
+      ...(dto.icerik !== undefined && { icerik: zenginMetinTemizle(dto.icerik) }),
       updatedBy,
     })) as unknown as TimestampedMeclisGundemi;
 
@@ -85,7 +87,15 @@ export class AdminMeclisGundemleriService {
     if (!Types.ObjectId.isValid(id)) return null;
 
     const doc = await this.meclisGundemiModel
-      .findByIdAndUpdate(id, { ...dto, updatedBy }, { new: true })
+      .findByIdAndUpdate(
+        id,
+        {
+          ...dto,
+          ...(dto.icerik !== undefined && { icerik: zenginMetinTemizle(dto.icerik) }),
+          updatedBy,
+        },
+        { new: true },
+      )
       .exec();
     return doc ? this.toAdmin(doc as unknown as TimestampedMeclisGundemi) : null;
   }

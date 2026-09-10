@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { getMedyaDosyalari, uploadMedya } from './api';
+import MedyaKlasorListesi from './MedyaKlasorListesi';
 import { dosyaUzantisi } from './medyaUzanti';
 import type { MedyaDosyasi } from './types';
 
@@ -60,11 +61,12 @@ export function MedyaSeciciModal({
   const [yukleniyor, setYukleniyor] = useState(false);
   const [arama, setArama] = useState('');
   const [uzantiFiltre, setUzantiFiltre] = useState('tumu');
+  const [seciliKlasorId, setSeciliKlasorId] = useState<string | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [seciliKlasorId]);
 
   const mevcutUzantilar = useMemo(() => {
     const uzantilar = new Set(
@@ -90,7 +92,7 @@ export function MedyaSeciciModal({
     setLoading(true);
     setError(null);
     try {
-      setDosyalar(await getMedyaDosyalari());
+      setDosyalar(await getMedyaDosyalari(seciliKlasorId));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Medya dosyaları yüklenemedi');
     } finally {
@@ -104,7 +106,10 @@ export function MedyaSeciciModal({
     setYukleniyor(true);
     setError(null);
     try {
-      const dosya = await uploadMedya(file);
+      const dosya = await uploadMedya(
+        file,
+        seciliKlasorId && seciliKlasorId !== 'root' ? seciliKlasorId : undefined,
+      );
       onSelect(dosya.url);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Dosya yüklenemedi');
@@ -124,64 +129,74 @@ export function MedyaSeciciModal({
           </button>
         </div>
 
-        <label>
-          Yeni Dosya Yükle ve Seç
-          <input type="file" ref={fileInputRef} onChange={handleFileChange} disabled={yukleniyor} />
-        </label>
-        {yukleniyor && <p>Yükleniyor...</p>}
-        {error && <p className="error-message">{error}</p>}
+        <div className="medya-modal-body">
+          <MedyaKlasorListesi
+            seciliKlasorId={seciliKlasorId}
+            onSecim={setSeciliKlasorId}
+            canManage
+          />
 
-        {!loading && dosyalar.length > 0 && (
-          <div className="medya-filtre-row">
-            <input
-              type="search"
-              value={arama}
-              onChange={(e) => setArama(e.target.value)}
-              placeholder="Dosya adına göre ara..."
-              className="medya-arama-input"
-            />
-            <select value={uzantiFiltre} onChange={(e) => setUzantiFiltre(e.target.value)}>
-              <option value="tumu">Tüm Uzantılar</option>
-              {mevcutUzantilar.map((uzanti) => (
-                <option key={uzanti} value={uzanti}>
-                  .{uzanti}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+          <div className="medya-icerik">
+            <label>
+              Yeni Dosya Yükle ve Seç
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} disabled={yukleniyor} />
+            </label>
+            {yukleniyor && <p>Yükleniyor...</p>}
+            {error && <p className="error-message">{error}</p>}
 
-        {loading ? (
-          <p>Yükleniyor...</p>
-        ) : dosyalar.length === 0 ? (
-          <p>Henüz dosya yüklenmemiş.</p>
-        ) : filtreliDosyalar.length === 0 ? (
-          <p>Aramanızla eşleşen dosya bulunamadı.</p>
-        ) : (
-          <div className="medya-grid medya-modal-grid">
-            {filtreliDosyalar.map((dosya) => (
-              <button
-                type="button"
-                key={dosya.id}
-                className="medya-card medya-card-select"
-                onClick={() => onSelect(dosya.url)}
-              >
-                {dosya.mimeType.startsWith('image/') ? (
-                  <img src={dosya.url} alt={dosya.orijinalAd} className="medya-thumb" />
-                ) : (
-                  <div className="medya-thumb medya-thumb-file">
-                    {dosya.orijinalAd.split('.').pop()?.toUpperCase() ?? 'DOSYA'}
-                  </div>
-                )}
-                <div className="medya-card-body">
-                  <span className="medya-card-name" title={dosya.orijinalAd}>
-                    {dosya.orijinalAd}
-                  </span>
-                </div>
-              </button>
-            ))}
+            {!loading && dosyalar.length > 0 && (
+              <div className="medya-filtre-row">
+                <input
+                  type="search"
+                  value={arama}
+                  onChange={(e) => setArama(e.target.value)}
+                  placeholder="Dosya adına göre ara..."
+                  className="medya-arama-input"
+                />
+                <select value={uzantiFiltre} onChange={(e) => setUzantiFiltre(e.target.value)}>
+                  <option value="tumu">Tüm Uzantılar</option>
+                  {mevcutUzantilar.map((uzanti) => (
+                    <option key={uzanti} value={uzanti}>
+                      .{uzanti}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {loading ? (
+              <p>Yükleniyor...</p>
+            ) : dosyalar.length === 0 ? (
+              <p>Bu klasörde henüz dosya yok.</p>
+            ) : filtreliDosyalar.length === 0 ? (
+              <p>Aramanızla eşleşen dosya bulunamadı.</p>
+            ) : (
+              <div className="medya-grid medya-modal-grid">
+                {filtreliDosyalar.map((dosya) => (
+                  <button
+                    type="button"
+                    key={dosya.id}
+                    className="medya-card medya-card-select"
+                    onClick={() => onSelect(dosya.url)}
+                  >
+                    {dosya.mimeType.startsWith('image/') ? (
+                      <img src={dosya.url} alt={dosya.orijinalAd} className="medya-thumb" />
+                    ) : (
+                      <div className="medya-thumb medya-thumb-file">
+                        {dosya.orijinalAd.split('.').pop()?.toUpperCase() ?? 'DOSYA'}
+                      </div>
+                    )}
+                    <div className="medya-card-body">
+                      <span className="medya-card-name" title={dosya.orijinalAd}>
+                        {dosya.orijinalAd}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

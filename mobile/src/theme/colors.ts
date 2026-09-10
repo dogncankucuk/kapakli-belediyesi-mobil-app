@@ -20,6 +20,7 @@ export const lightColors = {
   surfaceContainerLowest: "#FFFFFF",
   outline: "#7A756E",
   outlineVariant: "#E4DFD6",
+  success: "#2E7D32",
 } as const;
 
 export const darkColors = {
@@ -42,6 +43,7 @@ export const darkColors = {
   surfaceContainerLowest: "#1B2B27",
   outline: "#8FA39D",
   outlineVariant: "#3A4B46",
+  success: "#81C784",
 } as const;
 
 export type Colors = Record<keyof typeof lightColors, string>;

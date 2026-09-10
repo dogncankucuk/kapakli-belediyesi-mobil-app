@@ -15,7 +15,7 @@ import { getCanliOtobusler, getUlasimHatlari } from "../api/ulasimHatlari";
 import { CanliOtobus, UlasimHatti } from "../api/types";
 import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 const CANLI_POLL_MS = 15_000;
 
@@ -23,7 +23,11 @@ export default function OtobusTakipScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [hatlar, setHatlar] = useState<UlasimHatti[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -177,7 +181,7 @@ export default function OtobusTakipScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

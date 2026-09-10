@@ -31,15 +31,7 @@ import {
   StepProgressBar,
 } from "../components";
 import { buildTalepKategoriTanimlari } from "../constants/talepKategorileri";
-import {
-  talepKategoriRenkleri,
-  defaultCategoryAccent,
-  Colors,
-  shape,
-  spacing,
-  typography,
-  useThemeColors,
-} from "../theme";
+import { Colors, defaultCategoryAccent, shape, spacing, talepKategoriRenkleri, Typography, useThemeColors, useTypography } from "../theme";
 import { useTranslation } from "../i18n/LocaleContext";
 import { takipNumarasiEkle } from "../storage/talepStorage";
 
@@ -52,7 +44,11 @@ export default function YeniTalepOlusturScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const kategoriTanimlari = useMemo(() => buildTalepKategoriTanimlari(t), [t]);
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -341,7 +337,7 @@ export default function YeniTalepOlusturScreen() {
                       accessibilityRole="button"
                       style={styles.fotoRemove}
                     >
-                      <MaterialIcons name="close" size={14} color="#FFFFFF" />
+                      <MaterialIcons name="close" size={14} color={colors.background} />
                     </Pressable>
                   </View>
                 ))}
@@ -479,7 +475,11 @@ function PreviewRow({
   value: string;
   colors: Colors;
 }) {
-  const styles = useMemo(() => createPreviewRowStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createPreviewRowStyles(colors, typography),
+    [colors, typography],
+  );
   return (
     <View style={styles.row}>
       <View style={styles.iconBox}>
@@ -495,7 +495,7 @@ function PreviewRow({
 
 type ComponentIconName = keyof typeof MaterialIcons.glyphMap;
 
-const createPreviewRowStyles = (colors: Colors) =>
+const createPreviewRowStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     row: {
       flexDirection: "row",
@@ -523,7 +523,7 @@ const createPreviewRowStyles = (colors: Colors) =>
     },
   });
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

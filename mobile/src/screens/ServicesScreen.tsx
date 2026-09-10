@@ -17,14 +17,7 @@ import {
 } from "../constants/serviceCatalog";
 import { useTranslation } from "../i18n/LocaleContext";
 import { useAppShell } from "../navigation/AppShellContext";
-import {
-  Colors,
-  donguselKategoriPaleti,
-  shape,
-  spacing,
-  typography,
-  useThemeColors,
-} from "../theme";
+import { Colors, donguselKategoriPaleti, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 export default function ServicesScreen() {
   const navigation = useNavigation();
@@ -32,7 +25,11 @@ export default function ServicesScreen() {
   const { openMenu } = useAppShell();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const acSearch = (route.params as { acSearch?: boolean } | undefined)
     ?.acSearch;
   const [isSearchOpen, setIsSearchOpen] = useState(!!acSearch);
@@ -110,7 +107,7 @@ export default function ServicesScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

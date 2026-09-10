@@ -19,7 +19,8 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.kapaklibelediyesi.mobile"
+      "package": "com.kapaklibelediyesi.mobile",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -27,8 +28,15 @@
     "plugins": [
       "expo-status-bar",
       "expo-web-browser",
+      "expo-notifications",
       "@react-native-google-signin/google-signin",
       "@react-native-community/datetimepicker"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "caff33d7-5916-406f-8fa1-870bca2931ac"
+      }
+    },
+    "owner": "dogancankucuk"
   }
 }

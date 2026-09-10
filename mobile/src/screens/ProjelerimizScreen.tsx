@@ -17,7 +17,7 @@ import { getProjelerimiz, Proje, ProjeKategorisi } from "../api/projelerimiz";
 import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { TranslationKey } from "../i18n/tr";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 type FilterKey = ProjeKategorisi | "tumu";
 
@@ -32,7 +32,11 @@ export default function ProjelerimizScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [filter, setFilter] = useState<FilterKey>("tumu");
   const [projeler, setProjeler] = useState<Proje[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -133,7 +137,7 @@ export default function ProjelerimizScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

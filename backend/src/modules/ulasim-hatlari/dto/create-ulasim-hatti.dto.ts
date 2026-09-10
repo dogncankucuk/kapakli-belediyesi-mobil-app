@@ -8,7 +8,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-import type { KalkisYonu } from '../schemas/ulasim-hatti.schema';
+import type { KalkisGunu, KalkisYonu } from '../schemas/ulasim-hatti.schema';
 
 export class KalkisSaatiDto {
   @IsString()
@@ -17,6 +17,10 @@ export class KalkisSaatiDto {
 
   @IsIn(['gidis', 'donus'])
   yon: KalkisYonu;
+
+  @IsOptional()
+  @IsIn(['hergun', 'haftaici', 'haftasonu'])
+  gun?: KalkisGunu;
 }
 
 export class CreateUlasimHattiDto {

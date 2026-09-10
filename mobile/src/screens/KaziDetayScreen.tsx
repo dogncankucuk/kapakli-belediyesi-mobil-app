@@ -12,9 +12,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { getKaziCalismalari } from "../api/kaziCalismalari";
 import { Kazi } from "../api/types";
-import { Card } from "../components";
+import { Card, ZenginMetinGoster } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 export default function KaziDetayScreen() {
   const navigation = useNavigation();
@@ -22,7 +22,11 @@ export default function KaziDetayScreen() {
   const { id } = route.params as { id: string };
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [kazi, setKazi] = useState<Kazi | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -46,14 +50,14 @@ export default function KaziDetayScreen() {
           <MaterialIcons name="arrow-back" size={24} color={colors.onPrimary} />
         </Pressable>
         <Text style={styles.headerTitle} numberOfLines={1}>
-          Kazı Çalışması
+          {t("kaziDetay_title")}
         </Text>
       </View>
       <View style={styles.content}>
         {isLoading && <ActivityIndicator color={colors.primaryContainer} />}
 
         {!isLoading && !kazi && (
-          <Text style={styles.emptyText}>Kayıt bulunamadı</Text>
+          <Text style={styles.emptyText}>{t("common_recordNotFound")}</Text>
         )}
 
         {!isLoading && kazi && (
@@ -78,7 +82,9 @@ export default function KaziDetayScreen() {
                 size={18}
                 color={colors.secondary}
               />
-              <Text style={styles.rowText}>{kazi.sureGun} gün</Text>
+              <Text style={styles.rowText}>
+                {t("kaziDetay_sureGun").replace("{gun}", String(kazi.sureGun))}
+              </Text>
             </View>
             <View style={styles.row}>
               <MaterialIcons
@@ -88,7 +94,7 @@ export default function KaziDetayScreen() {
               />
               <Text style={styles.rowText}>{kazi.saat}</Text>
             </View>
-            <Text style={styles.description}>{kazi.aciklama}</Text>
+            <ZenginMetinGoster html={kazi.aciklama} />
           </Card>
         )}
       </View>
@@ -96,7 +102,7 @@ export default function KaziDetayScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

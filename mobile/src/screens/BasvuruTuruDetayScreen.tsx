@@ -7,7 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { BasvuruTuru } from "../api/types";
 import { Card, PrimaryButton } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 export default function BasvuruTuruDetayScreen() {
   const navigation = useNavigation();
@@ -15,7 +15,11 @@ export default function BasvuruTuruDetayScreen() {
   const { basvuruTuru: tur } = route.params as { basvuruTuru: BasvuruTuru };
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -105,7 +109,7 @@ export default function BasvuruTuruDetayScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

@@ -1,23 +1,13 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { getAtikIstatistik } from "../api/atikSiniflandirma";
-import { AtikTaramaIstatistigi } from "../api/types";
-import { Card, CategoryIconCard } from "../components";
+import { CategoryIconCard } from "../components";
 import { ATIK_TURLERI } from "../constants/atikTurleri";
 import { useTranslation } from "../i18n/LocaleContext";
-import {
-  atikTuruRenkleri,
-  Colors,
-  defaultCategoryAccent,
-  shape,
-  spacing,
-  typography,
-  useThemeColors,
-} from "../theme";
+import { atikTuruRenkleri, Colors, defaultCategoryAccent, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 const ATIK_TURU_IKONLARI: Record<string, keyof typeof MaterialIcons.glyphMap> =
   {
@@ -36,19 +26,12 @@ export default function AtikRehberiScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
-  const [sorgu, setSorgu] = useState("");
-  const [istatistik, setIstatistik] = useState<AtikTaramaIstatistigi | null>(
-    null,
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
   );
-
-  useEffect(() => {
-    getAtikIstatistik()
-      .then(setIstatistik)
-      .catch(() => {
-        // Ana sayfa/rehber widget'ı için sessiz başarısızlık kabul edilebilir.
-      });
-  }, []);
+  const [sorgu, setSorgu] = useState("");
 
   const filtrelenmisTurler = useMemo(() => {
     const q = sorgu.trim().toLocaleLowerCase("tr-TR");
@@ -96,28 +79,6 @@ export default function AtikRehberiScreen() {
           />
         </View>
 
-        <Pressable
-          onPress={() => navigation.navigate("AtikSiniflandirma" as never)}
-          accessibilityRole="button"
-        >
-          <Card style={styles.aiCard}>
-            <View style={styles.aiCardText}>
-              <Text style={styles.aiCardBadge}>{t("atikRehberi_aiBadge")}</Text>
-              <Text style={styles.aiCardTitle}>{t("atikRehberi_aiTitle")}</Text>
-              <Text style={styles.aiCardDescription}>
-                {t("atikRehberi_aiDescription")}
-              </Text>
-            </View>
-            <View style={styles.aiCardIcon}>
-              <MaterialIcons
-                name="photo-camera"
-                size={24}
-                color={colors.primaryContainer}
-              />
-            </View>
-          </Card>
-        </Pressable>
-
         <Text style={styles.sectionTitle}>{t("atikRehberi_kategoriler")}</Text>
         <View style={styles.grid}>
           {filtrelenmisTurler.map((tur) => (
@@ -134,24 +95,12 @@ export default function AtikRehberiScreen() {
             />
           ))}
         </View>
-
-        {istatistik && istatistik.taramaSayisi > 0 && (
-          <Card style={styles.statCard}>
-            <Text style={styles.statLabel}>{t("atikRehberi_statLabel")}</Text>
-            <View style={styles.statRow}>
-              <Text style={styles.statValue}>
-                {`~${istatistik.tahminiKg} kg`}
-              </Text>
-              <Text style={styles.statHint}>{t("atikRehberi_statHint")}</Text>
-            </View>
-          </Card>
-        )}
       </View>
     </SafeAreaView>
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -196,39 +145,6 @@ const createStyles = (colors: Colors) =>
       color: colors.onBackground,
       flex: 1,
     },
-    aiCard: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing.stackGap,
-      padding: spacing.containerMargin,
-      backgroundColor: colors.primaryContainer,
-    },
-    aiCardText: {
-      flex: 1,
-      gap: 2,
-    },
-    aiCardBadge: {
-      ...typography.labelSm,
-      color: colors.onPrimaryContainer,
-      textTransform: "uppercase",
-      letterSpacing: 0.5,
-    },
-    aiCardTitle: {
-      ...typography.titleMd,
-      color: colors.onPrimary,
-    },
-    aiCardDescription: {
-      ...typography.bodyMd,
-      color: colors.onPrimaryContainer,
-    },
-    aiCardIcon: {
-      width: 48,
-      height: 48,
-      borderRadius: 24,
-      backgroundColor: colors.surfaceContainerLowest,
-      alignItems: "center",
-      justifyContent: "center",
-    },
     sectionTitle: {
       ...typography.titleMd,
       color: colors.onBackground,
@@ -237,27 +153,5 @@ const createStyles = (colors: Colors) =>
       flexDirection: "row",
       flexWrap: "wrap",
       gap: spacing.gridGutter,
-    },
-    statCard: {
-      padding: spacing.containerMargin,
-      gap: 4,
-    },
-    statLabel: {
-      ...typography.labelSm,
-      color: colors.outline,
-      textTransform: "uppercase",
-    },
-    statRow: {
-      flexDirection: "row",
-      alignItems: "baseline",
-      gap: spacing.stackGap / 2,
-    },
-    statValue: {
-      ...typography.headlineMdMobile,
-      color: colors.onBackground,
-    },
-    statHint: {
-      ...typography.labelSm,
-      color: colors.outline,
     },
   });

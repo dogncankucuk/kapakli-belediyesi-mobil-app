@@ -233,10 +233,12 @@ export interface UlasimSecenegi {
 }
 
 export type KalkisYonu = 'gidis' | 'donus';
+export type KalkisGunu = 'hergun' | 'haftaici' | 'haftasonu';
 
 export interface KalkisSaati {
   saat: string;
   yon: KalkisYonu;
+  gun: KalkisGunu;
 }
 
 export interface UlasimHatti {
@@ -261,6 +263,15 @@ export interface MedyaDosyasi {
   mimeType: string;
   boyut: number;
   url: string;
+  klasorId: string | null;
+  updatedBy: string | null;
+  createdAt: string;
+}
+
+export interface MedyaKlasoru {
+  id: string;
+  ad: string;
+  dosyaSayisi: number;
   updatedBy: string | null;
   createdAt: string;
 }
@@ -461,6 +472,45 @@ export interface OnemliKurum {
   updatedAt: string;
 }
 
+export type EgitimTuru = 'Lise' | 'Ortaokul' | 'İlkokul';
+
+export const egitimTuruLabels: Record<EgitimTuru, string> = {
+  Lise: 'Lise',
+  Ortaokul: 'Ortaokul',
+  İlkokul: 'İlkokul',
+};
+
+export interface EgitimKurumu {
+  id: string;
+  ad: string;
+  tur: string;
+  adres: string | null;
+  lat: number;
+  lng: number;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SaglikTuru = 'Hastane' | 'Eczane';
+
+export const saglikTuruLabels: Record<SaglikTuru, string> = {
+  Hastane: 'Hastane',
+  Eczane: 'Eczane',
+};
+
+export interface SaglikKurumu {
+  id: string;
+  ad: string;
+  tur: string;
+  adres: string | null;
+  lat: number;
+  lng: number;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type AtikTuru =
   | 'Kağıt/Karton/Plastik/Metal'
   | 'Elektronik (AEEE)'
@@ -542,20 +592,6 @@ export interface TarihiYer {
   updatedAt: string;
 }
 
-export interface Baraj {
-  id: string;
-  ad: string;
-  doluluk: number;
-  updatedBy: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface SuHizmetleriAyarlari {
-  kesintilerKaynakUrl: string;
-  kesintilerGoruntulemeUrl: string;
-  updatedBy: string | null;
-}
 
 export interface PlanliKesinti {
   id: string;

@@ -18,3 +18,4 @@ export type { StatusStep } from "./StatusStepper";
 export { default as StepProgressBar } from "./StepProgressBar";
 export { default as TopBar } from "./TopBar";
 export { default as YanMenuPanel } from "./YanMenuPanel";
+export { default as ZenginMetinGoster } from "./ZenginMetinGoster";

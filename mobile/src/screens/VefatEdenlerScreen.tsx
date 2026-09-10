@@ -14,7 +14,7 @@ import { getVefatIlanlari } from "../api/vefatEdenler";
 import { VefatIlani } from "../api/types";
 import { Card, SegmentedControl } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 function isToday(iso: string): boolean {
   const tarih = new Date(iso);
@@ -30,7 +30,11 @@ export default function VefatEdenlerScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [ilanlar, setIlanlar] = useState<VefatIlani[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -137,7 +141,7 @@ export default function VefatEdenlerScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

@@ -13,14 +13,19 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BaskanBilgisi, getBaskanBilgisi } from "../api/baskan";
+import { ZenginMetinGoster } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 export default function BaskanScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [bilgi, setBilgi] = useState<BaskanBilgisi | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -90,9 +95,7 @@ export default function BaskanScreen() {
               </View>
               <Text style={styles.titleBadgeText}>{t("baskan_roleLabel")}</Text>
             </View>
-            {bilgi.introText ? (
-              <Text style={styles.paragraph}>{bilgi.introText}</Text>
-            ) : null}
+            {bilgi.introText ? <ZenginMetinGoster html={bilgi.introText} /> : null}
 
             {bilgi.maddeler.length > 0 && (
               <View style={styles.bioSection}>
@@ -108,9 +111,7 @@ export default function BaskanScreen() {
               </View>
             )}
 
-            {bilgi.kapanisText ? (
-              <Text style={styles.paragraph}>{bilgi.kapanisText}</Text>
-            ) : null}
+            {bilgi.kapanisText ? <ZenginMetinGoster html={bilgi.kapanisText} /> : null}
           </>
         )}
       </ScrollView>
@@ -118,7 +119,7 @@ export default function BaskanScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

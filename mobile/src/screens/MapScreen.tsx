@@ -23,81 +23,24 @@ import { getCamiler } from "../api/camiler";
 import { getOnemliKurumlar } from "../api/onemliKurumlar";
 import { getParklar } from "../api/parklar";
 import { getPharmacies } from "../api/pharmacies";
-import { getTarihiYerler } from "../api/tarihiYerler";
+import { getSaglikKurumlari } from "../api/saglik";
 import { getWifiNoktalari } from "../api/wifiNoktalari";
 import { Card, TopBar } from "../components";
 import { ATIK_TURLERI } from "../constants/atikTurleri";
 import { useTranslation } from "../i18n/LocaleContext";
 import { TranslationKey } from "../i18n/tr";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 type LayerKey =
   | "parklar"
-  | "tarihiYerler"
+  | "hastaneler"
   | "eczaneler"
   | "wifi"
   | "camiler"
   | "kurumlar"
   | "atikNoktalari";
 
-type TabKey = LayerKey | "kentRehberi";
-
-const KENT_REHBERI_URL =
-  "https://cbs.kapakli.bel.tr/GiSoftGis/#/cityguidepublic";
-
-// GiSoftGis kendi ust arac cubugunu (.cityguide-header) haritanin (#map)
-// UZERINE position:absolute ile bindiriyor - gizlemek haritanin boyutunu
-// etkilemiyor. Katman secimi (Numarataj/Parsel/Onemli Yerler/Wifi Noktalari
-// vb.) icin native bir kopru denendi ama guvenilir dogrulanamadigi icin
-// vazgecildi - kullanicilar katman secimini sitenin kendi calisan katman
-// panelinden (sag-ust "layer-panel-button") yapabiliyor, o buton bilerek
-// gizlenmedi.
-const HIDE_KENT_REHBERI_CHROME_JS = `
-(function () {
-  var style = document.createElement('style');
-  style.innerHTML = '.cityguide-header { display: none !important; }';
-  document.documentElement.appendChild(style);
-})();
-true;
-`;
-
-// GiSoftGis'in kendisi hicbir altlik (base) katmani varsayilan secili
-// getirmiyor - kullanici Katmanlar panelini acip "Standart Harita" gibi bir
-// secenegi elle isaretlemeden harita bombos (sadece sinir/overlay
-// vektorleri) goruniyor. _gilayerswitcher-tpl.html'de temel katmanlar gercek
-// <input type="radio" name="baseMapLayerOption" ng-click="toggleBaseMapLayer(...)">
-// elemanlari - panel gorsel olarak kapali olsa da DOM'da mevcutlar, o yuzden
-// paneli acmadan dogrudan bu radio'ya native bir click event'i dispatch
-// etmek Angular'in kendi secim akisini tetikliyor. Sayfa/Angular render'i
-// asenkron oldugundan element gelene kadar kisa araliklarla deneniyor.
-const SELECT_DEFAULT_BASE_LAYER_JS = `
-(function () {
-  function selectDefaultBaseLayer() {
-    var labels = document.querySelectorAll('.layer-name');
-    for (var i = 0; i < labels.length; i++) {
-      if (labels[i].textContent.trim() === 'Standart Harita') {
-        var container = labels[i].closest('li') || labels[i].parentElement;
-        var radio = container
-          ? container.querySelector('input[type="radio"][name="baseMapLayerOption"]')
-          : null;
-        if (radio && !radio.checked) {
-          radio.click();
-        }
-        return !!radio;
-      }
-    }
-    return false;
-  }
-  var attempts = 0;
-  var poll = setInterval(function () {
-    attempts += 1;
-    if (selectDefaultBaseLayer() || attempts > 40) {
-      clearInterval(poll);
-    }
-  }, 500);
-})();
-true;
-`;
+type TabKey = LayerKey;
 
 type Poi = {
   id: string;
@@ -117,7 +60,7 @@ function openInGoogleMaps(poi: Poi) {
 
 const LAYER_OPTIONS: { labelKey: TranslationKey; value: LayerKey }[] = [
   { labelKey: "map_parklar", value: "parklar" },
-  { labelKey: "map_tarihiYerler", value: "tarihiYerler" },
+  { labelKey: "map_hastaneler", value: "hastaneler" },
   { labelKey: "map_eczaneler", value: "eczaneler" },
   { labelKey: "map_wifi", value: "wifi" },
   { labelKey: "map_camiler", value: "camiler" },
@@ -127,7 +70,7 @@ const LAYER_OPTIONS: { labelKey: TranslationKey; value: LayerKey }[] = [
 
 const LAYER_COLORS: Record<LayerKey, string> = {
   parklar: "#2E8B57",
-  tarihiYerler: "#8B5E34",
+  hastaneler: "#C2185B",
   eczaneler: "#EF353A",
   wifi: "#1E88E5",
   camiler: "#00897B",
@@ -137,7 +80,7 @@ const LAYER_COLORS: Record<LayerKey, string> = {
 
 const LAYER_ICONS: Record<LayerKey, keyof typeof MaterialIcons.glyphMap> = {
   parklar: "park",
-  tarihiYerler: "account-balance",
+  hastaneler: "local-hospital",
   eczaneler: "local-pharmacy",
   wifi: "wifi",
   camiler: "mosque",
@@ -150,7 +93,7 @@ const LAYER_ICONS: Record<LayerKey, keyof typeof MaterialIcons.glyphMap> = {
 // sekmeler) MaterialIcons kullanilmaya devam ediyor.
 const LAYER_EMOJI: Record<LayerKey, string> = {
   parklar: "🌳",
-  tarihiYerler: "🏛️",
+  hastaneler: "🏥",
   eczaneler: "💊",
   wifi: "📶",
   camiler: "🕌",
@@ -383,7 +326,11 @@ export default function MapScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const route = useRoute();
   const routeParams = route.params as
     { initialTab?: TabKey; focusId?: string } | undefined;
@@ -435,7 +382,7 @@ export default function MapScreen() {
       getCamiler(),
       getOnemliKurumlar(),
       getParklar(),
-      getTarihiYerler(),
+      getSaglikKurumlari(),
       getAtikNoktalari(),
     ]).then(
       ([
@@ -444,7 +391,7 @@ export default function MapScreen() {
         camiler,
         onemliKurumlar,
         parklar,
-        tarihiYerler,
+        saglikKurumlari,
         atikNoktalari,
       ]) => {
         if (cancelled) return;
@@ -472,7 +419,10 @@ export default function MapScreen() {
               layer: "wifi" as const,
               name: item.ad,
               address: item.adres,
-              subtitle: `Ücretsiz Wi-Fi - ${item.kategori}`,
+              subtitle: t("map_wifiSubtitle").replace(
+                "{kategori}",
+                item.kategori,
+              ),
               lat: item.lat,
               lng: item.lng,
             })),
@@ -486,7 +436,7 @@ export default function MapScreen() {
               layer: "camiler" as const,
               name: item.ad,
               address: item.adres ?? "",
-              subtitle: "Namaz vakitlerinde açık",
+              subtitle: t("map_camiSubtitle"),
               lat: item.lat,
               lng: item.lng,
             })),
@@ -521,17 +471,19 @@ export default function MapScreen() {
           );
         }
 
-        if (tarihiYerler.status === "fulfilled") {
+        if (saglikKurumlari.status === "fulfilled") {
           pois.push(
-            ...tarihiYerler.value.map((item) => ({
-              id: `tarihi-${item.id}`,
-              layer: "tarihiYerler" as const,
-              name: item.ad,
-              address: item.adres ?? "",
-              subtitle: item.tur,
-              lat: item.lat,
-              lng: item.lng,
-            })),
+            ...saglikKurumlari.value
+              .filter((item) => item.tur === "Hastane")
+              .map((item) => ({
+                id: `hastane-${item.id}`,
+                layer: "hastaneler" as const,
+                name: item.ad,
+                address: item.adres ?? "",
+                subtitle: item.tur,
+                lat: item.lat,
+                lng: item.lng,
+              })),
           );
         }
 
@@ -557,7 +509,7 @@ export default function MapScreen() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   const allPois = useMemo(() => apiPois, [apiPois]);
   const html = useMemo(() => buildLeafletHtml(allPois), [allPois]);
@@ -583,9 +535,7 @@ export default function MapScreen() {
     setActiveTab(value);
     setAtikSubFilter(null);
     setSelectedPoi(null);
-    if (value !== "kentRehberi") {
-      webViewRef.current?.injectJavaScript(`setLayer('${value}'); true;`);
-    }
+    webViewRef.current?.injectJavaScript(`setLayer('${value}'); true;`);
   };
 
   const handleAtikSubFilterChange = (value: string | null) => {
@@ -625,13 +575,6 @@ export default function MapScreen() {
             styles={styles}
           />
         ))}
-        <LayerPill
-          label={t("map_kentRehberi")}
-          isActive={activeTab === "kentRehberi"}
-          onPress={() => handleTabChange("kentRehberi")}
-          colors={colors}
-          styles={styles}
-        />
       </ScrollView>
       {activeTab === "atikNoktalari" ? (
         <ScrollView
@@ -660,36 +603,27 @@ export default function MapScreen() {
         </ScrollView>
       ) : null}
       <View style={styles.mapWrapper}>
-        {activeTab === "kentRehberi" ? (
-          <WebView
-            source={{ uri: KENT_REHBERI_URL }}
-            style={styles.map}
-            injectedJavaScriptBeforeContentLoaded={HIDE_KENT_REHBERI_CHROME_JS}
-            injectedJavaScript={SELECT_DEFAULT_BASE_LAYER_JS}
-          />
-        ) : (
-          <WebView
-            ref={webViewRef}
-            source={{ html }}
-            style={styles.map}
-            onMessage={handleMessage}
-            onLoadEnd={() => {
-              const subFilterArg =
-                activeTab === "atikNoktalari" && atikSubFilter
-                  ? `, ${JSON.stringify(atikSubFilter)}`
-                  : "";
+        <WebView
+          ref={webViewRef}
+          source={{ html }}
+          style={styles.map}
+          onMessage={handleMessage}
+          onLoadEnd={() => {
+            const subFilterArg =
+              activeTab === "atikNoktalari" && atikSubFilter
+                ? `, ${JSON.stringify(atikSubFilter)}`
+                : "";
+            webViewRef.current?.injectJavaScript(
+              `setLayer('${activeTab}'${subFilterArg}); true;`,
+            );
+            if (focusTarget) {
               webViewRef.current?.injectJavaScript(
-                `setLayer('${activeTab}'${subFilterArg}); true;`,
+                `if (typeof panTo === 'function') { panTo(${focusTarget.lat}, ${focusTarget.lng}); } true;`,
               );
-              if (focusTarget) {
-                webViewRef.current?.injectJavaScript(
-                  `if (typeof panTo === 'function') { panTo(${focusTarget.lat}, ${focusTarget.lng}); } true;`,
-                );
-              }
-            }}
-          />
-        )}
-        {isLoading && activeTab !== "kentRehberi" ? (
+            }
+          }}
+        />
+        {isLoading ? (
           <View style={styles.loadingOverlay}>
             <ActivityIndicator color={colors.primaryContainer} />
           </View>
@@ -765,7 +699,7 @@ export default function MapScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

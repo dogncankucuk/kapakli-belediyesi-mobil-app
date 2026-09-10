@@ -4,36 +4,37 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import Card from "./Card";
+import { useTranslation } from "../i18n/LocaleContext";
+import { TranslationKey } from "../i18n/tr";
 import { useAppShell } from "../navigation/AppShellContext";
 import { navigationRef } from "../navigation/navigationRef";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 type SheetOption = {
-  label: string;
-  description: string;
+  labelKey: TranslationKey;
+  descriptionKey: TranslationKey;
   icon: ComponentProps<typeof MaterialIcons>["name"];
   screen: string;
 };
 
 const OPTIONS: SheetOption[] = [
   {
-    label: "Yeni Talep Oluştur",
-    description: "Arıza, şikayet veya öneri bildir",
+    labelKey: "createActionSheet_yeniTalepLabel",
+    descriptionKey: "createActionSheet_yeniTalepDescription",
     icon: "post-add",
     screen: "YeniTalepOlustur",
-  },
-  {
-    label: "AI ile Atık Tara",
-    description: "Fotoğrafla doğru kutuyu öğren",
-    icon: "camera-alt",
-    screen: "AtikSiniflandirma",
   },
 ];
 
 export default function CreateActionSheet() {
   const { isCreateSheetOpen, closeCreateSheet } = useAppShell();
+  const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
 
   if (!isCreateSheetOpen) {
     return null;
@@ -52,7 +53,7 @@ export default function CreateActionSheet() {
         style={styles.backdrop}
         onPress={closeCreateSheet}
         accessibilityRole="button"
-        accessibilityLabel="Kapat"
+        accessibilityLabel={t("common_close")}
       />
       <SafeAreaView style={styles.sheet} edges={["bottom"]}>
         <View style={styles.grabber} />
@@ -71,9 +72,9 @@ export default function CreateActionSheet() {
                 />
               </View>
               <View style={styles.optionText}>
-                <Text style={styles.optionLabel}>{option.label}</Text>
+                <Text style={styles.optionLabel}>{t(option.labelKey)}</Text>
                 <Text style={styles.optionDescription}>
-                  {option.description}
+                  {t(option.descriptionKey)}
                 </Text>
               </View>
               <MaterialIcons
@@ -89,7 +90,7 @@ export default function CreateActionSheet() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     backdrop: {
       ...StyleSheet.absoluteFill,

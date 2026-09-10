@@ -2,7 +2,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { ReactNode, useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { useTranslation } from "../i18n/LocaleContext";
+import { Colors, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 type TopBarProps = {
   title: string;
@@ -17,8 +18,13 @@ export default function TopBar({
   onBackPress,
   rightSlot,
 }: TopBarProps) {
+  const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
 
   return (
     <View style={styles.container}>
@@ -28,7 +34,7 @@ export default function TopBar({
             onPress={onBackPress}
             hitSlop={8}
             accessibilityRole="button"
-            accessibilityLabel="Geri dön"
+            accessibilityLabel={t("common_back")}
             style={styles.menuButton}
           >
             <MaterialIcons
@@ -42,7 +48,7 @@ export default function TopBar({
             onPress={onMenuPress}
             hitSlop={8}
             accessibilityRole="button"
-            accessibilityLabel="Menüyü aç"
+            accessibilityLabel={t("topBar_openMenu")}
             style={styles.menuButton}
           >
             <MaterialIcons name="menu" size={24} color={colors.onPrimary} />
@@ -57,7 +63,7 @@ export default function TopBar({
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flexDirection: "row",

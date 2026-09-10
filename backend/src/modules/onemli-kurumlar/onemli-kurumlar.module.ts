@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { CbsModule } from '../cbs/cbs.module';
 import { OnemliKurum, OnemliKurumSchema } from './schemas/onemli-kurum.schema';
 import { AdminOnemliKurumlarController } from './admin-onemli-kurumlar.controller';
 import { AdminOnemliKurumlarService } from './admin-onemli-kurumlar.service';
@@ -12,6 +13,7 @@ import { OnemliKurumlarService } from './onemli-kurumlar.service';
     MongooseModule.forFeature([
       { name: OnemliKurum.name, schema: OnemliKurumSchema },
     ]),
+    CbsModule,
   ],
   controllers: [OnemliKurumlarController, AdminOnemliKurumlarController],
   providers: [OnemliKurumlarService, AdminOnemliKurumlarService],

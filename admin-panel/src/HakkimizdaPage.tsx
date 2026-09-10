@@ -4,6 +4,7 @@ import { getHakkimizda, updateHakkimizda } from './api';
 import type { HakkimizdaInput } from './api';
 import MedyaSecici from './MedyaSecici';
 import { HakkimizdaOnizleme, TelefonOnizleme } from './MobilOnizleme';
+import ZenginMetinEditor from './ZenginMetinEditor';
 
 interface Props {
   canManage: boolean;
@@ -87,9 +88,9 @@ function HakkimizdaPage({ canManage }: Props) {
       <form className="inline-form" onSubmit={handleSubmit}>
         <label>
           Başkan Özet Metni (Hakkımızda kartında görünür)
-          <textarea
+          <ZenginMetinEditor
             value={form.baskanOzetMetni}
-            onChange={(e) => setForm({ ...form, baskanOzetMetni: e.target.value })}
+            onChange={(baskanOzetMetni) => setForm({ ...form, baskanOzetMetni })}
             disabled={!canManage}
           />
         </label>

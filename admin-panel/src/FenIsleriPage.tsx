@@ -6,6 +6,7 @@ import { KAPAKLI_MAHALLELERI } from './constants/mahalleler';
 import { bugununTarihi } from './tarih';
 import TelefonOnizleme from './TelefonOnizleme';
 import type { AdminKazi } from './types';
+import ZenginMetinEditor from './ZenginMetinEditor';
 
 interface Props {
   canManage: boolean;
@@ -145,11 +146,9 @@ function FenIsleriPage({ canManage }: Props) {
           </label>
           <label>
             Açıklama
-            <textarea
+            <ZenginMetinEditor
               value={form.aciklama}
-              onChange={(e) => setForm({ ...form, aciklama: e.target.value })}
-              placeholder="Lütfen veri girişi yapınız"
-              required
+              onChange={(aciklama) => setForm({ ...form, aciklama })}
             />
           </label>
           <button type="submit">Kaydet</button>
@@ -221,9 +220,9 @@ function FenIsleriPage({ canManage }: Props) {
                       </label>
                       <label>
                         Açıklama
-                        <textarea
+                        <ZenginMetinEditor
                           value={editForm.aciklama}
-                          onChange={(e) => setEditForm({ ...editForm, aciklama: e.target.value })}
+                          onChange={(aciklama) => setEditForm({ ...editForm, aciklama })}
                         />
                       </label>
                       <div className="row-actions">
@@ -243,7 +242,7 @@ function FenIsleriPage({ canManage }: Props) {
                   <td>{item.baslangicTarihi.slice(0, 10)}</td>
                   <td>{item.sureGun}</td>
                   <td>{item.saat}</td>
-                  <td>{item.aciklama}</td>
+                  <td dangerouslySetInnerHTML={{ __html: item.aciklama }} />
                   {canManage && (
                     <td className="row-actions">
                       <button type="button" onClick={() => startEdit(item)}>
@@ -277,7 +276,10 @@ function FenIsleriPage({ canManage }: Props) {
                 <span className="genel-onizleme-satir-ipucu">
                   {item.sureGun} gün · {item.saat}
                 </span>
-                <span className="genel-onizleme-satir-ipucu">{item.aciklama}</span>
+                <span
+                  className="genel-onizleme-satir-ipucu"
+                  dangerouslySetInnerHTML={{ __html: item.aciklama }}
+                />
               </div>
             </div>
           ))}

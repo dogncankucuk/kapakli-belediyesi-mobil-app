@@ -10,6 +10,7 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import { AppShellProvider, useAppShell } from "./AppShellContext";
 import { navigationRef } from "./navigationRef";
+import PersistentBottomBar from "./PersistentBottomBar";
 import RootStack from "./RootStack";
 import {
   CreateActionSheet,
@@ -122,16 +123,19 @@ function AppShellGate() {
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      {/* createStaticNavigation's ref type is fixed to the generic ParamListBase,
-          while createNavigationContainerRef() infers our augmented RootParamList —
-          the two are structurally incompatible for TS even though they match at runtime. */}
-      <Navigation
-        ref={
-          navigationRef as unknown as Ref<NavigationContainerRef<ParamListBase>>
-        }
-        theme={navTheme}
-        onReady={handleNavigationReady}
-      />
+      <View style={styles.navigationArea}>
+        {/* createStaticNavigation's ref type is fixed to the generic ParamListBase,
+            while createNavigationContainerRef() infers our augmented RootParamList —
+            the two are structurally incompatible for TS even though they match at runtime. */}
+        <Navigation
+          ref={
+            navigationRef as unknown as Ref<NavigationContainerRef<ParamListBase>>
+          }
+          theme={navTheme}
+          onReady={handleNavigationReady}
+        />
+      </View>
+      <PersistentBottomBar />
       <YanMenuPanel />
       <CreateActionSheet />
     </View>
@@ -148,6 +152,9 @@ export default function Root() {
 
 const styles = StyleSheet.create({
   root: {
+    flex: 1,
+  },
+  navigationArea: {
     flex: 1,
   },
   centered: {

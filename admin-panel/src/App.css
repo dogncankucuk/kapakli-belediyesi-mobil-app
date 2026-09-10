@@ -388,6 +388,48 @@ button:active:not(:disabled) {
   align-items: start;
 }
 
+/* Kaynaktan Yapıştır / CSV ile Toplu Ekle gibi ikincil, gerektiğinde
+   kullanılan araçlar - varsayılan kapalı, kücük ve pasif gorunsun diye
+   kendi .inline-form'unu içine alan bir <details> ile sarmalanır. */
+.disable-blok {
+  margin: 0 0 12px 14px;
+  max-width: 900px;
+}
+
+.disable-blok summary {
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 0;
+}
+
+.disable-blok summary:hover {
+  color: var(--color-text);
+}
+
+.disable-blok[open] summary {
+  margin-bottom: 8px;
+}
+
+.disable-blok .inline-form {
+  margin: 0;
+}
+
+/* Harita konumlari kategorilerinde belediyenin resmi CBS kaynagindan
+   yeniden veri cekmek icin kullanilan buton. */
+.cbs-senkronize {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px;
+}
+
+.cbs-senkronize-sonuc {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
 /* Uzun metin alanlari (Icerik/Aciklama vb.) kisa alanlarla ayni dar
    sutuna sikismasin - kendi satirinda tam genislik kaplasin. */
 .inline-form label:has(textarea),
@@ -532,6 +574,13 @@ button:active:not(:disabled) {
 
 .kalkis-chip button:first-child {
   background: transparent;
+}
+
+.kalkis-chip-gun {
+  background: rgba(0, 0, 0, 0.06);
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  color: var(--color-text-muted);
 }
 
 .kalkis-chip-sil {
@@ -1280,12 +1329,127 @@ td.row-actions button.btn-neutral:hover:not(:disabled) {
   box-shadow: var(--shadow-md);
   padding: 24px;
   width: 100%;
-  max-width: 720px;
+  max-width: 900px;
   max-height: 85vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.medya-layout,
+.medya-modal-body {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.medya-icerik {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.medya-klasor-listesi {
+  flex-shrink: 0;
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px;
+}
+
+.medya-klasor-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: none;
+  background: none;
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 13.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.medya-klasor-item:hover {
+  background: var(--color-primary-light);
+}
+
+.medya-klasor-item.aktif {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.medya-klasor-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.medya-klasor-row .medya-klasor-item {
+  flex: 1;
+}
+
+.medya-klasor-sayi {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.medya-klasor-item.aktif .medya-klasor-sayi {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.medya-klasor-sil {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 4px 6px;
+  font-size: 13px;
+}
+
+.medya-klasor-sil:hover {
+  color: var(--color-danger);
+}
+
+.medya-klasor-yeni {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.medya-klasor-yeni input {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.medya-klasor-yeni button {
+  flex-shrink: 0;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .medya-layout,
+  .medya-modal-body {
+    flex-direction: column;
+  }
+  .medya-klasor-listesi {
+    width: 100%;
+  }
 }
 
 .medya-modal-header {
@@ -1385,6 +1549,23 @@ td.row-actions button.btn-neutral:hover:not(:disabled) {
   border: 1px solid var(--color-border);
 }
 
+.request-photo-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.request-photo-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.request-photo-actions button {
+  padding: 2px 6px;
+  font-size: 12px;
+}
+
 .hint {
   color: var(--color-text-muted);
   font-size: 13px;
@@ -1448,6 +1629,16 @@ td.row-actions button.btn-neutral:hover:not(:disabled) {
 }
 
 /* ---------- Harita Editörü ---------- */
+
+.map-editor-cbs-note {
+  margin: 0 0 16px 14px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.map-editor-cbs-note a {
+  font-weight: 600;
+}
 
 .map-editor-controls {
   display: flex;
@@ -1661,4 +1852,229 @@ td.row-actions button.btn-neutral:hover:not(:disabled) {
   text-align: center;
   font-weight: 600;
   font-size: 14px;
+}
+
+/* ---------- Zengin Metin Editoru (Word-benzeri) ---------- */
+.zengin-metin {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: visible;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(22, 63, 59, 0.04);
+}
+
+.zengin-metin.devre-disi {
+  opacity: 0.75;
+}
+
+.zengin-metin-arac-cubugu {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+  padding: 7px 8px;
+  background: #f7f5f0;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  position: relative;
+}
+
+.zengin-metin-arac-cubugu button {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 7px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #3a3a38;
+  cursor: pointer;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s ease, color 0.1s ease;
+}
+
+.zengin-metin-arac-cubugu button:hover:not(:disabled) {
+  background: #e8e4d9;
+}
+
+.zengin-metin-arac-cubugu button.aktif {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.zengin-metin-arac-cubugu button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.zengin-metin-arac-cubugu select {
+  height: 30px;
+  font-size: 12.5px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  padding: 0 6px;
+  color: var(--color-text);
+}
+
+.zengin-metin-blok-secim {
+  min-width: 106px;
+  font-weight: 600;
+}
+
+.zengin-metin-arac-cubugu select:not(.zengin-metin-blok-secim) {
+  max-width: 128px;
+}
+
+.zengin-metin-ayirac {
+  width: 1px;
+  align-self: stretch;
+  background: var(--color-border);
+  margin: 3px 4px;
+}
+
+.zengin-metin-renk-secici {
+  position: relative;
+}
+
+.zengin-metin-renk-secici > button {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 7px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zengin-metin-renk-secici > button:hover {
+  background: #e8e4d9;
+}
+
+.zengin-metin-renk-ikon {
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 1;
+  width: 15px;
+  height: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+}
+
+.zengin-metin-renk-ikon--vurgu {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1.5px solid #9a9488;
+}
+
+.zengin-metin-renk-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+}
+
+.zengin-metin-renk-ornek {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 0;
+  cursor: pointer;
+}
+
+.zengin-metin-renk-ornek:hover {
+  transform: scale(1.15);
+}
+
+.zengin-metin-icerik {
+  padding: 22px 28px;
+  min-height: 240px;
+  max-height: 560px;
+  overflow-y: auto;
+  background: #fdfcfa;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+.zengin-metin-icerik .ProseMirror {
+  outline: none;
+  min-height: 210px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15.5px;
+  line-height: 1.75;
+  color: #1a1a1a;
+}
+
+.zengin-metin-icerik .ProseMirror > * + * {
+  margin-top: 0.85em;
+}
+
+.zengin-metin-icerik .ProseMirror p {
+  margin: 0;
+}
+
+.zengin-metin-icerik .ProseMirror h1,
+.zengin-metin-icerik .ProseMirror h2,
+.zengin-metin-icerik .ProseMirror h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-primary-dark);
+  margin: 0;
+}
+
+.zengin-metin-icerik .ProseMirror h1 { font-size: 26px; }
+.zengin-metin-icerik .ProseMirror h2 { font-size: 21px; }
+.zengin-metin-icerik .ProseMirror h3 { font-size: 18px; }
+
+.zengin-metin-icerik .ProseMirror blockquote {
+  margin: 0;
+  padding: 4px 0 4px 16px;
+  border-left: 3px solid var(--color-primary);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.zengin-metin-icerik .ProseMirror a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.zengin-metin-icerik .ProseMirror mark {
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.zengin-metin-icerik .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--color-text-muted);
+  pointer-events: none;
+  height: 0;
+}
+
+.zengin-metin-icerik .ProseMirror ul,
+.zengin-metin-icerik .ProseMirror ol {
+  padding-left: 26px;
+  margin: 0;
+}
+
+.zengin-metin-icerik .ProseMirror li + li {
+  margin-top: 0.3em;
 }

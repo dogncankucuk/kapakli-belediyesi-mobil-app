@@ -13,3 +13,22 @@ export const typography = {
 } as const;
 
 export type Typography = typeof typography;
+
+// Ayarlar > Yazı Boyutu icin secilebilir olcek adimlari.
+export const FONT_SCALE_STEPS = [0.9, 1, 1.15, 1.3] as const;
+export type FontScale = (typeof FONT_SCALE_STEPS)[number];
+export const DEFAULT_FONT_SCALE: FontScale = 1;
+
+// typography sabitini verilen olcekle carpip yeni bir nesne dondurur -
+// fontSize ve lineHeight orantili buyur/kucultur, fontWeight aynen kalir.
+export function scaleTypography(scale: number): Typography {
+  const entries = Object.entries(typography).map(([key, value]) => [
+    key,
+    {
+      ...value,
+      fontSize: Math.round(value.fontSize * scale),
+      lineHeight: Math.round(value.lineHeight * scale),
+    },
+  ]);
+  return Object.fromEntries(entries) as Typography;
+}

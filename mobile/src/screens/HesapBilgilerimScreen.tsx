@@ -42,12 +42,12 @@ const KAPAKLI_MAHALLELERI = [
   "19 Mayıs",
 ];
 
-import { updateProfile } from "../api/auth";
+import { changePassword, updateProfile } from "../api/auth";
 import { resolveMediaUrl } from "../api/client";
-import { Card } from "../components";
+import { Card, PrimaryButton } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { useAppShell } from "../navigation/AppShellContext";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 function maskTcKimlikNo(tcKimlikNo: string | null): string | null {
   if (!tcKimlikNo) return null;
@@ -55,16 +55,118 @@ function maskTcKimlikNo(tcKimlikNo: string | null): string | null {
   return `${tcKimlikNo.slice(0, 3)}*****${tcKimlikNo.slice(8)}`;
 }
 
+// Backend'deki sifre regex'iyle (register.dto.ts) ayni karakter setlerini
+// kullanan, kullanici yazarken anlik kural kontrolu icin ayrik fonksiyonlar
+// (GirisEkraniScreen.tsx'teki sifreKurallari ile ayni mantik, bu ekrana ozel
+// kullanildigi icin yerel olarak tekrar tanimlandi).
+const sifreKurallari = [
+  {
+    etiketKey: "sifreKurali_minKarakter" as const,
+    kontrolEt: (sifre: string) => sifre.length >= 8,
+  },
+  {
+    etiketKey: "sifreKurali_buyukHarf" as const,
+    kontrolEt: (sifre: string) => /[A-ZÇĞİÖŞÜ]/.test(sifre),
+  },
+  {
+    etiketKey: "sifreKurali_kucukHarf" as const,
+    kontrolEt: (sifre: string) => /[a-zçğıöşü]/.test(sifre),
+  },
+  {
+    etiketKey: "sifreKurali_rakam" as const,
+    kontrolEt: (sifre: string) => /\d/.test(sifre),
+  },
+  {
+    etiketKey: "sifreKurali_noktalama" as const,
+    kontrolEt: (sifre: string) => /[^\wçğıöşüÇĞİÖŞÜ\s]/.test(sifre),
+  },
+];
+
 export default function HesapBilgilerimScreen() {
   const navigation = useNavigation();
   const { user, updateUser } = useAppShell();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [mahalle, setMahalle] = useState(user?.mahalle ?? "");
   const [adres, setAdres] = useState(user?.adres ?? "");
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [mahalleModalVisible, setMahalleModalVisible] = useState(false);
+
+  const [changePasswordModalVisible, setChangePasswordModalVisible] =
+    useState(false);
+  const [mevcutSifre, setMevcutSifre] = useState("");
+  const [yeniSifre, setYeniSifre] = useState("");
+  const [yeniSifreTekrar, setYeniSifreTekrar] = useState("");
+  const [changePasswordError, setChangePasswordError] = useState<
+    string | null
+  >(null);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const yeniSifreGecerli = sifreKurallari.every((kural) =>
+    kural.kontrolEt(yeniSifre),
+  );
+  const yeniSifreTekrarHatali =
+    yeniSifreTekrar.length > 0 && yeniSifreTekrar !== yeniSifre;
+  const changePasswordDisabled =
+    !mevcutSifre ||
+    !yeniSifreGecerli ||
+    yeniSifreTekrar !== yeniSifre ||
+    isChangingPassword;
+
+  function openChangePasswordModal() {
+    setMevcutSifre("");
+    setYeniSifre("");
+    setYeniSifreTekrar("");
+    setChangePasswordError(null);
+    setChangePasswordModalVisible(true);
+  }
+
+  function closeChangePasswordModal() {
+    setChangePasswordModalVisible(false);
+  }
+
+  // Backend'in bilinen iki hata mesajını dile göre çevirir - dil ne olursa
+  // olsun kullanıcı Türkçe sunucu metni görmesin diye. Tanınmayan bir mesaj
+  // gelirse (örn. zayıf şifre - mobil zaten göndermeden engelliyor) ham
+  // metin gösterilir, sessizce yutulmaz.
+  function changePasswordHataMesaji(ham: string): string {
+    if (ham === "Mevcut şifreniz hatalı") {
+      return t("hesapBilgilerim_currentPasswordWrong");
+    }
+    if (ham === "Google hesabınız için şifre değiştirilemez") {
+      return t("hesapBilgilerim_googleAccountNoPassword");
+    }
+    return ham;
+  }
+
+  async function handleChangePasswordSubmit() {
+    setChangePasswordError(null);
+    setIsChangingPassword(true);
+    try {
+      await changePassword(mevcutSifre, yeniSifre);
+      setChangePasswordModalVisible(false);
+      setMevcutSifre("");
+      setYeniSifre("");
+      setYeniSifreTekrar("");
+      Alert.alert(
+        t("hesapBilgilerim_changePasswordSuccessTitle"),
+        t("hesapBilgilerim_changePasswordSuccessBody"),
+      );
+    } catch (err) {
+      setChangePasswordError(
+        err instanceof Error
+          ? changePasswordHataMesaji(err.message)
+          : t("common_error"),
+      );
+    } finally {
+      setIsChangingPassword(false);
+    }
+  }
 
   async function handleMahalleSecim(secilen: string) {
     setMahalleModalVisible(false);
@@ -75,8 +177,8 @@ export default function HesapBilgilerimScreen() {
       const updatedUser = await updateProfile({ mahalle: secilen });
       updateUser(updatedUser);
     } catch (err) {
-      const mesaj = err instanceof Error ? err.message : "Bir hata oluştu";
-      Alert.alert("Hata", mesaj);
+      const mesaj = err instanceof Error ? err.message : t("common_error");
+      Alert.alert(t("common_errorTitle"), mesaj);
       setMahalle(oncekiMahalle);
     }
   }
@@ -106,8 +208,8 @@ export default function HesapBilgilerimScreen() {
       updateUser(updatedUser);
     } catch (err) {
       sonKaydedilenAdresRef.current = oncekiDeger;
-      const mesaj = err instanceof Error ? err.message : "Bir hata oluştu";
-      Alert.alert("Hata", mesaj);
+      const mesaj = err instanceof Error ? err.message : t("common_error");
+      Alert.alert(t("common_errorTitle"), mesaj);
       setAdres(oncekiDeger);
     }
   }
@@ -146,8 +248,8 @@ export default function HesapBilgilerimScreen() {
       const updatedUser = await updateProfile({ profilFotografiBase64: base64 });
       updateUser(updatedUser);
     } catch (err) {
-      const mesaj = err instanceof Error ? err.message : "Bir hata oluştu";
-      Alert.alert("Hata", mesaj);
+      const mesaj = err instanceof Error ? err.message : t("common_error");
+      Alert.alert(t("common_errorTitle"), mesaj);
     } finally {
       setIsUploadingPhoto(false);
     }
@@ -281,7 +383,9 @@ export default function HesapBilgilerimScreen() {
               accessibilityRole="button"
             >
               <Text style={styles.changePhotoText}>
-                {isUploadingPhoto ? "Yükleniyor..." : "Fotoğraf Değiştir"}
+                {isUploadingPhoto
+                  ? t("common_loading")
+                  : t("hesapBilgilerim_changePhoto")}
               </Text>
             </Pressable>
           </View>
@@ -343,7 +447,7 @@ export default function HesapBilgilerimScreen() {
           </View>
           <View style={styles.fieldRow}>
             <View style={styles.field}>
-              <Text style={styles.label}>Mahalle</Text>
+              <Text style={styles.label}>{t("hesapBilgilerim_mahalle")}</Text>
               <Pressable
                 onPress={() => setMahalleModalVisible(true)}
                 accessibilityRole="button"
@@ -354,7 +458,7 @@ export default function HesapBilgilerimScreen() {
                       mahalle ? styles.selectValue : styles.selectPlaceholder
                     }
                   >
-                    {mahalle || "Mahalle seçiniz"}
+                    {mahalle || t("hesapBilgilerim_mahalleSeciniz")}
                   </Text>
                   <MaterialIcons
                     name="arrow-drop-down"
@@ -367,13 +471,13 @@ export default function HesapBilgilerimScreen() {
           </View>
           <View style={styles.fieldRow}>
             <View style={styles.field}>
-              <Text style={styles.label}>Adres</Text>
+              <Text style={styles.label}>{t("hesapBilgilerim_adres")}</Text>
               <TextInput
                 style={[styles.input, styles.multilineInput]}
                 value={adres}
                 onChangeText={setAdres}
                 onBlur={handleAdresBlur}
-                placeholder="Adres giriniz"
+                placeholder={t("hesapBilgilerim_adresPlaceholder")}
                 placeholderTextColor={colors.outline}
                 maxLength={500}
                 multiline
@@ -389,7 +493,11 @@ export default function HesapBilgilerimScreen() {
               {t("hesapBilgilerim_security")}
             </Text>
           </View>
-          <Pressable style={styles.securityRow} accessibilityRole="button">
+          <Pressable
+            style={styles.securityRow}
+            onPress={openChangePasswordModal}
+            accessibilityRole="button"
+          >
             <MaterialIcons
               name="vpn-key"
               size={18}
@@ -418,7 +526,9 @@ export default function HesapBilgilerimScreen() {
           onPress={() => setMahalleModalVisible(false)}
         >
           <Pressable style={styles.modalSheet} onPress={() => undefined}>
-            <Text style={styles.modalTitle}>Mahalle Seçiniz</Text>
+            <Text style={styles.modalTitle}>
+              {t("hesapBilgilerim_mahalleModalTitle")}
+            </Text>
             <FlatList
               data={KAPAKLI_MAHALLELERI}
               keyExtractor={(item) => item}
@@ -429,7 +539,9 @@ export default function HesapBilgilerimScreen() {
                   onPress={() => void handleMahalleSecim(item)}
                   accessibilityRole="button"
                 >
-                  <Text style={styles.modalItemText}>{item} Mahallesi</Text>
+                  <Text style={styles.modalItemText}>
+                    {item} {t("hesapBilgilerim_mahalleSuffix")}
+                  </Text>
                   {item === mahalle && (
                     <MaterialIcons
                       name="check"
@@ -443,11 +555,110 @@ export default function HesapBilgilerimScreen() {
           </Pressable>
         </Pressable>
       </Modal>
+
+      <Modal
+        visible={changePasswordModalVisible}
+        animationType="slide"
+        onRequestClose={closeChangePasswordModal}
+      >
+        <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+          <View style={styles.header}>
+            <Pressable
+              onPress={closeChangePasswordModal}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t("common_back")}
+            >
+              <MaterialIcons
+                name="arrow-back"
+                size={24}
+                color={colors.onBackground}
+              />
+            </Pressable>
+            <Text style={styles.headerTitle}>
+              {t("hesapBilgilerim_changePassword")}
+            </Text>
+            <View style={{ width: 24 }} />
+          </View>
+
+          <View style={styles.content}>
+            <Card style={styles.card}>
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("hesapBilgilerim_currentPasswordLabel")}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  secureTextEntry
+                  value={mevcutSifre}
+                  onChangeText={setMevcutSifre}
+                />
+              </View>
+
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("hesapBilgilerim_newPasswordLabel")}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  secureTextEntry
+                  value={yeniSifre}
+                  onChangeText={setYeniSifre}
+                />
+                <View style={styles.sifreKuralListesi}>
+                  {sifreKurallari.map((kural) => {
+                    const gecti = kural.kontrolEt(yeniSifre);
+                    return (
+                      <View key={kural.etiketKey} style={styles.sifreKuralRow}>
+                        <MaterialIcons
+                          name={gecti ? "check-circle" : "cancel"}
+                          size={16}
+                          color={gecti ? colors.success : colors.outline}
+                        />
+                        <Text style={styles.sifreKuralText}>
+                          {t(kural.etiketKey)}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("hesapBilgilerim_newPasswordAgainLabel")}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  secureTextEntry
+                  value={yeniSifreTekrar}
+                  onChangeText={setYeniSifreTekrar}
+                />
+                {yeniSifreTekrarHatali && (
+                  <Text style={styles.fieldHata}>
+                    {t("hesapBilgilerim_passwordMismatch")}
+                  </Text>
+                )}
+              </View>
+
+              {changePasswordError && (
+                <Text style={styles.errorText}>{changePasswordError}</Text>
+              )}
+
+              <PrimaryButton
+                label={t("hesapBilgilerim_changePasswordSubmit")}
+                onPress={() => void handleChangePasswordSubmit()}
+                disabled={changePasswordDisabled}
+              />
+            </Card>
+          </View>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -612,5 +823,25 @@ const createStyles = (colors: Colors) =>
       ...typography.bodyMd,
       color: colors.onBackground,
       flex: 1,
+    },
+    sifreKuralListesi: {
+      gap: spacing.stackGap / 4,
+    },
+    sifreKuralRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.stackGap / 2,
+    },
+    sifreKuralText: {
+      ...typography.labelSm,
+      color: colors.outline,
+    },
+    fieldHata: {
+      ...typography.labelSm,
+      color: colors.error,
+    },
+    errorText: {
+      ...typography.bodyMd,
+      color: colors.error,
     },
   });

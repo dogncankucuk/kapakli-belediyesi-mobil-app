@@ -12,15 +12,19 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { getHakkimizda, HakkimizdaBilgisi } from "../api/hakkimizda";
-import { Card } from "../components";
+import { Card, ZenginMetinGoster } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 export default function HakkimizdaScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [bilgi, setBilgi] = useState<HakkimizdaBilgisi | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -79,7 +83,7 @@ export default function HakkimizdaScreen() {
               />
             </View>
             {!isLoading && bilgi?.baskanOzetMetni ? (
-              <Text style={styles.paragraph}>{bilgi.baskanOzetMetni}</Text>
+              <ZenginMetinGoster html={bilgi.baskanOzetMetni} />
             ) : null}
           </Card>
         </Pressable>
@@ -129,7 +133,7 @@ export default function HakkimizdaScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

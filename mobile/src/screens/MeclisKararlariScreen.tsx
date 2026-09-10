@@ -15,7 +15,7 @@ import WebView from "react-native-webview";
 import { getMeclisKararlari, MeclisKarari } from "../api/meclisKararlari";
 import { Card, SegmentedControl } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 import { extractYoutubeId } from "../utils/youtube";
 
 function yilFromTarih(tarih: string): string {
@@ -26,7 +26,11 @@ export default function MeclisKararlariScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [kararlar, setKararlar] = useState<MeclisKarari[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -139,7 +143,7 @@ export default function MeclisKararlariScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

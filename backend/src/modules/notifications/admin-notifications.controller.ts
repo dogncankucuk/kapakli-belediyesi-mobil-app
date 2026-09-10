@@ -16,10 +16,10 @@ export class AdminNotificationsController {
   async send(
     @Body() dto: SendManualNotificationDto,
   ): Promise<{ success: true }> {
-    await this.notificationsService.sendBroadcastToAnyCategory(
-      dto.kategoriler,
+    await this.notificationsService.sendBroadcastToAll(
       dto.baslik,
       dto.govde,
+      dto.fotografUrl,
     );
     return { success: true };
   }

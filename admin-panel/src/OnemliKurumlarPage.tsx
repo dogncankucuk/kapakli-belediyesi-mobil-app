@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import {
+  cbsSenkronizeOnemliKurumlar,
   createOnemliKurum,
   deleteOnemliKurum,
   getOnemliKurumlar,
   updateOnemliKurum,
 } from './api';
 import type { OnemliKurumInput } from './api';
+import CbsSenkronizeButonu from './CbsSenkronizeButonu';
 import KonumSecici from './KonumSecici';
 import { kurumTuruLabels } from './types';
 import type { OnemliKurum } from './types';
@@ -82,8 +84,12 @@ function OnemliKurumlarPage({ canManage }: Props) {
 
   return (
     <div className="page">
-      <h2>Önemli Kurumlar</h2>
+      <h2>Resmi Kurum</h2>
       {error && <p className="error-message">{error}</p>}
+
+      {canManage && (
+        <CbsSenkronizeButonu senkronizeEt={cbsSenkronizeOnemliKurumlar} onTamamlandi={load} />
+      )}
 
       {canManage && (
         <form className="inline-form" onSubmit={handleCreate}>

@@ -85,12 +85,15 @@ export const SERVICE_CATALOG: ServiceDefinition[] = [
     labelKey: "services_nobetciEczane",
     target: { tab: "Map", screen: "NobetciEczaneler" },
   },
-  {
-    id: "atik-noktalari",
-    icon: "recycling",
-    labelKey: "services_atikNoktalari",
-    target: { tab: "Services", screen: "AtikRehberi" },
-  },
+  // "Atik Rehberi" gecici olarak pasif - kullaniciya gosterilmiyor (talep
+  // uzerine). Ekranlar ve rota silinmedi, geri acmak icin bu objeyi tekrar
+  // aktif etmek yeterli.
+  // {
+  //   id: "atik-noktalari",
+  //   icon: "recycling",
+  //   labelKey: "services_atikNoktalari",
+  //   target: { tab: "Services", screen: "AtikRehberi" },
+  // },
   {
     id: "hava-durumu",
     icon: "wb-sunny",

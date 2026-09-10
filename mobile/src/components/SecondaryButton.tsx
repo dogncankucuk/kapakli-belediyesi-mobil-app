@@ -7,7 +7,7 @@ import {
   ViewStyle,
 } from "react-native";
 
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 type SecondaryButtonProps = {
   label: string;
@@ -23,7 +23,11 @@ export default function SecondaryButton({
   style,
 }: SecondaryButtonProps) {
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
 
   return (
     <Pressable
@@ -42,7 +46,7 @@ export default function SecondaryButton({
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     button: {
       minHeight: spacing.touchTargetMin,

@@ -2,7 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 export type StatusStep = {
   key: string;
@@ -20,7 +20,11 @@ export default function StatusStepper({
   currentIndex,
 }: StatusStepperProps) {
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
 
   return (
     <View>
@@ -58,7 +62,7 @@ export default function StatusStepper({
 
 const MARKER_SIZE = 24;
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     row: {
       flexDirection: "row",

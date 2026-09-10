@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { deleteMedya, getMedyaDosyalari, uploadMedya } from './api';
+import MedyaKlasorListesi from './MedyaKlasorListesi';
 import { dosyaUzantisi } from './medyaUzanti';
 import type { MedyaDosyasi } from './types';
 
@@ -30,17 +31,19 @@ function MedyaPage({ canManage }: Props) {
   const [kopyalananId, setKopyalananId] = useState<string | null>(null);
   const [arama, setArama] = useState('');
   const [uzantiFiltre, setUzantiFiltre] = useState('tumu');
+  const [seciliKlasorId, setSeciliKlasorId] = useState<string | undefined>(undefined);
+  const [klasorYenilemeSinyali, setKlasorYenilemeSinyali] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [seciliKlasorId]);
 
   async function load() {
     setLoading(true);
     setError(null);
     try {
-      setDosyalar(await getMedyaDosyalari());
+      setDosyalar(await getMedyaDosyalari(seciliKlasorId));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Medya dosyaları yüklenemedi');
     } finally {
@@ -57,7 +60,10 @@ function MedyaPage({ canManage }: Props) {
       let basarisiz = 0;
       for (const file of files) {
         try {
-          await uploadMedya(file);
+          await uploadMedya(
+            file,
+            seciliKlasorId && seciliKlasorId !== 'root' ? seciliKlasorId : undefined,
+          );
         } catch {
           basarisiz++;
         }
@@ -66,6 +72,7 @@ function MedyaPage({ canManage }: Props) {
         setError(`${basarisiz} dosya yüklenemedi`);
       }
       await load();
+      setKlasorYenilemeSinyali((n) => n + 1);
     } finally {
       setYukleniyor(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -78,6 +85,7 @@ function MedyaPage({ canManage }: Props) {
     try {
       await deleteMedya(id);
       await load();
+      setKlasorYenilemeSinyali((n) => n + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Dosya silinemedi');
     }
@@ -127,81 +135,94 @@ function MedyaPage({ canManage }: Props) {
       </p>
       {error && <p className="error-message">{error}</p>}
 
-      {canManage && (
-        <div className="inline-form">
-          <label>
-            Dosya Yükle
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              onChange={handleFileChange}
-              disabled={yukleniyor}
-            />
-          </label>
-          {yukleniyor && <p>Yükleniyor...</p>}
-        </div>
-      )}
+      <div className="medya-layout">
+        <MedyaKlasorListesi
+          seciliKlasorId={seciliKlasorId}
+          onSecim={setSeciliKlasorId}
+          canManage={canManage}
+          yenilemeSinyali={klasorYenilemeSinyali}
+        />
 
-      {!loading && dosyalar.length > 0 && (
-        <div className="medya-filtre-row">
-          <input
-            type="search"
-            value={arama}
-            onChange={(e) => setArama(e.target.value)}
-            placeholder="Dosya adına göre ara..."
-            className="medya-arama-input"
-          />
-          <select value={uzantiFiltre} onChange={(e) => setUzantiFiltre(e.target.value)}>
-            <option value="tumu">Tüm Uzantılar</option>
-            {mevcutUzantilar.map((uzanti) => (
-              <option key={uzanti} value={uzanti}>
-                .{uzanti}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {loading ? (
-        <p>Yükleniyor...</p>
-      ) : dosyalar.length === 0 ? (
-        <p>Henüz dosya yüklenmemiş.</p>
-      ) : filtreliDosyalar.length === 0 ? (
-        <p>Aramanızla eşleşen dosya bulunamadı.</p>
-      ) : (
-        <div className="medya-grid">
-          {filtreliDosyalar.map((dosya) => (
-            <div className="medya-card" key={dosya.id}>
-              {dosya.mimeType.startsWith('image/') ? (
-                <img src={dosya.url} alt={dosya.orijinalAd} className="medya-thumb" />
-              ) : (
-                <div className="medya-thumb medya-thumb-file">
-                  {dosya.orijinalAd.split('.').pop()?.toUpperCase() ?? 'DOSYA'}
-                </div>
-              )}
-              <div className="medya-card-body">
-                <span className="medya-card-name" title={dosya.orijinalAd}>
-                  {dosya.orijinalAd}
-                </span>
-                <span className="medya-card-meta">
-                  {boyutFormatla(dosya.boyut)} · {tarihFormatla(dosya.createdAt)}
-                </span>
-                <div className="row-actions">
-                  <button type="button" onClick={() => handleCopy(dosya)}>
-                    {kopyalananId === dosya.id ? 'Kopyalandı!' : "URL'yi Kopyala"}
-                  </button>
-                  {canManage && (
-                    <button type="button" onClick={() => handleDelete(dosya.id)}>
-                      Sil
-                    </button>
-                  )}
-                </div>
-              </div>
+        <div className="medya-icerik">
+          {canManage && (
+            <div className="inline-form">
+              <label>
+                {seciliKlasorId && seciliKlasorId !== 'root'
+                  ? 'Bu Klasöre Dosya Yükle'
+                  : 'Dosya Yükle'}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  onChange={handleFileChange}
+                  disabled={yukleniyor}
+                />
+              </label>
+              {yukleniyor && <p>Yükleniyor...</p>}
             </div>
-          ))}
+          )}
+
+          {!loading && dosyalar.length > 0 && (
+            <div className="medya-filtre-row">
+              <input
+                type="search"
+                value={arama}
+                onChange={(e) => setArama(e.target.value)}
+                placeholder="Dosya adına göre ara..."
+                className="medya-arama-input"
+              />
+              <select value={uzantiFiltre} onChange={(e) => setUzantiFiltre(e.target.value)}>
+                <option value="tumu">Tüm Uzantılar</option>
+                {mevcutUzantilar.map((uzanti) => (
+                  <option key={uzanti} value={uzanti}>
+                    .{uzanti}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {loading ? (
+            <p>Yükleniyor...</p>
+          ) : dosyalar.length === 0 ? (
+            <p>Bu klasörde henüz dosya yok.</p>
+          ) : filtreliDosyalar.length === 0 ? (
+            <p>Aramanızla eşleşen dosya bulunamadı.</p>
+          ) : (
+            <div className="medya-grid">
+              {filtreliDosyalar.map((dosya) => (
+                <div className="medya-card" key={dosya.id}>
+                  {dosya.mimeType.startsWith('image/') ? (
+                    <img src={dosya.url} alt={dosya.orijinalAd} className="medya-thumb" />
+                  ) : (
+                    <div className="medya-thumb medya-thumb-file">
+                      {dosya.orijinalAd.split('.').pop()?.toUpperCase() ?? 'DOSYA'}
+                    </div>
+                  )}
+                  <div className="medya-card-body">
+                    <span className="medya-card-name" title={dosya.orijinalAd}>
+                      {dosya.orijinalAd}
+                    </span>
+                    <span className="medya-card-meta">
+                      {boyutFormatla(dosya.boyut)} · {tarihFormatla(dosya.createdAt)}
+                    </span>
+                    <div className="row-actions">
+                      <button type="button" onClick={() => handleCopy(dosya)}>
+                        {kopyalananId === dosya.id ? 'Kopyalandı!' : "URL'yi Kopyala"}
+                      </button>
+                      {canManage && (
+                        <button type="button" onClick={() => handleDelete(dosya.id)}>
+                          Sil
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

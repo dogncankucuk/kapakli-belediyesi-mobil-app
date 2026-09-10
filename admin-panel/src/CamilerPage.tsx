@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { createCami, deleteCami, getCamiler, updateCami } from './api';
+import { cbsSenkronizeCamiler, createCami, deleteCami, getCamiler, updateCami } from './api';
 import type { CamiInput } from './api';
+import CbsSenkronizeButonu from './CbsSenkronizeButonu';
 import KonumSecici from './KonumSecici';
 import type { Cami } from './types';
 
@@ -76,8 +77,10 @@ function CamilerPage({ canManage }: Props) {
 
   return (
     <div className="page">
-      <h2>Camiler</h2>
+      <h2>Dini Tesis</h2>
       {error && <p className="error-message">{error}</p>}
+
+      {canManage && <CbsSenkronizeButonu senkronizeEt={cbsSenkronizeCamiler} onTamamlandi={load} />}
 
       {canManage && (
         <form className="inline-form" onSubmit={handleCreate}>

@@ -28,10 +28,11 @@ import VefatEdenlerPage from './VefatEdenlerPage';
 import WifiNoktalariPage from './WifiNoktalariPage';
 import SuHizmetleriPage from './SuHizmetleriPage';
 import FenIsleriPage from './FenIsleriPage';
-import ElektrikPage from './ElektrikPage';
 import AseviPage from './AseviPage';
 import CamilerPage from './CamilerPage';
 import OnemliKurumlarPage from './OnemliKurumlarPage';
+import EgitimPage from './EgitimPage';
+import SaglikPage from './SaglikPage';
 import ParklarPage from './ParklarPage';
 import TarihiYerlerPage from './TarihiYerlerPage';
 import FormlarPage from './FormlarPage';
@@ -109,6 +110,12 @@ function App() {
     return (p: Page): boolean => {
       if (p === 'mapEditor') {
         return MAP_EDITOR_RESOURCES.some((r) => canManage(r));
+      }
+      // Elektrik Kesintileri artik ayri bir sayfa/nav ogesi degil, bu
+      // sayfanin icine tasindi (bkz. SuHizmetleriPage) - sadece elektrik
+      // izni olan bir rol de bu sayfayi gorebilmeli.
+      if (p === 'suHizmetleri') {
+        return canView('suHizmetleri') || canView('elektrikKesintileri');
       }
       const resource = pageResource(p);
       return resource ? canView(resource) : false;
@@ -303,14 +310,20 @@ function App() {
         )}
         {page === 'vefatEdenler' && <VefatEdenlerPage canManage={canManage('vefatEdenler')} />}
         {page === 'wifiNoktalari' && <WifiNoktalariPage canManage={canManage('wifiNoktalari')} />}
-        {page === 'suHizmetleri' && <SuHizmetleriPage canManage={canManage('suHizmetleri')} />}
+        {page === 'suHizmetleri' && (
+          <SuHizmetleriPage
+            canManageSu={canManage('suHizmetleri')}
+            canManageElektrik={canManage('elektrikKesintileri')}
+          />
+        )}
         {page === 'fenIsleri' && <FenIsleriPage canManage={canManage('kaziCalismalari')} />}
-        {page === 'elektrik' && <ElektrikPage canManage={canManage('elektrikKesintileri')} />}
         {page === 'asevi' && <AseviPage canManage={canManage('asevi')} />}
         {page === 'camiler' && <CamilerPage canManage={canManage('camiler')} />}
         {page === 'onemliKurumlar' && (
           <OnemliKurumlarPage canManage={canManage('onemliKurumlar')} />
         )}
+        {page === 'egitim' && <EgitimPage canManage={canManage('egitim')} />}
+        {page === 'saglik' && <SaglikPage canManage={canManage('saglik')} />}
         {page === 'parklar' && <ParklarPage canManage={canManage('parklar')} />}
         {page === 'tarihiYerler' && <TarihiYerlerPage canManage={canManage('tarihiYerler')} />}
         {page === 'formlar' && <FormlarPage canManage={canManage('formlar')} />}

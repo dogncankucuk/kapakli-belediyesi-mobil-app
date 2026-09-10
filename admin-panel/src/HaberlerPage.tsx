@@ -11,6 +11,7 @@ import MedyaSeciciCoklu from './MedyaSeciciCoklu';
 import { IcerikKartiOnizleme, OnizlemeBosMetin, TelefonOnizleme } from './MobilOnizleme';
 import { bugununTarihi } from './tarih';
 import type { Haber } from './types';
+import ZenginMetinEditor from './ZenginMetinEditor';
 
 interface Props {
   canManage: boolean;
@@ -117,11 +118,9 @@ function HaberlerPage({ canManage }: Props) {
           </label>
           <label>
             İçerik
-            <textarea
+            <ZenginMetinEditor
               value={form.icerik}
-              onChange={(e) => setForm({ ...form, icerik: e.target.value })}
-              placeholder="Lütfen veri girişi yapınız"
-              required
+              onChange={(icerik) => setForm({ ...form, icerik })}
             />
           </label>
           <label>
@@ -187,9 +186,9 @@ function HaberlerPage({ canManage }: Props) {
                       </label>
                       <label>
                         İçerik
-                        <textarea
+                        <ZenginMetinEditor
                           value={editForm.icerik}
-                          onChange={(e) => setEditForm({ ...editForm, icerik: e.target.value })}
+                          onChange={(icerik) => setEditForm({ ...editForm, icerik })}
                         />
                       </label>
                       <label>

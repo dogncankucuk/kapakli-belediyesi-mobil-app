@@ -68,8 +68,7 @@ export class CreateRequestDto {
   @MaxLength(300)
   adres?: string;
 
-  // Base64 data-URI fotoğraflar (client tarafında küçültülmüş, quality:0.4) -
-  // AtikSiniflandirmaScreen'in classifyAtik() için kullandığı aynı desen.
+  // Base64 data-URI fotoğraflar (client tarafında küçültülmüş, quality:0.4).
   // En fazla 2 - Mongo doküman boyutunu güvenli tutmak için.
   @IsOptional()
   @IsArray()

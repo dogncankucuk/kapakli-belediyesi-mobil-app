@@ -22,6 +22,12 @@ export class AtikNoktasi {
 
   @Prop()
   updatedBy?: string;
+
+  // CBS kaynagindaki poi_id degeri - bu koleksiyonda "ad" tekil olmadigi icin
+  // (ör. birden fazla "ATIK GETİRME ARACI" adli nokta) senkronizasyonda
+  // dogru eslestirme icin kullaniliyor.
+  @Prop()
+  cbsPoiId?: string;
 }
 
 export const AtikNoktasiSchema = SchemaFactory.createForClass(AtikNoktasi);

@@ -24,13 +24,33 @@ import {
   setNotificationsDisabledByUser,
   setStoredPushToken,
 } from "../services/pushNotifications";
-import { Colors, shape, spacing, typography, useTheme } from "../theme";
+import {
+  Colors,
+  FONT_SCALE_STEPS,
+  shape,
+  spacing,
+  Typography,
+  useTheme,
+  useTypography,
+} from "../theme";
+import { TranslationKey } from "../i18n/tr";
+
+const FONT_SCALE_LABEL_KEYS: TranslationKey[] = [
+  "ayarlar_fontSizeSmall",
+  "ayarlar_fontSizeNormal",
+  "ayarlar_fontSizeLarge",
+  "ayarlar_fontSizeExtraLarge",
+];
 
 export default function AyarlarScreen() {
   const navigation = useNavigation();
   const { locale, setLocale, t } = useTranslation();
-  const { mode, setMode, colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { mode, setMode, colors, fontScale, setFontScale } = useTheme();
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [kvkkModalVisible, setKvkkModalVisible] = useState(false);
 
@@ -60,8 +80,13 @@ export default function AyarlarScreen() {
       }
     } catch (err) {
       setNotificationsEnabled(!value);
-      const mesaj = err instanceof Error ? err.message : "Bir hata oluştu";
-      Alert.alert("Hata", mesaj);
+      const mesaj =
+        err instanceof Error && err.message === "PUSH_NOT_CONFIGURED"
+          ? t("ayarlar_notificationNotConfigured")
+          : err instanceof Error
+            ? err.message
+            : t("common_error");
+      Alert.alert(t("ayarlar_notificationErrorTitle"), mesaj);
     }
   }
 
@@ -203,6 +228,52 @@ export default function AyarlarScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
+            {t("ayarlar_fontSizeSection")}
+          </Text>
+          <View style={styles.themeRow}>
+            {FONT_SCALE_STEPS.map((step, index) => {
+              const isActive = fontScale === step;
+              const stepLabelKey = FONT_SCALE_LABEL_KEYS[index];
+              return (
+                <Pressable
+                  key={step}
+                  style={styles.themeItem}
+                  onPress={() => setFontScale(step)}
+                  accessibilityRole="button"
+                >
+                  <View
+                    style={[
+                      styles.themeCard,
+                      isActive && styles.themeCardActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.fontSizeSample,
+                        { fontSize: 14 + index * 3 },
+                        isActive && styles.themeLabelActive,
+                      ]}
+                    >
+                      A
+                    </Text>
+                    <Text
+                      style={[
+                        styles.fontSizeCaption,
+                        isActive && styles.themeLabelActive,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {t(stepLabelKey)}
+                    </Text>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
             {t("ayarlar_notificationsSection")}
           </Text>
           <Card style={styles.notificationCard}>
@@ -276,7 +347,7 @@ export default function AyarlarScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -351,6 +422,14 @@ const createStyles = (colors: Colors) =>
     },
     themeLabelActive: {
       color: colors.onSecondary,
+    },
+    fontSizeSample: {
+      fontWeight: "700",
+      color: colors.onBackground,
+    },
+    fontSizeCaption: {
+      ...typography.labelSm,
+      color: colors.onBackground,
     },
     notificationCard: {
       flexDirection: "row",

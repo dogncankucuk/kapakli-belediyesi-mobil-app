@@ -33,7 +33,7 @@ import { Card, PrimaryButton, SecondaryButton } from "../components";
 import { KvkkMetniContent } from "../components/KvkkMetniContent";
 import { useTranslation } from "../i18n/LocaleContext";
 import { useAppShell } from "../navigation/AppShellContext";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 import { tcKimlikNoGecerliMi } from "../utils/tcKimlikDogrula";
 import { BizeUlasinContent } from "./BizeUlasinScreen";
 import { YardimMerkeziContent } from "./YardimMerkeziScreen";
@@ -58,23 +58,23 @@ function telefonuNormallestir(ham: string): string | null {
 // kullanan, kullanici yazarken anlik kural kontrolu icin ayrik fonksiyonlar.
 const sifreKurallari = [
   {
-    etiket: "En az 8 karakter",
+    etiketKey: "sifreKurali_minKarakter" as const,
     kontrolEt: (sifre: string) => sifre.length >= 8,
   },
   {
-    etiket: "En az 1 büyük harf",
+    etiketKey: "sifreKurali_buyukHarf" as const,
     kontrolEt: (sifre: string) => /[A-ZÇĞİÖŞÜ]/.test(sifre),
   },
   {
-    etiket: "En az 1 küçük harf",
+    etiketKey: "sifreKurali_kucukHarf" as const,
     kontrolEt: (sifre: string) => /[a-zçğıöşü]/.test(sifre),
   },
   {
-    etiket: "En az 1 rakam",
+    etiketKey: "sifreKurali_rakam" as const,
     kontrolEt: (sifre: string) => /\d/.test(sifre),
   },
   {
-    etiket: "En az 1 noktalama işareti",
+    etiketKey: "sifreKurali_noktalama" as const,
     kontrolEt: (sifre: string) => /[^\wçğıöşüÇĞİÖŞÜ\s]/.test(sifre),
   },
 ];
@@ -102,7 +102,11 @@ export default function GirisEkraniScreen() {
   const { enterApp, previewApp } = useAppShell();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [mode, setMode] = useState<Mode>("giris");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -244,9 +248,7 @@ export default function GirisEkraniScreen() {
     setError(null);
     const normalTelefon = telefonuNormallestir(telefon);
     if (!normalTelefon) {
-      setTelefonHata(
-        "Geçerli bir telefon numarası girin (örn. 5321234567)",
-      );
+      setTelefonHata(t("girisEkrani_telefonGecersiz"));
       return;
     }
     setTelefonHata(null);
@@ -359,7 +361,7 @@ export default function GirisEkraniScreen() {
                 />
                 {tcHataGoster && (
                   <Text style={styles.fieldHata}>
-                    Geçerli bir T.C. Kimlik No girin
+                    {t("girisEkrani_tcKimlikGecersiz")}
                   </Text>
                 )}
               </View>
@@ -386,8 +388,7 @@ export default function GirisEkraniScreen() {
                   }}
                 />
                 <Text style={styles.fieldHint}>
-                  Başında 0 olmadan, 5 ile başlayan 10 haneli numaranızı girin
-                  (örn. 5321234567)
+                  {t("girisEkrani_telefonIpucu")}
                 </Text>
                 {telefonHata && (
                   <Text style={styles.fieldHata}>{telefonHata}</Text>
@@ -409,14 +410,14 @@ export default function GirisEkraniScreen() {
                   {sifreKurallari.map((kural) => {
                     const gecti = kural.kontrolEt(password);
                     return (
-                      <View key={kural.etiket} style={styles.sifreKuralRow}>
+                      <View key={kural.etiketKey} style={styles.sifreKuralRow}>
                         <MaterialIcons
                           name={gecti ? "check-circle" : "cancel"}
                           size={16}
-                          color={gecti ? "#2E7D32" : colors.outline}
+                          color={gecti ? colors.success : colors.outline}
                         />
                         <Text style={styles.sifreKuralText}>
-                          {kural.etiket}
+                          {t(kural.etiketKey)}
                         </Text>
                       </View>
                     );
@@ -441,13 +442,14 @@ export default function GirisEkraniScreen() {
                   />
                 </Pressable>
                 <Text style={styles.sartlarText}>
+                  {t("girisEkrani_sartlarPrefix")}
                   <Text
                     style={styles.sartlarLink}
                     onPress={() => setInfoModal("Kvkk")}
                   >
-                    Kullanım Şartları ve KVKK Aydınlatma Metni
+                    {t("girisEkrani_sartlarLinkMetni")}
                   </Text>
-                  {"'ni okudum, kabul ediyorum"}
+                  {t("girisEkrani_sartlarSuffix")}
                 </Text>
               </View>
             </>
@@ -655,7 +657,7 @@ export default function GirisEkraniScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

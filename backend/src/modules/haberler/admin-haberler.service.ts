@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import { NotificationsService } from '../notifications/notifications.service';
+import { zenginMetinTemizle } from '../../zengin-metin-sanitize';
 import { CreateHaberDto } from './dto/create-haber.dto';
 import { UpdateHaberDto } from './dto/update-haber.dto';
 import { Haber, HaberDocument } from './schemas/haber.schema';
@@ -54,6 +55,7 @@ export class AdminHaberlerService {
   async create(dto: CreateHaberDto, updatedBy: string): Promise<AdminHaber> {
     const created = (await this.haberModel.create({
       ...dto,
+      icerik: zenginMetinTemizle(dto.icerik),
       updatedBy,
     })) as unknown as TimestampedHaber;
 
@@ -78,7 +80,15 @@ export class AdminHaberlerService {
     if (!Types.ObjectId.isValid(id)) return null;
 
     const doc = await this.haberModel
-      .findByIdAndUpdate(id, { ...dto, updatedBy }, { new: true })
+      .findByIdAndUpdate(
+        id,
+        {
+          ...dto,
+          ...(dto.icerik !== undefined && { icerik: zenginMetinTemizle(dto.icerik) }),
+          updatedBy,
+        },
+        { new: true },
+      )
       .exec();
     return doc ? this.toAdmin(doc as unknown as TimestampedHaber) : null;
   }

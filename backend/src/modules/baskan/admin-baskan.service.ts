@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { zenginMetinTemizle } from '../../zengin-metin-sanitize';
 import { UpdateBaskanDto } from './dto/update-baskan.dto';
 import { Baskan, BaskanDocument } from './schemas/baskan.schema';
 
@@ -28,7 +29,18 @@ export class AdminBaskanService {
 
   async update(dto: UpdateBaskanDto, updatedBy: string): Promise<AdminBaskan> {
     const doc = await this.baskanModel
-      .findOneAndUpdate({}, { ...dto, updatedBy }, { new: true, upsert: true })
+      .findOneAndUpdate(
+        {},
+        {
+          ...dto,
+          ...(dto.introText !== undefined && { introText: zenginMetinTemizle(dto.introText) }),
+          ...(dto.kapanisText !== undefined && {
+            kapanisText: zenginMetinTemizle(dto.kapanisText),
+          }),
+          updatedBy,
+        },
+        { new: true, upsert: true },
+      )
       .exec();
     return this.toAdmin(doc);
   }

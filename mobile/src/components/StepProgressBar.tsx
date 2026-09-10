@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 type StepProgressBarProps = {
   step: number;
@@ -15,7 +15,11 @@ export default function StepProgressBar({
   label,
 }: StepProgressBarProps) {
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const progress = Math.max(0, Math.min(1, step / totalSteps));
 
   return (
@@ -31,7 +35,7 @@ export default function StepProgressBar({
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       gap: spacing.stackGap / 2,

@@ -15,6 +15,7 @@ import type { Request } from 'express';
 import { RbacGuard } from '../../admin/auth/rbac.guard';
 import { RequirePermission } from '../../admin/auth/require-permission.decorator';
 import { SessionAuthGuard } from '../../admin/auth/session-auth.guard';
+import { CbsSenkronizeSonucu } from '../cbs/cbs-kaynak.service';
 import {
   AdminAtikNoktasi,
   AdminAtikNoktalariService,
@@ -83,5 +84,13 @@ export class AdminAtikNoktalariController {
       throw new NotFoundException();
     }
     return { success: true };
+  }
+
+  @Post('cbs-senkronize')
+  @RequirePermission('atikNoktalari', 'create')
+  cbsSenkronize(@Req() req: Request): Promise<CbsSenkronizeSonucu> {
+    return this.adminAtikNoktalariService.cbsSenkronize(
+      req.session.adminUser!.email,
+    );
   }
 }

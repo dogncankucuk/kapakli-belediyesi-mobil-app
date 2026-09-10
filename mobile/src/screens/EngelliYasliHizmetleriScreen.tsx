@@ -16,7 +16,7 @@ import { getBasvuruHizmetleri } from "../api/basvuruHizmetleri";
 import { BasvuruHizmeti } from "../api/types";
 import { Card, SecondaryButton } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 function handleApply(hizmet: BasvuruHizmeti) {
   if (hizmet.basvuruTuru === "link") {
@@ -30,7 +30,11 @@ export default function EngelliYasliHizmetleriScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const [hizmetler, setHizmetler] = useState<BasvuruHizmeti[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -137,7 +141,7 @@ export default function EngelliYasliHizmetleriScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

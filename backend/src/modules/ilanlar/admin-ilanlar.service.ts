@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import { NotificationsService } from '../notifications/notifications.service';
+import { zenginMetinTemizle } from '../../zengin-metin-sanitize';
 import { CreateIlanDto } from './dto/create-ilan.dto';
 import { UpdateIlanDto } from './dto/update-ilan.dto';
 import { Ilan, IlanDocument } from './schemas/ilan.schema';
@@ -54,6 +55,7 @@ export class AdminIlanlarService {
   async create(dto: CreateIlanDto, updatedBy: string): Promise<AdminIlan> {
     const created = (await this.ilanModel.create({
       ...dto,
+      icerik: zenginMetinTemizle(dto.icerik),
       updatedBy,
     })) as unknown as TimestampedIlan;
 
@@ -78,7 +80,15 @@ export class AdminIlanlarService {
     if (!Types.ObjectId.isValid(id)) return null;
 
     const doc = await this.ilanModel
-      .findByIdAndUpdate(id, { ...dto, updatedBy }, { new: true })
+      .findByIdAndUpdate(
+        id,
+        {
+          ...dto,
+          ...(dto.icerik !== undefined && { icerik: zenginMetinTemizle(dto.icerik) }),
+          updatedBy,
+        },
+        { new: true },
+      )
       .exec();
     return doc ? this.toAdmin(doc as unknown as TimestampedIlan) : null;
   }

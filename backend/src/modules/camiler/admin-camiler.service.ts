@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+import { CbsKaynakService, CbsSenkronizeSonucu } from '../cbs/cbs-kaynak.service';
 import { CreateCamiDto } from './dto/create-cami.dto';
 import { UpdateCamiDto } from './dto/update-cami.dto';
 import { Cami, CamiDocument } from './schemas/cami.schema';
@@ -27,7 +28,31 @@ export class AdminCamilerService {
   constructor(
     @InjectModel(Cami.name)
     private readonly camiModel: Model<CamiDocument>,
+    private readonly cbsKaynakService: CbsKaynakService,
   ) {}
+
+  // Belediyenin resmi CBS'inden (gisoft:gi_poi_mosque) cami verisini ceker,
+  // ayni ada (ad) sahip kayit varsa gunceller yoksa ekler - boylece
+  // senkronizasyon tekrar tekrar calistirilsa da kopya kayit olusmaz.
+  async cbsSenkronize(updatedBy: string): Promise<CbsSenkronizeSonucu> {
+    const poiler = await this.cbsKaynakService.getPois('gisoft:gi_poi_mosque');
+    let eklenen = 0;
+    let guncellenen = 0;
+    for (const poi of poiler) {
+      const adres = await this.cbsKaynakService.getAdres(poi.districtId);
+      const mevcut = await this.camiModel.exists({ ad: poi.ad }).exec();
+      await this.camiModel
+        .findOneAndUpdate(
+          { ad: poi.ad },
+          { ad: poi.ad, lat: poi.lat, lng: poi.lng, adres: adres ?? undefined, updatedBy },
+          { upsert: true },
+        )
+        .exec();
+      if (mevcut) guncellenen++;
+      else eklenen++;
+    }
+    return { bulunan: poiler.length, eklenen, guncellenen };
+  }
 
   async findAll(): Promise<AdminCami[]> {
     const camiler = await this.camiModel.find().sort({ ad: 1 }).exec();

@@ -9,6 +9,7 @@ import {
 import type { YardimMerkeziSoruInput } from './api';
 import { OnizlemeBosMetin, TelefonOnizleme, YardimMerkeziKartiOnizleme } from './MobilOnizleme';
 import type { YardimMerkeziSoru } from './types';
+import ZenginMetinEditor from './ZenginMetinEditor';
 
 interface Props {
   canManage: boolean;
@@ -105,11 +106,9 @@ function YardimMerkeziPage({ canManage }: Props) {
           </label>
           <label>
             Cevap
-            <textarea
+            <ZenginMetinEditor
               value={form.cevap}
-              onChange={(e) => setForm({ ...form, cevap: e.target.value })}
-              placeholder="Lütfen veri girişi yapınız"
-              required
+              onChange={(cevap) => setForm({ ...form, cevap })}
             />
           </label>
           <button type="submit">Kaydet</button>
@@ -143,9 +142,9 @@ function YardimMerkeziPage({ canManage }: Props) {
                       </label>
                       <label>
                         Cevap
-                        <textarea
+                        <ZenginMetinEditor
                           value={editForm.cevap}
-                          onChange={(e) => setEditForm({ ...editForm, cevap: e.target.value })}
+                          onChange={(cevap) => setEditForm({ ...editForm, cevap })}
                         />
                       </label>
                       <div className="row-actions">
@@ -162,7 +161,7 @@ function YardimMerkeziPage({ canManage }: Props) {
               ) : (
                 <tr key={item.id}>
                   <td>{item.soru}</td>
-                  <td>{item.cevap}</td>
+                  <td dangerouslySetInnerHTML={{ __html: item.cevap }} />
                   {canManage && (
                     <td className="row-actions">
                       <button type="button" onClick={() => startEdit(item)}>

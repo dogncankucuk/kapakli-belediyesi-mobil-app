@@ -3,7 +3,7 @@ import { ComponentProps, useMemo } from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
 
 import Card from "./Card";
-import { Colors, spacing, typography, useThemeColors } from "../theme";
+import { Colors, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 type ServiceGridCardProps = {
   icon: ComponentProps<typeof MaterialIcons>["name"];
@@ -17,7 +17,11 @@ export default function ServiceGridCard({
   onPress,
 }: ServiceGridCardProps) {
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
 
   return (
     <Pressable onPress={onPress} accessibilityRole="button">
@@ -37,7 +41,7 @@ export default function ServiceGridCard({
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     card: {
       aspectRatio: 1,

@@ -14,7 +14,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import PaginationDots from "./PaginationDots";
 import PrimaryButton from "./PrimaryButton";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { useTranslation } from "../i18n/LocaleContext";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 export type OnboardingSlide = {
   key: string;
@@ -35,8 +36,13 @@ export default function OnboardingCarousel({
   slides,
   onDone,
 }: OnboardingCarouselProps) {
+  const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
   const scrollRef = useRef<ScrollView>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -65,7 +71,7 @@ export default function OnboardingCarousel({
         accessibilityRole="button"
         style={styles.skip}
       >
-        <Text style={styles.skipText}>Atla</Text>
+        <Text style={styles.skipText}>{t("onboarding_skip")}</Text>
       </Pressable>
       <ScrollView
         ref={scrollRef}
@@ -96,7 +102,7 @@ export default function OnboardingCarousel({
       <View style={styles.footer}>
         <PaginationDots count={slides.length} activeIndex={activeIndex} />
         <PrimaryButton
-          label={isLast ? "Hemen Başla" : "Devam Et"}
+          label={isLast ? t("onboarding_getStarted") : t("onboarding_continue")}
           onPress={goNext}
           style={styles.button}
         />
@@ -105,7 +111,7 @@ export default function OnboardingCarousel({
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,

@@ -23,7 +23,7 @@ import { BasvuruTuru } from "../api/types";
 import { Card, PrimaryButton } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { basvuruIdEkle } from "../storage/basvuruStorage";
-import { Colors, shape, spacing, typography, useThemeColors } from "../theme";
+import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 const MAX_BELGE_BOYUTU = 3 * 1024 * 1024;
 const MAX_TOPLAM_BELGE_BOYUTU = 6 * 1024 * 1024;
@@ -36,7 +36,11 @@ export default function BasvuruFormScreen() {
   const { basvuruTuru } = route.params as { basvuruTuru: BasvuruTuru };
   const { t } = useTranslation();
   const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const typography = useTypography();
+  const styles = useMemo(
+    () => createStyles(colors, typography),
+    [colors, typography],
+  );
 
   const [kimlikNo, setKimlikNo] = useState("");
   const [adSoyad, setAdSoyad] = useState("");
@@ -480,7 +484,7 @@ export default function BasvuruFormScreen() {
   );
 }
 
-const createStyles = (colors: Colors) =>
+const createStyles = (colors: Colors, typography: Typography) =>
   StyleSheet.create({
     container: {
       flex: 1,
