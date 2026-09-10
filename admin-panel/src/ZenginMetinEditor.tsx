@@ -1,4 +1,4 @@
-import { EditorContent, useEditor, type Editor } from '@tiptap/react';
+import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import { Color, FontFamily, FontSize, TextStyle } from '@tiptap/extension-text-style';

@@ -165,36 +165,6 @@ function tesikiMetniniCevir(
   return { gecerli, toplamSatir: satirlar.length };
 }
 
-// TREDAŞ'in sonuc tablosunun gercek sutun sirasi dogrulanamadi (CAPTCHA
-// korumasi nedeniyle canli sorgu sonucuna erisilemedi) - TESKİ ile ayni
-// 4 sutunlu (baslangic/bitis/sebep/bolge) varsayimla deneysel olarak
-// yazildi. Gercek bir ornek yapistirildiginda sutun eslesmesi yanlissa
-// kolayca duzeltilebilir.
-function tredasMetniniCevir(
-  metin: string,
-): KaynaktanCikarimSonucu<ElektrikKesintisiInput> {
-  const satirlar = metin
-    .split('\n')
-    .map((s) => s.trim())
-    .filter(Boolean);
-  const gecerli: ElektrikKesintisiInput[] = [];
-  for (const satir of satirlar) {
-    const hucreler = yapistirilanSatiriHucrelereAyir(satir).map((h) => h.trim());
-    if (hucreler.length < 4) continue;
-    const [baslangic, , nedeni, yer] = hucreler;
-    const parcalar = yer.split('/').map((p) => p.trim());
-    const ilce = parcalar[0] ?? '';
-    const mahalle = parcalar[1] ?? parcalar[0] ?? '';
-    if (ilce && ilce.toLocaleUpperCase('tr-TR') !== 'KAPAKLI') continue;
-    gecerli.push({
-      mahalle: mahalle || '-',
-      tarih: turkceTarihiIsoyaCevir(baslangic),
-      aciklama: nedeni,
-    });
-  }
-  return { gecerli, toplamSatir: satirlar.length };
-}
-
 const emptyElektrikForm: ElektrikKesintisiInput = { mahalle: '', tarih: '', aciklama: '' };
 const emptyKesintiForm: PlanliKesintiInput = { tarih: '', ilce: '', aciklama: '' };
 
@@ -213,8 +183,6 @@ function SuHizmetleriPage({ canManageSu, canManageElektrik }: Props) {
   const [elektrikCsvYukleniyor, setElektrikCsvYukleniyor] = useState(false);
   const [elektrikCsvSonuc, setElektrikCsvSonuc] = useState<string | null>(null);
   const elektrikCsvInputRef = useRef<HTMLInputElement>(null);
-  const [tredasMetni, setTredasMetni] = useState('');
-  const [tredasSonuc, setTredasSonuc] = useState<string | null>(null);
 
   const [kesintiForm, setKesintiForm] = useState<PlanliKesintiInput>({
     ...emptyKesintiForm,
@@ -402,22 +370,6 @@ function SuHizmetleriPage({ canManageSu, canManageElektrik }: Props) {
     }
     csvIndir('su-kesintileri-kapakli.csv', SU_CSV_BASLIKLAR, gecerli.map(suCsvSatiriHazirla));
     setTeskiSonuc(
-      `${toplamSatir} satır tarandı, ${gecerli.length} tanesi Kapaklı'ya ait - CSV indirildi. "CSV Seç ve İçe Aktar" ile ekleyebilirsiniz.`,
-    );
-  }
-
-  function handleTredasCikar() {
-    const { gecerli, toplamSatir } = tredasMetniniCevir(tredasMetni);
-    if (gecerli.length === 0) {
-      setTredasSonuc(`${toplamSatir} satır tarandı, Kapaklı'ya ait kayıt bulunamadı.`);
-      return;
-    }
-    csvIndir(
-      'elektrik-kesintileri-kapakli.csv',
-      ELEKTRIK_CSV_BASLIKLAR,
-      gecerli.map(elektrikCsvSatiriHazirla),
-    );
-    setTredasSonuc(
       `${toplamSatir} satır tarandı, ${gecerli.length} tanesi Kapaklı'ya ait - CSV indirildi. "CSV Seç ve İçe Aktar" ile ekleyebilirsiniz.`,
     );
   }

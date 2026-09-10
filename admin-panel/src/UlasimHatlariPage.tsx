@@ -76,7 +76,7 @@ function saatGrubunuCevir(metin: string, yon: KalkisYonu): KalkisSaati[] {
   return sonuc;
 }
 
-function csvSatiriHazirla(item: UlasimHattiInput): (string | number)[] {
+function csvSatiriHazirla(item: UlasimHattiInput | UlasimHatti): (string | number)[] {
   return [
     item.hatAdi,
     item.hatNumarasi ?? '',
