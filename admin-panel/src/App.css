@@ -435,7 +435,9 @@ button:active:not(:disabled) {
 .inline-form label:has(textarea),
 .edit-row label:has(textarea),
 .inline-form label:has(.medya-coklu),
-.edit-row label:has(.medya-coklu) {
+.edit-row label:has(.medya-coklu),
+.inline-form label:has(.zengin-metin),
+.edit-row label:has(.zengin-metin) {
   grid-column: 1 / -1;
 }
 
