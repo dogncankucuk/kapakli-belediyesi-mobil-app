@@ -23,6 +23,11 @@ export class UpdateMeclisGundemiDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  resimUrlleri?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
   dosyaUrlleri?: string[];
 
   @IsOptional()

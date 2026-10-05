@@ -14,6 +14,7 @@ import { LoginDto } from './dto/login.dto';
 export interface AdminSessionUser {
   email: string;
   roleId: string;
+  departmanId: string | null;
 }
 
 @Injectable()
@@ -65,6 +66,10 @@ export class AuthService {
       }
     }
 
-    return { email: adminUser.email, roleId: adminUser.roleId.toString() };
+    return {
+      email: adminUser.email,
+      roleId: adminUser.roleId.toString(),
+      departmanId: adminUser.departmanId?.toString() ?? null,
+    };
   }
 }

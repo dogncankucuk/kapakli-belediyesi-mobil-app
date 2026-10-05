@@ -5,7 +5,7 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BasvuruTuru } from "../api/types";
-import { Card, PrimaryButton } from "../components";
+import { Card, PrimaryButton, ZenginMetinGoster } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
@@ -50,9 +50,7 @@ export default function BasvuruTuruDetayScreen() {
           />
         ) : null}
 
-        {tur.aciklama ? (
-          <Text style={styles.description}>{tur.aciklama}</Text>
-        ) : null}
+        {tur.aciklama ? <ZenginMetinGoster html={tur.aciklama} /> : null}
 
         {tur.gerekliBelgeler.length > 0 && (
           <Card style={styles.section}>
@@ -144,10 +142,6 @@ const createStyles = (colors: Colors, typography: Typography) =>
       width: "100%",
       height: 180,
       borderRadius: shape.roundedLg,
-    },
-    description: {
-      ...typography.bodyMd,
-      color: colors.onBackground,
     },
     section: {
       padding: spacing.stackGap,

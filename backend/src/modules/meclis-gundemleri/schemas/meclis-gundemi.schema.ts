@@ -15,6 +15,9 @@ export class MeclisGundemi {
   icerik: string;
 
   @Prop({ type: [String], default: [] })
+  resimUrlleri: string[];
+
+  @Prop({ type: [String], default: [] })
   dosyaUrlleri: string[];
 
   @Prop()

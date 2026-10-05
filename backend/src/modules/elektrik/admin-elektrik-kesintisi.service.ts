@@ -1,8 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import { NotificationsService } from '../notifications/notifications.service';
+import { KesintiApiAyarlariService } from '../kesinti-api-ayarlari/kesinti-api-ayarlari.service';
 import { CreateElektrikKesintisiDto } from './dto/create-elektrik-kesintisi.dto';
 import { UpdateElektrikKesintisiDto } from './dto/update-elektrik-kesintisi.dto';
 import {
@@ -20,6 +21,11 @@ export interface AdminElektrikKesintisi {
   updatedAt: string;
 }
 
+export interface KesintiApiSenkronizasyonSonucu {
+  basarili: number;
+  hatalar: string[];
+}
+
 type TimestampedElektrikKesintisi = ElektrikKesintisiDocument & {
   createdAt: Date;
   updatedAt: Date;
@@ -33,6 +39,7 @@ export class AdminElektrikKesintisiService {
     @InjectModel(ElektrikKesintisi.name)
     private readonly elektrikKesintisiModel: Model<ElektrikKesintisiDocument>,
     private readonly notificationsService: NotificationsService,
+    private readonly kesintiApiAyarlariService: KesintiApiAyarlariService,
   ) {}
 
   async findAll(): Promise<AdminElektrikKesintisi[]> {
@@ -94,6 +101,64 @@ export class AdminElektrikKesintisiService {
     if (!Types.ObjectId.isValid(id)) return false;
     const res = await this.elektrikKesintisiModel.findByIdAndDelete(id).exec();
     return !!res;
+  }
+
+  // API henuz TREDAS tarafindan saglanmadigi icin beklenen format kendi
+  // CreateElektrikKesintisiDto'muzla birebir ayni tutuldu: {mahalle, tarih,
+  // aciklama}[] JSON dizisi. Gercek API geldiginde format farkli cikarsa
+  // bu metod (sadece alan eslemesi) guncellenir.
+  async senkronizeApiIle(
+    updatedBy: string,
+  ): Promise<KesintiApiSenkronizasyonSonucu> {
+    const apiUrl = await this.kesintiApiAyarlariService.getApiUrl('elektrik');
+    if (!apiUrl) {
+      throw new BadRequestException(
+        'Elektrik kesintileri için API adresi henüz tanımlanmamış.',
+      );
+    }
+
+    let veri: unknown;
+    try {
+      const yanit = await fetch(apiUrl);
+      if (!yanit.ok) {
+        throw new Error(`API ${yanit.status} döndü`);
+      }
+      veri = await yanit.json();
+    } catch (err) {
+      this.logger.error(
+        'Elektrik kesintileri API senkronizasyonu başarısız',
+        err as Error,
+      );
+      throw new BadRequestException('API adresine ulaşılamadı');
+    }
+
+    if (!Array.isArray(veri)) {
+      throw new BadRequestException('API beklenmeyen bir formatta yanıt döndü');
+    }
+
+    const hatalar: string[] = [];
+    let basarili = 0;
+    for (const [index, kayit] of veri.entries()) {
+      const mahalle =
+        typeof kayit?.mahalle === 'string' ? kayit.mahalle.trim() : '';
+      const tarih = typeof kayit?.tarih === 'string' ? kayit.tarih : '';
+      const aciklama =
+        typeof kayit?.aciklama === 'string' ? kayit.aciklama.trim() : '';
+      if (!mahalle || !tarih || !aciklama) {
+        hatalar.push(`Kayıt ${index + 1}: eksik alan`);
+        continue;
+      }
+      try {
+        await this.create({ mahalle, tarih, aciklama }, updatedBy);
+        basarili++;
+      } catch (err) {
+        hatalar.push(
+          `Kayıt ${index + 1}: ${err instanceof Error ? err.message : 'oluşturulamadı'}`,
+        );
+      }
+    }
+
+    return { basarili, hatalar };
   }
 
   private toAdmin(

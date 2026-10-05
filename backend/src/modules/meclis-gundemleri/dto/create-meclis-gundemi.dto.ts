@@ -21,6 +21,11 @@ export class CreateMeclisGundemiDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  resimUrlleri?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
   dosyaUrlleri?: string[];
 
   @IsOptional()

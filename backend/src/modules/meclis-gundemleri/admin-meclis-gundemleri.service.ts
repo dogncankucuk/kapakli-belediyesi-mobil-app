@@ -16,6 +16,7 @@ export interface AdminMeclisGundemi {
   baslik: string;
   tarih: string;
   icerik: string;
+  resimUrlleri: string[];
   dosyaUrlleri: string[];
   youtubeUrl: string | null;
   updatedBy: string | null;
@@ -113,6 +114,7 @@ export class AdminMeclisGundemleriService {
       baslik: doc.baslik,
       tarih: doc.tarih.toISOString(),
       icerik: doc.icerik ?? '',
+      resimUrlleri: doc.resimUrlleri ?? [],
       dosyaUrlleri: doc.dosyaUrlleri ?? [],
       youtubeUrl: doc.youtubeUrl ?? null,
       updatedBy: doc.updatedBy ?? null,

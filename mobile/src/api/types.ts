@@ -54,6 +54,7 @@ export type MeclisGundemi = {
   baslik: string;
   tarih: string;
   icerik: string;
+  resimUrlleri: string[];
   dosyaUrlleri: string[];
   youtubeUrl: string | null;
 };
@@ -155,6 +156,8 @@ export type MeclisKarari = {
   kategori: string;
   tarih: string;
   baslik: string;
+  icerik: string;
+  resimUrlleri: string[];
   dosyaUrlleri: string[];
   youtubeUrl: string | null;
 };

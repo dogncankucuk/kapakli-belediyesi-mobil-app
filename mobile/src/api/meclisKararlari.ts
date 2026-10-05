@@ -6,6 +6,8 @@ export type MeclisKarari = {
   kategori: string;
   tarih: string;
   baslik: string;
+  icerik: string;
+  resimUrlleri: string[];
   dosyaUrlleri: string[];
   youtubeUrl: string | null;
 };
@@ -21,6 +23,7 @@ export async function getMeclisKararlari(): Promise<MeclisKarari[]> {
 
   return data.map((item) => ({
     ...item,
+    resimUrlleri: (item.resimUrlleri ?? []).map(resolveMediaUrl),
     dosyaUrlleri: (item.dosyaUrlleri ?? []).map(resolveMediaUrl),
   }));
 }

@@ -36,6 +36,7 @@ import { UlasimHatlariModule } from './modules/ulasim-hatlari/ulasim-hatlari.mod
 import { SuHizmetleriModule } from './modules/su-hizmetleri/su-hizmetleri.module';
 import { FenIsleriModule } from './modules/fen-isleri/fen-isleri.module';
 import { ElektrikModule } from './modules/elektrik/elektrik.module';
+import { KesintiApiAyarlariModule } from './modules/kesinti-api-ayarlari/kesinti-api-ayarlari.module';
 import { AseviModule } from './modules/asevi/asevi.module';
 import { HavaKalitesiModule } from './modules/hava-kalitesi/hava-kalitesi.module';
 import { HavaDurumuModule } from './modules/hava-durumu/hava-durumu.module';
@@ -51,6 +52,7 @@ import { FormlarModule } from './modules/formlar/formlar.module';
 import { BasvuruHizmetleriModule } from './modules/basvuru-hizmetleri/basvuru-hizmetleri.module';
 import { BasvurularModule } from './modules/basvurular/basvurular.module';
 import { RolesModule } from './modules/roles/roles.module';
+import { DepartmanlarModule } from './modules/departmanlar/departmanlar.module';
 import { MedyaModule } from './modules/medya/medya.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AdminModule } from './admin/admin.module';
@@ -111,6 +113,7 @@ import { UPLOADS_DIR } from './uploads-dir';
     SuHizmetleriModule,
     FenIsleriModule,
     ElektrikModule,
+    KesintiApiAyarlariModule,
     AseviModule,
     HavaKalitesiModule,
     HavaDurumuModule,
@@ -126,6 +129,7 @@ import { UPLOADS_DIR } from './uploads-dir';
     BasvuruHizmetleriModule,
     BasvurularModule,
     RolesModule,
+    DepartmanlarModule,
     MedyaModule,
     NotificationsModule,
     AdminModule,

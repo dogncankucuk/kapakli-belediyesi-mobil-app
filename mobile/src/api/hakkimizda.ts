@@ -3,7 +3,7 @@ import { BASE_URL } from "./client";
 export type HakkimizdaBilgisi = {
   baskanOzetMetni: string;
   tarihcePhotoUrl: string | null;
-  tarihceParagraflari: string[];
+  tarihce: string;
   kurulusYili: string;
   buyuksehirYili: string;
   nufus: string;

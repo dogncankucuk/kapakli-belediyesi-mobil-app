@@ -11,6 +11,7 @@ import MedyaSeciciCoklu from './MedyaSeciciCoklu';
 import { KararKartiOnizleme, OnizlemeBosMetin, TelefonOnizleme } from './MobilOnizleme';
 import { bugununTarihi } from './tarih';
 import type { MeclisKarari } from './types';
+import ZenginMetinEditor from './ZenginMetinEditor';
 
 interface Props {
   canManage: boolean;
@@ -21,6 +22,8 @@ const emptyForm: MeclisKarariInput = {
   kategori: '',
   tarih: '',
   baslik: '',
+  icerik: '',
+  resimUrlleri: [],
   dosyaUrlleri: [],
   youtubeUrl: '',
 };
@@ -68,6 +71,8 @@ function MeclisKararlariPage({ canManage }: Props) {
       kategori: item.kategori,
       tarih: item.tarih.slice(0, 10),
       baslik: item.baslik,
+      icerik: item.icerik,
+      resimUrlleri: item.resimUrlleri,
       dosyaUrlleri: item.dosyaUrlleri,
       youtubeUrl: item.youtubeUrl ?? '',
     });
@@ -143,6 +148,20 @@ function MeclisKararlariPage({ canManage }: Props) {
             />
           </label>
           <label>
+            İçerik
+            <ZenginMetinEditor
+              value={form.icerik}
+              onChange={(icerik) => setForm({ ...form, icerik })}
+            />
+          </label>
+          <label>
+            Resim URL (birden fazla seçilebilir)
+            <MedyaSeciciCoklu
+              value={form.resimUrlleri}
+              onChange={(resimUrlleri) => setForm({ ...form, resimUrlleri })}
+            />
+          </label>
+          <label>
             PDF / Belge URL (birden fazla seçilebilir)
             <MedyaSeciciCoklu
               value={form.dosyaUrlleri}
@@ -211,6 +230,22 @@ function MeclisKararlariPage({ canManage }: Props) {
                         />
                       </label>
                       <label>
+                        İçerik
+                        <ZenginMetinEditor
+                          value={editForm.icerik}
+                          onChange={(icerik) => setEditForm({ ...editForm, icerik })}
+                        />
+                      </label>
+                      <label>
+                        Resim URL (birden fazla seçilebilir)
+                        <MedyaSeciciCoklu
+                          value={editForm.resimUrlleri}
+                          onChange={(resimUrlleri) =>
+                            setEditForm({ ...editForm, resimUrlleri })
+                          }
+                        />
+                      </label>
+                      <label>
                         PDF / Belge URL (birden fazla seçilebilir)
                         <MedyaSeciciCoklu
                           value={editForm.dosyaUrlleri}
@@ -272,6 +307,8 @@ function MeclisKararlariPage({ canManage }: Props) {
                 kararNo={item.kararNo}
                 kategori={item.kategori}
                 baslik={item.baslik}
+                icerik={item.icerik}
+                resimUrlleri={item.resimUrlleri}
                 tarih={item.tarih}
                 dosyaUrlleri={item.dosyaUrlleri}
                 youtubeUrl={item.youtubeUrl}

@@ -3,8 +3,10 @@ import { useNavigation } from "@react-navigation/native";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Linking,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -77,7 +79,11 @@ export default function MeclisGundemleriScreen() {
           {t("meclisGundemleri_title")}
         </Text>
       </View>
-      <View style={styles.content}>
+
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {isLoading && <ActivityIndicator color={colors.primaryContainer} />}
         {!isLoading && error && (
           <Text style={styles.errorText}>{t("meclisGundemleri_error")}</Text>
@@ -103,7 +109,17 @@ export default function MeclisGundemleriScreen() {
                     accessibilityRole="button"
                   >
                     <Card style={styles.card}>
-                      <Text style={styles.itemTitle} numberOfLines={2}>
+                      {item.resimUrlleri.length > 0 && (
+                        <Image
+                          source={{ uri: item.resimUrlleri[0] }}
+                          style={styles.itemImage}
+                          resizeMode="cover"
+                        />
+                      )}
+                      <Text
+                        style={styles.itemTitle}
+                        numberOfLines={expanded ? undefined : 2}
+                      >
                         {item.baslik}
                       </Text>
                       {item.icerik ? (
@@ -128,6 +144,20 @@ export default function MeclisGundemleriScreen() {
                             />
                           </View>
                         )}
+                      <View style={styles.itemFooter}>
+                        <Text style={styles.itemDate}>
+                          {new Date(item.tarih).toLocaleDateString("tr-TR", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </Text>
+                        <MaterialIcons
+                          name={expanded ? "expand-less" : "expand-more"}
+                          size={18}
+                          color={colors.secondary}
+                        />
+                      </View>
                       {item.dosyaUrlleri.map((dosyaUrl, index) => (
                         <Pressable
                           key={dosyaUrl}
@@ -156,7 +186,7 @@ export default function MeclisGundemleriScreen() {
             </View>
           </>
         )}
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -188,7 +218,6 @@ const createStyles = (colors: Colors, typography: Typography) =>
       flexShrink: 1,
     },
     content: {
-      flex: 1,
       padding: spacing.containerMargin,
       gap: spacing.stackGap,
     },
@@ -207,6 +236,13 @@ const createStyles = (colors: Colors, typography: Typography) =>
       padding: spacing.stackGap,
       gap: 4,
     },
+    itemImage: {
+      width: "100%",
+      aspectRatio: 16 / 9,
+      borderRadius: shape.rounded,
+      marginBottom: 4,
+      backgroundColor: colors.outlineVariant,
+    },
     itemTitle: {
       ...typography.labelLg,
       color: colors.onBackground,
@@ -224,11 +260,21 @@ const createStyles = (colors: Colors, typography: Typography) =>
     video: {
       flex: 1,
     },
+    itemFooter: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginTop: 4,
+    },
+    itemDate: {
+      ...typography.labelSm,
+      color: colors.secondary,
+    },
     dosyaRow: {
       flexDirection: "row",
       alignItems: "center",
       gap: 4,
-      marginTop: 4,
+      marginTop: 8,
       paddingTop: 8,
       borderTopWidth: 1,
       borderTopColor: colors.outlineVariant,

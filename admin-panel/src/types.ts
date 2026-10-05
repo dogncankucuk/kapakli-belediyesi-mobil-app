@@ -1,5 +1,5 @@
-// Roller artik veritabaninda tanimli, dinamik (bkz. RolesPage). Bir kaynak
-// (resource) icin iki seviye yetki var: "list" (goruntule) ve "manage"
+// Oturum acan kullanicinin session/me yanitindaki kaba yetki ozeti - bir
+// kaynak (resource) icin iki seviye var: "list" (goruntule) ve "manage"
 // (olustur+duzenle+sil hepsi birden - backend hala ayri ayri kontrol eder,
 // panel sadece 2 sutuna sadelestirir).
 export type PermissionLevel = 'list' | 'manage';
@@ -24,33 +24,32 @@ export interface ResourcePermission {
   actions: ResourceAction[];
 }
 
-export interface AdminRole {
-  id: string;
-  name: string;
-  isFullAccess: boolean;
-  isProtected: boolean;
-  permissions: ResourcePermission[];
-  userCount: number;
-  updatedBy: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface AdminAccount {
   id: string;
   email: string;
   ad: string | null;
-  roleId: string;
-  roleName: string;
+  isFullAccess: boolean;
+  permissions: ResourcePermission[];
+  departmanId: string | null;
+  departmanAdi: string | null;
   disabled: boolean;
   updatedBy: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-// Izin matrisi (RolesPage) ve sidebar gorunurlugu (App.tsx) icin ortak
-// kaynak -> etiket eslemesi. Backend'deki AdminResource union'iyla birebir
-// aynı anahtarları kullanır (bkz. backend require-permission.decorator.ts).
+export interface Departman {
+  id: string;
+  ad: string;
+  varsayilanYetkiler: ResourcePermission[];
+  kullaniciSayisi: number;
+  updatedBy: string | null;
+  createdAt: string;
+}
+
+// Izin matrisi (YetkiMatrisEditor) ve sidebar gorunurlugu (App.tsx) icin
+// ortak kaynak -> etiket eslemesi. Backend'deki AdminResource union'iyla
+// birebir aynı anahtarları kullanır (bkz. backend require-permission.decorator.ts).
 export const RESOURCE_LABELS: Record<string, string> = {
   haberler: 'Haberler',
   announcements: 'Duyurular',
@@ -67,6 +66,7 @@ export const RESOURCE_LABELS: Record<string, string> = {
   temaAyarlari: 'Mobil Görünüm Ayarları',
   panelTemasi: 'Panel Görünümü',
   medya: 'Medya Kütüphanesi',
+  medyaKlasorleri: 'Medya Klasörleri (Klasör Oluşturma/Silme)',
   formlar: 'Formlar ve Dilekçeler',
   basvuruHizmetleri: 'Başvuru Hizmetleri',
   basvuruTurleri: 'Başvuru Türleri',
@@ -167,6 +167,7 @@ export interface MeclisGundemi {
   baslik: string;
   tarih: string;
   icerik: string;
+  resimUrlleri: string[];
   dosyaUrlleri: string[];
   youtubeUrl: string | null;
   updatedBy: string | null;
@@ -186,7 +187,7 @@ export interface Baskan {
 export interface Hakkimizda {
   baskanOzetMetni: string;
   tarihcePhotoUrl: string | null;
-  tarihceParagraflari: string[];
+  tarihce: string;
   kurulusYili: string;
   buyuksehirYili: string;
   nufus: string;
@@ -271,6 +272,7 @@ export interface MedyaDosyasi {
 export interface MedyaKlasoru {
   id: string;
   ad: string;
+  gorunurDepartmanlar: string[];
   dosyaSayisi: number;
   updatedBy: string | null;
   createdAt: string;
@@ -394,6 +396,8 @@ export interface MeclisKarari {
   kategori: string;
   tarih: string;
   baslik: string;
+  icerik: string;
+  resimUrlleri: string[];
   dosyaUrlleri: string[];
   youtubeUrl: string | null;
   updatedBy: string | null;

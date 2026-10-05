@@ -20,7 +20,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { createBasvuru } from "../api/basvurular";
 import { BasvuruTuru } from "../api/types";
-import { Card, PrimaryButton } from "../components";
+import { Card, PrimaryButton, ZenginMetinGoster } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { basvuruIdEkle } from "../storage/basvuruStorage";
 import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
@@ -313,7 +313,7 @@ export default function BasvuruFormScreen() {
       >
         {basvuruTuru.aciklama ? (
           <Card style={styles.descriptionCard}>
-            <Text style={styles.descriptionText}>{basvuruTuru.aciklama}</Text>
+            <ZenginMetinGoster html={basvuruTuru.aciklama} />
           </Card>
         ) : null}
 
@@ -518,10 +518,6 @@ const createStyles = (colors: Colors, typography: Typography) =>
     descriptionCard: {
       padding: spacing.stackGap,
       backgroundColor: colors.primaryContainer,
-    },
-    descriptionText: {
-      ...typography.bodyMd,
-      color: colors.onPrimary,
     },
     form: {
       padding: spacing.stackGap,

@@ -13,7 +13,7 @@ type TabName = (typeof TAB_ITEMS)[number]["name"];
 // gibi ~28 ekrani Tabs'in DISINDA, kok stack'te tutuyor (bkz. RootStack.tsx yorumu).
 // Bu yuzden o ekranlarda hangi sekmenin "aktif" sayilacagina dair anlamli bir
 // karsilik yok - boyle bir ekrandayken hicbir sekme vurgulanmaz, sadece Tabs
-// icindeyken (Home/Hava/Services/Profile) o sekme aktif renkte gosterilir.
+// icindeyken (Home/Harita/Services/Profile) o sekme aktif renkte gosterilir.
 function getActiveTabName(): TabName | null {
   if (!navigationRef.isReady()) return null;
   const rootState = navigationRef.getRootState();

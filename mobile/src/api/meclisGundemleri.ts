@@ -12,6 +12,7 @@ export async function getMeclisGundemleri(): Promise<MeclisGundemi[]> {
 
   return data.map((doc) => ({
     ...doc,
+    resimUrlleri: (doc.resimUrlleri ?? []).map(resolveMediaUrl),
     dosyaUrlleri: (doc.dosyaUrlleri ?? []).map(resolveMediaUrl),
   }));
 }

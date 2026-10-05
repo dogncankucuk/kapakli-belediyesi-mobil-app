@@ -18,6 +18,7 @@ import { SessionAuthGuard } from '../../admin/auth/session-auth.guard';
 import {
   AdminUlasimHatti,
   AdminUlasimHatlariService,
+  KesintiApiSenkronizasyonSonucu,
 } from './admin-ulasim-hatlari.service';
 import { CreateUlasimHattiDto } from './dto/create-ulasim-hatti.dto';
 import { UpdateUlasimHattiDto } from './dto/update-ulasim-hatti.dto';
@@ -83,5 +84,15 @@ export class AdminUlasimHatlariController {
       throw new NotFoundException();
     }
     return { success: true };
+  }
+
+  @Post('senkronize-api')
+  @RequirePermission('ulasimHatlari', 'create')
+  senkronizeApiIle(
+    @Req() req: Request,
+  ): Promise<KesintiApiSenkronizasyonSonucu> {
+    return this.adminUlasimHatlariService.senkronizeApiIle(
+      req.session.adminUser!.email,
+    );
   }
 }

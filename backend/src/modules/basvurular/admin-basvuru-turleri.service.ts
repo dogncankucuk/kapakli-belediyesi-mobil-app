@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
+import { zenginMetinTemizle } from '../../zengin-metin-sanitize';
 import { CreateBasvuruTuruDto } from './dto/create-basvuru-turu.dto';
 import { UpdateBasvuruTuruDto } from './dto/update-basvuru-turu.dto';
 import {
@@ -58,6 +59,7 @@ export class AdminBasvuruTurleriService {
   ): Promise<AdminBasvuruTuru> {
     const created = (await this.basvuruTuruModel.create({
       ...dto,
+      ...(dto.aciklama !== undefined && { aciklama: zenginMetinTemizle(dto.aciklama) }),
       updatedBy,
     })) as unknown as TimestampedBasvuruTuru;
     return this.toAdmin(created);
@@ -70,7 +72,15 @@ export class AdminBasvuruTurleriService {
   ): Promise<AdminBasvuruTuru | null> {
     if (!Types.ObjectId.isValid(id)) return null;
     const doc = await this.basvuruTuruModel
-      .findByIdAndUpdate(id, { ...dto, updatedBy }, { new: true })
+      .findByIdAndUpdate(
+        id,
+        {
+          ...dto,
+          ...(dto.aciklama !== undefined && { aciklama: zenginMetinTemizle(dto.aciklama) }),
+          updatedBy,
+        },
+        { new: true },
+      )
       .exec();
     return doc ? this.toAdmin(doc as unknown as TimestampedBasvuruTuru) : null;
   }

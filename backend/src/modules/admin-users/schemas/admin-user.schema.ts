@@ -19,6 +19,12 @@ export class AdminUser {
   @Prop({ required: true, type: Types.ObjectId, ref: 'AdminRole' })
   roleId: Types.ObjectId;
 
+  // Rolden (yetki seti) bilinçli olarak ayrı: departman sadece hangi
+  // birimde çalıştığını gösteren organizasyonel bir etiket - opsiyonel
+  // (eski kullanıcılarda yok), bkz. modules/departmanlar.
+  @Prop({ type: Types.ObjectId, ref: 'Departman' })
+  departmanId?: Types.ObjectId;
+
   // Pasife alinan kullanici giris yapamaz (bkz. auth.service.ts) ama kaydi
   // silinmez - gecmis updatedBy referanslari icin.
   @Prop({ default: false })

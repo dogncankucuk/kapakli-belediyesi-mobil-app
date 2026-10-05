@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
+import { useEffect, useState } from 'react';
+import type { FormEvent } from 'react';
 import {
   createPharmacy,
   deletePharmacy,
-  fetchTeoEczaneCsv,
+  getKesintiApiAyari,
   getPharmacies,
+  senkronizePharmaciesApiIle,
+  setKesintiApiAyari,
   updatePharmacy,
 } from './api';
 import type { PharmacyInput } from './api';
@@ -14,6 +16,7 @@ import type { Pharmacy } from './types';
 
 interface Props {
   canManage: boolean;
+  isSuperAdmin: boolean;
 }
 
 const emptyForm: PharmacyInput = {
@@ -26,209 +29,65 @@ const emptyForm: PharmacyInput = {
   lng: 27.97,
 };
 
-// TEO'nun (Tekirdağ Eczacılar Odası) nöbetçi eczane arama formundaki ilçe
-// kodlarıyla birebir aynı - https://www.teo.org.tr/nobetci-eczaneler
-const TEO_ILCELER = [
-  { kod: '813', ad: 'KAPAKLI' },
-  { kod: '808', ad: 'SÜLEYMANPAŞA' },
-  { kod: '812', ad: 'ÇERKEZKÖY' },
-  { kod: '809', ad: 'ÇORLU' },
-  { kod: '817', ad: 'HAYRABOLU' },
-  { kod: '820', ad: 'MALKARA' },
-  { kod: '816', ad: 'MURATLI' },
-  { kod: '818', ad: 'MARMARA EREĞLİSİ' },
-  { kod: '814', ad: 'SARAY' },
-  { kod: '815', ad: 'ŞARKÖY' },
-  { kod: '821', ad: 'YENİÇİFTLİK' },
-  { kod: '819', ad: 'ERGENE' },
-];
-
 function bugun(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-// Basit CSV satir ayirici - tirnak icindeki virgulleri korur ("" ile
-// kacirilmis tirnaklari da destekler).
-function parseCsvLine(line: string): string[] {
-  const values: string[] = [];
-  let current = '';
-  let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    if (inQuotes) {
-      if (char === '"' && line[i + 1] === '"') {
-        current += '"';
-        i++;
-      } else if (char === '"') {
-        inQuotes = false;
-      } else {
-        current += char;
-      }
-    } else if (char === '"') {
-      inQuotes = true;
-    } else if (char === ',' || char === ';') {
-      values.push(current.trim());
-      current = '';
-    } else {
-      current += char;
-    }
-  }
-  values.push(current.trim());
-  return values;
-}
-
-const HEADER_ALIASES: Record<string, keyof PharmacyInput> = {
-  tarih: 'nobetTarihi',
-  nobettarihi: 'nobetTarihi',
-  'nöbet tarihi': 'nobetTarihi',
-  'nobet tarihi': 'nobetTarihi',
-  ad: 'ad',
-  eczaneadi: 'ad',
-  'eczane adı': 'ad',
-  'eczane adi': 'ad',
-  isim: 'ad',
-  telefon: 'telefon',
-  tel: 'telefon',
-  adres: 'adres',
-  'adres tarifi': 'adresTarifi',
-  adrestarifi: 'adresTarifi',
-  tarif: 'adresTarifi',
-  lat: 'lat',
-  enlem: 'lat',
-  latitude: 'lat',
-  lng: 'lng',
-  lon: 'lng',
-  boylam: 'lng',
-  longitude: 'lng',
-};
-
-// "12.03.2026" ya da "2026-03-12" formatlarini <input type=date> icin
-// ISO (yyyy-mm-dd) formatina cevirir.
-function normalizeTarih(raw: string): string {
-  const trimmed = raw.trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
-  const match = trimmed.match(/^(\d{1,2})[.\/](\d{1,2})[.\/](\d{4})$/);
-  if (match) {
-    const [, gun, ay, yil] = match;
-    return `${yil}-${ay.padStart(2, '0')}-${gun.padStart(2, '0')}`;
-  }
-  return trimmed;
-}
-
-function parsePharmacyCsv(text: string): PharmacyInput[] {
-  const lines = text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
-  if (lines.length < 2) return [];
-
-  const headerCells = parseCsvLine(lines[0]).map((h) =>
-    h.trim().toLocaleLowerCase('tr-TR'),
-  );
-  const columns = headerCells.map((h) => HEADER_ALIASES[h] ?? null);
-
-  const rows: PharmacyInput[] = [];
-  for (const line of lines.slice(1)) {
-    const cells = parseCsvLine(line);
-    const record: Partial<PharmacyInput> = {};
-    columns.forEach((key, index) => {
-      if (!key) return;
-      const value = cells[index] ?? '';
-      if (key === 'lat' || key === 'lng') {
-        record[key] = Number(value.replace(',', '.'));
-      } else if (key === 'nobetTarihi') {
-        record[key] = normalizeTarih(value);
-      } else {
-        record[key] = value;
-      }
-    });
-    if (record.ad && record.telefon && record.adres && record.nobetTarihi) {
-      rows.push({
-        ad: record.ad,
-        telefon: record.telefon,
-        adres: record.adres,
-        adresTarifi: record.adresTarifi,
-        nobetTarihi: record.nobetTarihi,
-        lat: record.lat ?? 0,
-        lng: record.lng ?? 0,
-      });
-    }
-  }
-  return rows;
-}
-
-function PharmaciesPage({ canManage }: Props) {
+function PharmaciesPage({ canManage, isSuperAdmin }: Props) {
   const [items, setItems] = useState<Pharmacy[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<PharmacyInput>({ ...emptyForm, nobetTarihi: bugun() });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<PharmacyInput>(emptyForm);
-  const [csvBusy, setCsvBusy] = useState(false);
-  const [csvResult, setCsvResult] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [teoIlce, setTeoIlce] = useState('813');
-  const [teoBaslangic, setTeoBaslangic] = useState(bugun());
-  const [teoBitis, setTeoBitis] = useState(bugun());
-  const [teoBusy, setTeoBusy] = useState(false);
-  const [teoError, setTeoError] = useState<string | null>(null);
+  const [apiYukleniyor, setApiYukleniyor] = useState(false);
+  const [apiSonuc, setApiSonuc] = useState<string | null>(null);
+
+  // Sadece Super Admin gorebilir/degistirebilir - bkz. isSuperAdmin prop'u,
+  // backend SuperAdminGuard.
+  const [apiUrl, setApiUrl] = useState('');
+  const [apiUrlKaydediliyor, setApiUrlKaydediliyor] = useState(false);
+  const [apiUrlMesaj, setApiUrlMesaj] = useState<string | null>(null);
 
   useEffect(() => {
     load();
   }, []);
 
-  async function handleTeoIndir() {
-    setTeoBusy(true);
-    setTeoError(null);
+  useEffect(() => {
+    if (!isSuperAdmin) return;
+    getKesintiApiAyari('eczane').then((r) => setApiUrl(r.apiUrl)).catch(() => {});
+  }, [isSuperAdmin]);
+
+  async function handleApiCek() {
+    setError(null);
+    setApiSonuc(null);
+    setApiYukleniyor(true);
     try {
-      const blob = await fetchTeoEczaneCsv(teoIlce, teoBaslangic, teoBitis);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `nobetci-eczaneler-${teoBaslangic}-${teoBitis}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      const { basarili, hatalar } = await senkronizePharmaciesApiIle();
+      const parcalar = [`${basarili} kayıt eklendi.`];
+      if (hatalar.length > 0) {
+        parcalar.push(`${hatalar.length} kayıt atlandı: ${hatalar.join('; ')}`);
+      }
+      setApiSonuc(parcalar.join(' '));
+      await load();
     } catch (err) {
-      setTeoError(err instanceof Error ? err.message : 'CSV oluşturulamadı');
+      setError(err instanceof Error ? err.message : 'API üzerinden eczane çekilemedi');
     } finally {
-      setTeoBusy(false);
+      setApiYukleniyor(false);
     }
   }
 
-  async function handleCsvUpload(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setCsvBusy(true);
-    setCsvResult(null);
-    setError(null);
+  async function handleApiUrlKaydet(e: FormEvent) {
+    e.preventDefault();
+    setApiUrlMesaj(null);
+    setApiUrlKaydediliyor(true);
     try {
-      const text = await file.text();
-      const rows = parsePharmacyCsv(text);
-      if (rows.length === 0) {
-        setCsvResult('CSV dosyasında geçerli satır bulunamadı.');
-        return;
-      }
-      let success = 0;
-      let failed = 0;
-      for (const row of rows) {
-        try {
-          await createPharmacy(row);
-          success++;
-        } catch {
-          failed++;
-        }
-      }
-      setCsvResult(
-        `${success} kayıt eklendi${failed > 0 ? `, ${failed} kayıt başarısız oldu` : ''}.`,
-      );
-      await load();
+      await setKesintiApiAyari('eczane', apiUrl);
+      setApiUrlMesaj('API adresi kaydedildi.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'CSV dosyası okunamadı');
+      setApiUrlMesaj(err instanceof Error ? err.message : 'API adresi kaydedilemedi');
     } finally {
-      setCsvBusy(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      setApiUrlKaydediliyor(false);
     }
   }
 
@@ -304,70 +163,48 @@ function PharmaciesPage({ canManage }: Props) {
       <div className="guncel-sayfa-govde">
       <div className="guncel-sol">
       {canManage && <h3 className="bolum-baslik">1. Bölüm: Ekleme</h3>}
-      {canManage && (
-        <div className="inline-form">
-          <h3>CSV ile Toplu Yükleme</h3>
-          <p>
-            Beklenen sütunlar: <code>Tarih, Eczane Adı, Telefon, Adres, Lat, Lng</code>{' '}
-            (<code>Adres Tarifi</code> opsiyonel bir sütundur; başlık satırı
-            zorunlu, sütun sırası önemli değil, virgül veya noktalı virgülle
-            ayrılmış olabilir. Tarih <code>YYYY-AA-GG</code> veya{' '}
-            <code>GG.AA.YYYY</code> formatında olabilir).
-          </p>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".csv,text/csv"
-            onChange={handleCsvUpload}
-            disabled={csvBusy}
-          />
-          {csvBusy && <p>Yükleniyor...</p>}
-          {csvResult && <p className="success-message">{csvResult}</p>}
-        </div>
-      )}
 
-      {canManage && (
-        <div className="inline-form">
-          <h3>TEO'dan Otomatik Çek</h3>
-          <p>
-            Seçilen tarih aralığı ve ilçe için{' '}
-            <a href="https://www.teo.org.tr/nobetci-eczaneler" target="_blank" rel="noreferrer">
-              Tekirdağ Eczacılar Odası
-            </a>{' '}
-            sitesinden nöbetçi eczaneleri çekip bir CSV dosyası indirir. İndirilen
-            dosyayı yukarıdaki "CSV ile Toplu Yükleme" ile içe aktarabilirsiniz.
-          </p>
-          <label>
-            Başlangıç Tarihi
-            <input
-              type="date"
-              value={teoBaslangic}
-              onChange={(e) => setTeoBaslangic(e.target.value)}
-            />
-          </label>
-          <label>
-            Bitiş Tarihi
-            <input
-              type="date"
-              value={teoBitis}
-              onChange={(e) => setTeoBitis(e.target.value)}
-            />
-          </label>
-          <label>
-            İlçe
-            <select value={teoIlce} onChange={(e) => setTeoIlce(e.target.value)}>
-              {TEO_ILCELER.map((ilce) => (
-                <option key={ilce.kod} value={ilce.kod}>
-                  {ilce.ad}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button type="button" onClick={handleTeoIndir} disabled={teoBusy}>
-            {teoBusy ? 'Oluşturuluyor...' : 'CSV Oluştur ve İndir'}
-          </button>
-          {teoError && <p className="error-message">{teoError}</p>}
-        </div>
+      {isSuperAdmin && (
+        <details className="disable-blok">
+          <summary>API Ayarları (Süper Admin)</summary>
+          <form className="inline-form" onSubmit={handleApiUrlKaydet}>
+            <p>
+              Bu alan yalnızca süper admin tarafından görülebilir ve
+              değiştirilebilir. Nöbetçi eczaneler API'si hazır olduğunda
+              adresini buraya girin.
+            </p>
+            <p className="map-editor-readonly-note">
+              Beklenen yanıt formatı: her biri
+              <code>
+                {'{"ad": "...", "adres": "...", "adresTarifi": "...", "telefon": "...", "nobetTarihi": "YYYY-AA-GG", "lat": 0, "lng": 0}'}
+              </code>
+              şeklinde nesnelerden oluşan bir JSON dizisi ("adresTarifi"
+              opsiyonel, gerisi zorunlu).
+            </p>
+            <label>
+              API Adresi
+              <input
+                type="password"
+                autoComplete="off"
+                value={apiUrl}
+                onChange={(e) => setApiUrl(e.target.value)}
+                placeholder="https://..."
+              />
+            </label>
+            <div className="row-actions">
+              <button type="submit" disabled={apiUrlKaydediliyor}>
+                {apiUrlKaydediliyor ? 'Kaydediliyor...' : 'Kaydet'}
+              </button>
+            </div>
+            {apiUrlMesaj && <p className="success-message">{apiUrlMesaj}</p>}
+            <div className="row-actions">
+              <button type="button" onClick={handleApiCek} disabled={apiYukleniyor}>
+                {apiYukleniyor ? 'Çekiliyor...' : "API'den Çek"}
+              </button>
+            </div>
+            {apiSonuc && <p className="success-message">{apiSonuc}</p>}
+          </form>
+        </details>
       )}
 
       {canManage && (

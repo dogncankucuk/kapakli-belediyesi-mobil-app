@@ -4,7 +4,6 @@ import type {
   AdminBasvuruTuru,
   AdminElektrikKesintisi,
   AdminKazi,
-  AdminRole,
   AdminUser,
   Announcement,
   Appointment,
@@ -14,6 +13,7 @@ import type {
   BasvuruHizmeti,
   Cami,
   CitizenUser,
+  Departman,
   AseviBasvuru,
   AseviBasvuruDurumu,
   Baskan,
@@ -206,6 +206,7 @@ export type MeclisGundemiInput = {
   baslik: string;
   tarih: string;
   icerik: string;
+  resimUrlleri: string[];
   dosyaUrlleri: string[];
   youtubeUrl: string | null;
 };
@@ -255,7 +256,7 @@ export function getHakkimizda() {
 export type HakkimizdaInput = {
   baskanOzetMetni: string;
   tarihcePhotoUrl: string | null;
-  tarihceParagraflari: string[];
+  tarihce: string;
   kurulusYili: string;
   buyuksehirYili: string;
   nufus: string;
@@ -421,6 +422,13 @@ export function deleteUlasimHatti(id: string) {
   return request<{ success: boolean }>(`/ulasim-hatlari/${id}`, { method: 'DELETE' });
 }
 
+export function senkronizeUlasimHatlariApiIle() {
+  return request<{ basarili: number; hatalar: string[] }>(
+    '/ulasim-hatlari/senkronize-api',
+    { method: 'POST' },
+  );
+}
+
 export function getTemaAyarlari() {
   return request<TemaAyarlari>('/tema-ayarlari');
 }
@@ -546,29 +554,11 @@ export function deletePharmacy(id: string) {
   return request<{ success: boolean }>(`/pharmacies/${id}`, { method: 'DELETE' });
 }
 
-// TEO (Tekirdağ Eczacılar Odası) sitesinden nöbetçi eczane CSV'si üretir -
-// generic `request` JSON bekledigi icin burada ayri, dosya indirmeye uygun
-// bir istek atiyoruz.
-export async function fetchTeoEczaneCsv(
-  ilce: string,
-  baslangic: string,
-  bitis: string,
-): Promise<Blob> {
-  const params = new URLSearchParams({ ilce, baslangic, bitis });
-  const res = await fetch(`${API_BASE}/pharmacies/teo-csv?${params}`, {
-    credentials: 'include',
-  });
-  if (!res.ok) {
-    let message = `CSV oluşturulamadı (${res.status})`;
-    try {
-      const data = await res.json();
-      if (data?.message) message = data.message;
-    } catch {
-      // yanıt gövdesi yoksa varsayılan mesaj kullanılır
-    }
-    throw new Error(message);
-  }
-  return res.blob();
+export function senkronizePharmaciesApiIle() {
+  return request<{ basarili: number; hatalar: string[] }>(
+    '/pharmacies/senkronize-api',
+    { method: 'POST' },
+  );
 }
 
 export type MeclisKarariInput = {
@@ -576,6 +566,8 @@ export type MeclisKarariInput = {
   kategori: string;
   tarih: string;
   baslik: string;
+  icerik: string;
+  resimUrlleri: string[];
   dosyaUrlleri: string[];
   youtubeUrl: string | null;
 };
@@ -685,6 +677,13 @@ export function deletePlanliKesinti(id: string) {
   return request<{ success: boolean }>(`/planli-kesintiler/${id}`, { method: 'DELETE' });
 }
 
+export function senkronizeSuKesintileriApiIle() {
+  return request<{ basarili: number; hatalar: string[] }>(
+    '/planli-kesintiler/senkronize-api',
+    { method: 'POST' },
+  );
+}
+
 export type KaziInput = {
   mahalle: string;
   baslangicTarihi: string;
@@ -745,6 +744,28 @@ export function deleteElektrikKesintisi(id: string) {
   });
 }
 
+export function senkronizeElektrikKesintileriApiIle() {
+  return request<{ basarili: number; hatalar: string[] }>(
+    '/elektrik-kesintileri/senkronize-api',
+    { method: 'POST' },
+  );
+}
+
+export type KesintiApiTuru = 'su' | 'elektrik' | 'ulasim' | 'eczane';
+
+// Sadece Super Admin gorebilir/degistirebilir - bkz. backend
+// SuperAdminGuard. Diger tum admin kullanicilari icin bu iki uc 403 doner.
+export function getKesintiApiAyari(tur: KesintiApiTuru) {
+  return request<{ apiUrl: string }>(`/kesinti-api-ayarlari/${tur}`);
+}
+
+export function setKesintiApiAyari(tur: KesintiApiTuru, apiUrl: string) {
+  return request<{ apiUrl: string }>(`/kesinti-api-ayarlari/${tur}`, {
+    method: 'PUT',
+    body: JSON.stringify({ apiUrl }),
+  });
+}
+
 // klasorId: verilmezse tumu, 'root' ise klasorsuz (Genel) dosyalar, aksi
 // halde o klasordeki dosyalar.
 export function getMedyaDosyalari(klasorId?: string) {
@@ -785,10 +806,10 @@ export function getMedyaKlasorleri() {
   return request<MedyaKlasoru[]>('/medya-klasorleri');
 }
 
-export function createMedyaKlasoru(ad: string) {
+export function createMedyaKlasoru(ad: string, gorunurDepartmanlar?: string[]) {
   return request<MedyaKlasoru>('/medya-klasorleri', {
     method: 'POST',
-    body: JSON.stringify({ ad }),
+    body: JSON.stringify({ ad, gorunurDepartmanlar }),
   });
 }
 
@@ -1170,37 +1191,20 @@ export function deleteUser(id: string) {
   return request<void>(`/users/${id}`, { method: 'DELETE' });
 }
 
-export type RoleInput = {
-  name: string;
-  permissions: ResourcePermission[];
-};
-
-export function getRoles() {
-  return request<AdminRole[]>('/roles');
-}
-
-export function createRole(data: RoleInput) {
-  return request<AdminRole>('/roles', { method: 'POST', body: JSON.stringify(data) });
-}
-
-export function updateRole(id: string, data: Partial<RoleInput>) {
-  return request<AdminRole>(`/roles/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
-}
-
-export function deleteRole(id: string) {
-  return request<{ success: boolean }>(`/roles/${id}`, { method: 'DELETE' });
-}
-
 export type AdminAccountInput = {
   email: string;
   password: string;
   ad?: string;
-  roleId: string;
+  isFullAccess?: boolean;
+  permissions?: ResourcePermission[];
+  departmanId?: string | null;
 };
 
 export type AdminAccountUpdateInput = {
   ad?: string;
-  roleId?: string;
+  isFullAccess?: boolean;
+  permissions?: ResourcePermission[];
+  departmanId?: string | null;
   disabled?: boolean;
   password?: string;
 };
@@ -1222,6 +1226,21 @@ export function updateAdminUser(id: string, data: AdminAccountUpdateInput) {
 
 export function deleteAdminUser(id: string) {
   return request<{ success: boolean }>(`/admin-users/${id}`, { method: 'DELETE' });
+}
+
+export function getDepartmanlar() {
+  return request<Departman[]>('/departmanlar');
+}
+
+export function createDepartman(ad: string, varsayilanYetkiler?: ResourcePermission[]) {
+  return request<Departman>('/departmanlar', {
+    method: 'POST',
+    body: JSON.stringify({ ad, varsayilanYetkiler }),
+  });
+}
+
+export function deleteDepartman(id: string) {
+  return request<{ success: boolean }>(`/departmanlar/${id}`, { method: 'DELETE' });
 }
 
 export function sendManualNotification(baslik: string, govde: string, fotografUrl?: string) {

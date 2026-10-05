@@ -10,7 +10,7 @@ const ANDROID_TARGET: "emulator" | "physical-device" = "physical-device";
 
 // Sadece "physical-device" hedefinde kullanilir. Makine degisirse ("ipconfig" ile
 // Wi-Fi adaptorunun IPv4 adresi) guncellenmesi gerekir.
-const DEV_MACHINE_LAN_IP = "192.168.0.153";
+const DEV_MACHINE_LAN_IP = "192.168.33.132";
 
 const ANDROID_HOST =
   ANDROID_TARGET === "emulator" ? "10.0.2.2" : DEV_MACHINE_LAN_IP;

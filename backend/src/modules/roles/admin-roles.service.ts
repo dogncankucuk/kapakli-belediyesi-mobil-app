@@ -7,6 +7,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import { AdminUser, AdminUserDocument } from '../admin-users/schemas/admin-user.schema';
+import { Departman, DepartmanDocument } from '../departmanlar/schemas/departman.schema';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { AdminRole, AdminRoleDocument } from './schemas/admin-role.schema';
@@ -17,6 +18,8 @@ export interface AdminRoleView {
   isFullAccess: boolean;
   isProtected: boolean;
   permissions: { resource: string; actions: string[] }[];
+  departmanId: string | null;
+  departmanAdi: string | null;
   userCount: number;
   updatedBy: string | null;
   createdAt: string;
@@ -32,6 +35,8 @@ export class AdminRolesService {
     private readonly roleModel: Model<AdminRoleDocument>,
     @InjectModel(AdminUser.name)
     private readonly adminUserModel: Model<AdminUserDocument>,
+    @InjectModel(Departman.name)
+    private readonly departmanModel: Model<DepartmanDocument>,
   ) {}
 
   async findAll(): Promise<AdminRoleView[]> {
@@ -43,11 +48,13 @@ export class AdminRolesService {
     const countByRoleId = new Map(
       counts.map((c) => [c._id.toString(), c.count]),
     );
+    const departmanAdiById = await this.departmanAdiMapiOlustur(roles);
 
     return roles.map((doc) =>
       this.toView(
         doc as unknown as TimestampedRole,
         countByRoleId.get(doc._id.toString()) ?? 0,
+        departmanAdiById,
       ),
     );
   }
@@ -59,15 +66,21 @@ export class AdminRolesService {
     const userCount = await this.adminUserModel.countDocuments({
       roleId: doc._id,
     });
-    return this.toView(doc as unknown as TimestampedRole, userCount);
+    const departmanAdiById = await this.departmanAdiMapiOlustur([doc]);
+    return this.toView(doc as unknown as TimestampedRole, userCount, departmanAdiById);
   }
 
   async create(dto: CreateRoleDto, updatedBy: string): Promise<AdminRoleView> {
+    if (dto.departmanId) {
+      await this.departmaniDogrula(dto.departmanId);
+    }
     const created = (await this.roleModel.create({
       ...dto,
+      departmanId: dto.departmanId ?? undefined,
       updatedBy,
     })) as unknown as TimestampedRole;
-    return this.toView(created, 0);
+    const departmanAdiById = await this.departmanAdiMapiOlustur([created]);
+    return this.toView(created, 0, departmanAdiById);
   }
 
   async update(
@@ -83,6 +96,9 @@ export class AdminRolesService {
         'Bu rol sistem tarafından korunuyor, düzenlenemez.',
       );
     }
+    if (dto.departmanId) {
+      await this.departmaniDogrula(dto.departmanId);
+    }
 
     const doc = await this.roleModel
       .findByIdAndUpdate(id, { ...dto, updatedBy }, { new: true })
@@ -91,7 +107,30 @@ export class AdminRolesService {
     const userCount = await this.adminUserModel.countDocuments({
       roleId: doc._id,
     });
-    return this.toView(doc as unknown as TimestampedRole, userCount);
+    const departmanAdiById = await this.departmanAdiMapiOlustur([doc]);
+    return this.toView(doc as unknown as TimestampedRole, userCount, departmanAdiById);
+  }
+
+  private async departmaniDogrula(departmanId: string): Promise<void> {
+    const departman = await this.departmanModel.findById(departmanId).exec();
+    if (!departman) {
+      throw new BadRequestException('Geçersiz departman.');
+    }
+  }
+
+  private async departmanAdiMapiOlustur(
+    roles: AdminRoleDocument[],
+  ): Promise<Map<string, string>> {
+    const departmanIds = [
+      ...new Set(
+        roles.filter((r) => r.departmanId).map((r) => r.departmanId!.toString()),
+      ),
+    ];
+    if (departmanIds.length === 0) return new Map();
+    const departmanlar = await this.departmanModel
+      .find({ _id: { $in: departmanIds } })
+      .exec();
+    return new Map(departmanlar.map((d) => [d._id.toString(), d.ad]));
   }
 
   async remove(id: string): Promise<boolean> {
@@ -116,7 +155,12 @@ export class AdminRolesService {
     return !!res;
   }
 
-  private toView(doc: TimestampedRole, userCount: number): AdminRoleView {
+  private toView(
+    doc: TimestampedRole,
+    userCount: number,
+    departmanAdiById: Map<string, string>,
+  ): AdminRoleView {
+    const departmanId = doc.departmanId?.toString() ?? null;
     return {
       id: doc._id.toString(),
       name: doc.name,
@@ -126,6 +170,10 @@ export class AdminRolesService {
         resource: p.resource,
         actions: p.actions,
       })),
+      departmanId,
+      departmanAdi: departmanId
+        ? (departmanAdiById.get(departmanId) ?? '(silinmiş departman)')
+        : null,
       userCount,
       updatedBy: doc.updatedBy ?? null,
       createdAt: doc.createdAt.toISOString(),

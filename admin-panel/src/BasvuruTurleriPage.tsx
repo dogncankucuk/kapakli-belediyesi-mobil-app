@@ -10,6 +10,7 @@ import type { BasvuruTuruInput } from './api';
 import MedyaSecici from './MedyaSecici';
 import TelefonOnizleme from './TelefonOnizleme';
 import type { AdminBasvuruTuru, EkBilgiAlani, GerekliBelge } from './types';
+import ZenginMetinEditor from './ZenginMetinEditor';
 
 interface Props {
   canManage: boolean;
@@ -265,9 +266,9 @@ function BasvuruTurleriPage({ canManage }: Props) {
             </label>
             <label>
               Açıklama (opsiyonel)
-              <input
-                value={form.aciklama}
-                onChange={(e) => setForm({ ...form, aciklama: e.target.value })}
+              <ZenginMetinEditor
+                value={form.aciklama ?? ''}
+                onChange={(aciklama) => setForm({ ...form, aciklama })}
               />
             </label>
             <label>
@@ -336,11 +337,9 @@ function BasvuruTurleriPage({ canManage }: Props) {
                       </label>
                       <label>
                         Açıklama (opsiyonel)
-                        <input
-                          value={editForm.aciklama}
-                          onChange={(e) =>
-                            setEditForm({ ...editForm, aciklama: e.target.value })
-                          }
+                        <ZenginMetinEditor
+                          value={editForm.aciklama ?? ''}
+                          onChange={(aciklama) => setEditForm({ ...editForm, aciklama })}
                         />
                       </label>
                       <label>
@@ -427,7 +426,9 @@ function BasvuruTurleriPage({ canManage }: Props) {
         <h3 className="bolum-baslik">3. Bölüm: Mobil Uygulamadaki Görüntüsü</h3>
         <TelefonOnizleme baslik={form.baslik || 'Başvuru Türü'}>
           {form.gorselUrl ? <img src={form.gorselUrl} alt="" /> : null}
-          {form.aciklama ? <p>{form.aciklama}</p> : null}
+          {form.aciklama && (
+            <div dangerouslySetInnerHTML={{ __html: form.aciklama }} />
+          )}
           {form.gerekliBelgeler.length > 0 && (
             <div className="genel-onizleme-bolum">
               <span className="genel-onizleme-bolum-baslik">Gerekli Belgeler</span>

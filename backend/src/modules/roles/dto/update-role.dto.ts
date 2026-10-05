@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsMongoId,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -20,4 +21,8 @@ export class UpdateRoleDto {
   @ValidateNested({ each: true })
   @Type(() => ResourcePermissionDto)
   permissions?: ResourcePermissionDto[];
+
+  @IsOptional()
+  @IsMongoId()
+  departmanId?: string | null;
 }

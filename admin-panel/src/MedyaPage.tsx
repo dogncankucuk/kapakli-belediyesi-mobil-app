@@ -139,7 +139,6 @@ function MedyaPage({ canManage }: Props) {
         <MedyaKlasorListesi
           seciliKlasorId={seciliKlasorId}
           onSecim={setSeciliKlasorId}
-          canManage={canManage}
           yenilemeSinyali={klasorYenilemeSinyali}
         />
 

@@ -1,4 +1,4 @@
-import { IsArray, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class UpdateHakkimizdaDto {
   @IsOptional()
@@ -10,9 +10,8 @@ export class UpdateHakkimizdaDto {
   tarihcePhotoUrl?: string;
 
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  tarihceParagraflari?: string[];
+  @IsString()
+  tarihce?: string;
 
   @IsOptional()
   @IsString()

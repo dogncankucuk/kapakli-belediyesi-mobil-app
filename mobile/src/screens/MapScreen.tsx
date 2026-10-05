@@ -29,6 +29,7 @@ import { Card, TopBar } from "../components";
 import { ATIK_TURLERI } from "../constants/atikTurleri";
 import { useTranslation } from "../i18n/LocaleContext";
 import { TranslationKey } from "../i18n/tr";
+import { useAppShell } from "../navigation/AppShellContext";
 import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
 type LayerKey =
@@ -324,6 +325,7 @@ function buildLeafletHtml(pois: Poi[]): string {
 
 export default function MapScreen() {
   const navigation = useNavigation();
+  const { openMenu } = useAppShell();
   const { t } = useTranslation();
   const colors = useThemeColors();
   const typography = useTypography();
@@ -557,7 +559,11 @@ export default function MapScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <TopBar title={t("tabs_map")} onBackPress={() => navigation.goBack()} />
+      {navigation.canGoBack() ? (
+        <TopBar title={t("tabs_map")} onBackPress={() => navigation.goBack()} />
+      ) : (
+        <TopBar title={t("tabs_map")} onMenuPress={openMenu} />
+      )}
       <Text style={styles.heading}>{t("map_heading")}</Text>
       <ScrollView
         horizontal

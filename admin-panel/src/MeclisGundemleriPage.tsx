@@ -21,6 +21,7 @@ const emptyForm: MeclisGundemiInput = {
   baslik: '',
   tarih: '',
   icerik: '',
+  resimUrlleri: [],
   dosyaUrlleri: [],
   youtubeUrl: '',
 };
@@ -67,6 +68,7 @@ function MeclisGundemleriPage({ canManage }: Props) {
       baslik: item.baslik,
       tarih: item.tarih.slice(0, 10),
       icerik: item.icerik,
+      resimUrlleri: item.resimUrlleri,
       dosyaUrlleri: item.dosyaUrlleri,
       youtubeUrl: item.youtubeUrl ?? '',
     });
@@ -131,6 +133,13 @@ function MeclisGundemleriPage({ canManage }: Props) {
             />
           </label>
           <label>
+            Resim URL (birden fazla seçilebilir)
+            <MedyaSeciciCoklu
+              value={form.resimUrlleri}
+              onChange={(resimUrlleri) => setForm({ ...form, resimUrlleri })}
+            />
+          </label>
+          <label>
             Dosya URL (birden fazla seçilebilir)
             <MedyaSeciciCoklu
               value={form.dosyaUrlleri}
@@ -188,6 +197,15 @@ function MeclisGundemleriPage({ canManage }: Props) {
                         <ZenginMetinEditor
                           value={editForm.icerik}
                           onChange={(icerik) => setEditForm({ ...editForm, icerik })}
+                        />
+                      </label>
+                      <label>
+                        Resim URL (birden fazla seçilebilir)
+                        <MedyaSeciciCoklu
+                          value={editForm.resimUrlleri}
+                          onChange={(resimUrlleri) =>
+                            setEditForm({ ...editForm, resimUrlleri })
+                          }
                         />
                       </label>
                       <label>
@@ -252,6 +270,7 @@ function MeclisGundemleriPage({ canManage }: Props) {
                 key={item.id}
                 baslik={item.baslik}
                 icerik={item.icerik}
+                resimUrlleri={item.resimUrlleri}
                 tarih={item.tarih}
                 dosyaUrlleri={item.dosyaUrlleri}
                 youtubeUrl={item.youtubeUrl}

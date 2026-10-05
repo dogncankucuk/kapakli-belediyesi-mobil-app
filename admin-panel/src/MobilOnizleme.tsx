@@ -84,17 +84,25 @@ export function BelgeKartiOnizleme({ baslik, dosyaVarMi }: { baslik: string; dos
   );
 }
 
-export function KararKartiOnizleme({ kararNo, kategori, baslik, tarih, dosyaUrlleri, youtubeUrl }: {
-  kararNo: string; kategori: string; baslik: string; tarih: string; dosyaUrlleri?: string[]; youtubeUrl?: string | null;
+export function KararKartiOnizleme({ kararNo, kategori, baslik, icerik, resimUrlleri, tarih, dosyaUrlleri, youtubeUrl }: {
+  kararNo: string; kategori: string; baslik: string; icerik?: string; resimUrlleri?: string[]; tarih: string; dosyaUrlleri?: string[]; youtubeUrl?: string | null;
 }) {
+  const kapakResmi = resimUrlleri?.[0];
   const dosyaSayisi = dosyaUrlleri?.length ?? 0;
   return (
     <div className="onizleme-kart">
+      {kapakResmi && <img src={kapakResmi} className="onizleme-kart-resim" alt="" />}
       <div className="onizleme-karar-ust">
         <span className="onizleme-karar-no">{kararNo || 'Karar No'}</span>
         <span className="onizleme-karar-kategori">{kategori || 'Kategori'}</span>
       </div>
       <div className="onizleme-karar-baslik">{baslik || 'Başlık'}</div>
+      {icerik && (
+        <div
+          className="onizleme-kart-icerik"
+          dangerouslySetInnerHTML={{ __html: icerik }}
+        />
+      )}
       <div className="onizleme-karar-tarih">
         {tarihFormatla(tarih)}
         {dosyaSayisi > 0 && (
@@ -144,8 +152,8 @@ export function BaskanOnizleme({ ad, photoUrl, introText, maddeler, kapanisText 
   );
 }
 
-export function HakkimizdaOnizleme({ baskanOzetMetni, tarihceParagraflari, kurulusYili, buyuksehirYili, nufus }: {
-  baskanOzetMetni: string; tarihceParagraflari: string[]; kurulusYili: string; buyuksehirYili: string; nufus: string;
+export function HakkimizdaOnizleme({ baskanOzetMetni, tarihce, kurulusYili, buyuksehirYili, nufus }: {
+  baskanOzetMetni: string; tarihce: string; kurulusYili: string; buyuksehirYili: string; nufus: string;
 }) {
   return (
     <>
@@ -166,9 +174,9 @@ export function HakkimizdaOnizleme({ baskanOzetMetni, tarihceParagraflari, kurul
         <div className="onizleme-kart-baslik-satir">
           <span>Kapaklı'nın Tarihçesi</span>
         </div>
-        {tarihceParagraflari.map((p, i) => (
-          <p key={i} className="onizleme-paragraf">{p}</p>
-        ))}
+        {tarihce && (
+          <div className="onizleme-paragraf" dangerouslySetInnerHTML={{ __html: tarihce }} />
+        )}
       </div>
       <div className="onizleme-istatistik-satiri">
         <div className="onizleme-istatistik">

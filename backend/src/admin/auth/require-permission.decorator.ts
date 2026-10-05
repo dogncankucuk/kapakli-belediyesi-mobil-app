@@ -16,6 +16,7 @@ export type AdminResource =
   | 'temaAyarlari'
   | 'panelTemasi'
   | 'medya'
+  | 'medyaKlasorleri'
   | 'atikNoktalari'
   | 'appointments'
   | 'requests'
@@ -62,6 +63,7 @@ export const ALL_ADMIN_RESOURCES: AdminResource[] = [
   'temaAyarlari',
   'panelTemasi',
   'medya',
+  'medyaKlasorleri',
   'atikNoktalari',
   'appointments',
   'requests',

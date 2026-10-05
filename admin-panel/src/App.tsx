@@ -41,7 +41,6 @@ import BasvuruTurleriPage from './BasvuruTurleriPage';
 import BasvurularPage from './BasvurularPage';
 import MapEditorPage from './MapEditorPage';
 import UsersPage from './UsersPage';
-import RolesPage from './RolesPage';
 import AdminUsersPage from './AdminUsersPage';
 import NotificationsPage from './NotificationsPage';
 import './App.css';
@@ -61,7 +60,11 @@ function App() {
   const [page, setPage] = useState<Page | null>(
     () => (localStorage.getItem(SAYFA_DEPOLAMA_ANAHTARI) as Page | null) ?? null,
   );
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  // Sayfa ilk acildiginda tum gruplar kucultulmus (kapali) baslasin diye
+  // NAV_GROUPS'taki tum basliklarla dolu bir Set ile baslatiliyor.
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
+    () => new Set(NAV_GROUPS.map((group) => group.heading)),
+  );
   const [sidebarArama, setSidebarArama] = useState('');
 
   function toggleGroup(heading: string) {
@@ -289,7 +292,10 @@ function App() {
         {page === 'bizeUlasin' && <BizeUlasinPage canManage={canManage('bizeUlasin')} />}
         {page === 'faturaOdeme' && <FaturaOdemePage canManage={canManage('faturaOdeme')} />}
         {page === 'ulasimHizmetleri' && (
-          <UlasimHatlariPage canManage={canManage('ulasimHatlari')} />
+          <UlasimHatlariPage
+            canManage={canManage('ulasimHatlari')}
+            isSuperAdmin={user?.role.isFullAccess ?? false}
+          />
         )}
         {page === 'atikRehberi' && (
           <AtikRehberiPage canManage={canManage('atikRehberi')} />
@@ -304,7 +310,12 @@ function App() {
         {page === 'atikNoktalari' && <AtikNoktalariPage canManage={canManage('atikNoktalari')} />}
         {page === 'appointments' && <AppointmentsPage canManage={canManage('appointments')} />}
         {page === 'requests' && <RequestsPage canManage={canManage('requests')} />}
-        {page === 'pharmacies' && <PharmaciesPage canManage={canManage('pharmacies')} />}
+        {page === 'pharmacies' && (
+          <PharmaciesPage
+            canManage={canManage('pharmacies')}
+            isSuperAdmin={user?.role.isFullAccess ?? false}
+          />
+        )}
         {page === 'meclisKararlari' && (
           <MeclisKararlariPage canManage={canManage('meclisKararlari')} />
         )}
@@ -314,6 +325,7 @@ function App() {
           <SuHizmetleriPage
             canManageSu={canManage('suHizmetleri')}
             canManageElektrik={canManage('elektrikKesintileri')}
+            isSuperAdmin={user?.role.isFullAccess ?? false}
           />
         )}
         {page === 'fenIsleri' && <FenIsleriPage canManage={canManage('kaziCalismalari')} />}
@@ -340,7 +352,6 @@ function App() {
           <MapEditorPage canManage={MAP_EDITOR_RESOURCES.some((r) => canManage(r))} />
         )}
         {page === 'users' && <UsersPage canManage={canManage('users')} />}
-        {page === 'roles' && <RolesPage canManage={canManage('roles')} />}
         {page === 'adminUsers' && <AdminUsersPage canManage={canManage('adminUsers')} />}
         {page === 'notifications' && (
           <NotificationsPage canManage={canManage('notifications')} />

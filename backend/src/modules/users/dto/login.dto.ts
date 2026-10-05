@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
 export class LoginDto {
-  // T.C. kimlik no, telefon veya e-posta olabilir
+  // Sadece T.C. kimlik no kabul edilir (telefon/e-posta ile giris yok).
   @IsString()
   @IsNotEmpty()
   identifier: string;

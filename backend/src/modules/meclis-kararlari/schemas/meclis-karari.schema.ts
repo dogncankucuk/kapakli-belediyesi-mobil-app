@@ -17,6 +17,12 @@ export class MeclisKarari {
   @Prop({ required: true })
   baslik: string;
 
+  @Prop({ default: '' })
+  icerik: string;
+
+  @Prop({ type: [String], default: [] })
+  resimUrlleri: string[];
+
   @Prop({ type: [String], default: [] })
   dosyaUrlleri: string[];
 

@@ -1,9 +1,9 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import * as WebBrowser from "expo-web-browser";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -74,7 +74,7 @@ export default function FaturaOdemeScreen() {
             {kurumlar.map((kurum) => (
               <Pressable
                 key={kurum.id}
-                onPress={() => Linking.openURL(kurum.url)}
+                onPress={() => WebBrowser.openBrowserAsync(kurum.url)}
                 accessibilityRole="button"
                 style={styles.gridItem}
               >

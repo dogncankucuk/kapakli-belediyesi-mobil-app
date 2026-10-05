@@ -17,6 +17,7 @@ import { BasvuruTuru } from "../api/types";
 import { Card } from "../components";
 import { useTranslation } from "../i18n/LocaleContext";
 import { Colors, shape, spacing, Typography, useThemeColors, useTypography } from "../theme";
+import { htmlToDuzMetin } from "../utils/html";
 
 export default function RandevuAlScreen() {
   const navigation = useNavigation();
@@ -132,7 +133,7 @@ export default function RandevuAlScreen() {
                     <Text style={styles.title}>{tur.baslik}</Text>
                     {tur.aciklama ? (
                       <Text style={styles.description} numberOfLines={2}>
-                        {tur.aciklama}
+                        {htmlToDuzMetin(tur.aciklama)}
                       </Text>
                     ) : null}
                   </View>

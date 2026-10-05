@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
+import * as WebBrowser from "expo-web-browser";
 
 import { getCanliOtobusler, getUlasimHatlari } from "../api/ulasimHatlari";
 import { CanliOtobus, UlasimHatti } from "../api/types";
@@ -243,7 +244,7 @@ export default function UlasimHizmetleriScreen() {
         <SecondaryButton
           label={t("ulasim_bakiyeButton")}
           onPress={() =>
-            Linking.openURL(
+            WebBrowser.openBrowserAsync(
               "https://www.tekulas.com.tr/tekirdag-kart-bakiye-yukleme-islemi/",
             )
           }

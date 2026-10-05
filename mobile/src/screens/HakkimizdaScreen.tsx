@@ -101,13 +101,9 @@ export default function HakkimizdaScreen() {
           {!isLoading && (error || !bilgi) && (
             <Text style={styles.errorText}>{t("hakkimizda_historyError")}</Text>
           )}
-          {!isLoading &&
-            bilgi &&
-            bilgi.tarihceParagraflari.map((paragraf, index) => (
-              <Text key={index} style={styles.paragraph}>
-                {paragraf}
-              </Text>
-            ))}
+          {!isLoading && bilgi?.tarihce ? (
+            <ZenginMetinGoster html={bilgi.tarihce} />
+          ) : null}
         </Card>
 
         {!isLoading && bilgi && (
@@ -180,11 +176,6 @@ const createStyles = (colors: Colors, typography: Typography) =>
       ...typography.labelLg,
       color: colors.onBackground,
       flex: 1,
-    },
-    paragraph: {
-      ...typography.bodyMd,
-      color: colors.onBackground,
-      lineHeight: 22,
     },
     errorText: {
       ...typography.bodyMd,

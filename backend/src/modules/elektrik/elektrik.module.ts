@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { NotificationsModule } from '../notifications/notifications.module';
+import { KesintiApiAyarlariModule } from '../kesinti-api-ayarlari/kesinti-api-ayarlari.module';
 import {
   ElektrikKesintisi,
   ElektrikKesintisiSchema,
@@ -17,6 +18,7 @@ import { ElektrikKesintisiService } from './elektrik-kesintisi.service';
     MongooseModule.forFeature([
       { name: ElektrikKesintisi.name, schema: ElektrikKesintisiSchema },
     ]),
+    KesintiApiAyarlariModule,
   ],
   controllers: [ElektrikKesintisiController, AdminElektrikKesintisiController],
   providers: [ElektrikKesintisiService, AdminElektrikKesintisiService],

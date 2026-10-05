@@ -11,8 +11,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { getAnnouncements } from "../api/announcements";
 import { getHaberler } from "../api/haberler";
-import { Haber } from "../api/types";
+import { Announcement, Haber } from "../api/types";
 import {
   AnnouncementCard,
   HavaVeAramaSag,
@@ -34,8 +35,8 @@ import {
 } from "../storage/quickActionsStorage";
 import { Colors, spacing, Typography, useThemeColors, useTypography } from "../theme";
 
-function formatHaberDate(item: Haber): string {
-  return new Date(item.yayinTarihi).toLocaleDateString("tr-TR", {
+function formatTarih(yayinTarihi: string): string {
+  return new Date(yayinTarihi).toLocaleDateString("tr-TR", {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -53,6 +54,7 @@ export default function HomeScreen() {
     [colors, typography],
   );
   const [haberler, setHaberler] = useState<Haber[]>([]);
+  const [duyurular, setDuyurular] = useState<Announcement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [hizliIslemIdleri, setHizliIslemIdleri] = useState<ServiceId[]>([]);
@@ -60,8 +62,11 @@ export default function HomeScreen() {
     useState(false);
 
   useEffect(() => {
-    getHaberler()
-      .then((data) => setHaberler(data.slice(0, 2)))
+    Promise.all([getHaberler(), getAnnouncements()])
+      .then(([haberVerisi, duyuruVerisi]) => {
+        setHaberler(haberVerisi.slice(0, 3));
+        setDuyurular(duyuruVerisi.slice(0, 1));
+      })
       .catch(() => setError(true))
       .finally(() => setIsLoading(false));
     getSeciliHizliIslemler().then(setHizliIslemIdleri);
@@ -155,11 +160,6 @@ export default function HomeScreen() {
           onPress={() => navigation.navigate("Taleplerim" as never)}
         />
 
-        <PrimaryButton
-          label={t("tabs_map")}
-          onPress={() => navigation.navigate("Map" as never)}
-        />
-
         <View style={styles.announcements}>
           {isLoading && <ActivityIndicator color={colors.primaryContainer} />}
           {!isLoading && error && (
@@ -171,7 +171,17 @@ export default function HomeScreen() {
               <AnnouncementCard
                 key={item.id}
                 title={item.baslik}
-                date={formatHaberDate(item)}
+                date={formatTarih(item.yayinTarihi)}
+                imageUrl={item.resimUrlleri[0] ?? null}
+              />
+            ))}
+          {!isLoading &&
+            !error &&
+            duyurular.map((item) => (
+              <AnnouncementCard
+                key={item.id}
+                title={item.baslik}
+                date={formatTarih(item.yayinTarihi)}
                 imageUrl={item.resimUrlleri[0] ?? null}
               />
             ))}

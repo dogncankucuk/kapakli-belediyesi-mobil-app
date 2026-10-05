@@ -35,7 +35,7 @@ export type RegisterInput = {
   soyad: string;
   tcKimlikNo: string;
   telefon: string;
-  eposta?: string;
+  eposta: string;
   password: string;
 };
 

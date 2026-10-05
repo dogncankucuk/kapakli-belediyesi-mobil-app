@@ -13,8 +13,8 @@ export class Hakkimizda {
   @Prop()
   tarihcePhotoUrl?: string;
 
-  @Prop({ type: [String], default: [] })
-  tarihceParagraflari: string[];
+  @Prop({ required: true, default: '' })
+  tarihce: string;
 
   @Prop({ required: true, default: '' })
   kurulusYili: string;

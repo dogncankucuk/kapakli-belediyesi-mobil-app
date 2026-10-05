@@ -18,6 +18,7 @@ import { SessionAuthGuard } from '../../admin/auth/session-auth.guard';
 import {
   AdminPlanliKesinti,
   AdminPlanliKesintilerService,
+  KesintiApiSenkronizasyonSonucu,
 } from './admin-planli-kesintiler.service';
 import { CreatePlanliKesintiDto } from './dto/create-planli-kesinti.dto';
 import { UpdatePlanliKesintiDto } from './dto/update-planli-kesinti.dto';
@@ -83,5 +84,15 @@ export class AdminPlanliKesintilerController {
       throw new NotFoundException();
     }
     return { success: true };
+  }
+
+  @Post('senkronize-api')
+  @RequirePermission('suHizmetleri', 'create')
+  senkronizeApiIle(
+    @Req() req: Request,
+  ): Promise<KesintiApiSenkronizasyonSonucu> {
+    return this.adminPlanliKesintilerService.senkronizeApiIle(
+      req.session.adminUser!.email,
+    );
   }
 }

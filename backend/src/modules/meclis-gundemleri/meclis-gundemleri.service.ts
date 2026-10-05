@@ -12,6 +12,7 @@ export interface PublicMeclisGundemi {
   baslik: string;
   tarih: string;
   icerik: string;
+  resimUrlleri: string[];
   dosyaUrlleri: string[];
   youtubeUrl: string | null;
 }
@@ -34,6 +35,7 @@ export class MeclisGundemleriService {
       baslik: doc.baslik,
       tarih: doc.tarih.toISOString(),
       icerik: doc.icerik ?? '',
+      resimUrlleri: doc.resimUrlleri ?? [],
       dosyaUrlleri: doc.dosyaUrlleri ?? [],
       youtubeUrl: doc.youtubeUrl ?? null,
     }));

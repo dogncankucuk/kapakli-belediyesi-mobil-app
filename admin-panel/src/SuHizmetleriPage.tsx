@@ -1,14 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
-import { csvIndir } from './csvExport';
-import { csvOku } from './csvImport';
+import { useEffect, useState } from 'react';
+import type { FormEvent } from 'react';
 import {
   createElektrikKesintisi,
   createPlanliKesinti,
   deleteElektrikKesintisi,
   deletePlanliKesinti,
   getElektrikKesintileri,
+  getKesintiApiAyari,
   getPlanliKesintiler,
+  senkronizeElektrikKesintileriApiIle,
+  senkronizeSuKesintileriApiIle,
+  setKesintiApiAyari,
   updateElektrikKesintisi,
   updatePlanliKesinti,
 } from './api';
@@ -21,154 +23,13 @@ import type { AdminElektrikKesintisi, PlanliKesinti } from './types';
 interface Props {
   canManageSu: boolean;
   canManageElektrik: boolean;
-}
-
-const ELEKTRIK_CSV_BASLIKLAR = ['Mahalle', 'Tarih (GG.AA.YYYY)', 'Açıklama'];
-
-// "12.03.2026" veya "2026-03-12" formatlarindan ISO tarihe (YYYY-MM-DD)
-// cevirir - class-validator'in @IsDateString() DTO alani bu formati bekliyor.
-function csvGgAaYyyyTarihiCevir(raw: string): string | null {
-  const metin = raw.trim();
-  const isoMatch = metin.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (isoMatch) return metin;
-  const trMatch = metin.match(/^(\d{1,2})[.\/](\d{1,2})[.\/](\d{4})$/);
-  if (trMatch) {
-    const [, gun, ay, yil] = trMatch;
-    return `${yil}-${ay.padStart(2, '0')}-${gun.padStart(2, '0')}`;
-  }
-  return null;
-}
-
-function elektrikCsvSatiriHazirla(item: ElektrikKesintisiInput): (string | number)[] {
-  return [item.mahalle, item.tarih.slice(0, 10), item.aciklama];
-}
-
-interface ElektrikCsvHatasi {
-  satirNo: number;
-  mesaj: string;
-}
-
-function elektrikCsvSatiriniCevir(
-  hucreler: string[],
-): { input: ElektrikKesintisiInput | null; hata: string | null } {
-  const mahalle = (hucreler[0] ?? '').trim();
-  const aciklama = (hucreler[2] ?? '').trim();
-  if (!mahalle || !aciklama) {
-    return { input: null, hata: 'Mahalle ve Açıklama zorunludur' };
-  }
-  const tarih = csvGgAaYyyyTarihiCevir(hucreler[1] ?? '');
-  if (!tarih) {
-    return { input: null, hata: `Tarih anlaşılamadı: "${hucreler[1] ?? ''}"` };
-  }
-  return { input: { mahalle, tarih, aciklama }, hata: null };
-}
-
-const SU_CSV_BASLIKLAR = ['İlçe / Mahalle', 'Tarih (GG.AA.YYYY)', 'Açıklama'];
-
-function suCsvSatiriHazirla(item: PlanliKesintiInput): (string | number)[] {
-  return [item.ilce, item.tarih.slice(0, 10), item.aciklama];
-}
-
-interface SuCsvHatasi {
-  satirNo: number;
-  mesaj: string;
-}
-
-function suCsvSatiriniCevir(
-  hucreler: string[],
-): { input: PlanliKesintiInput | null; hata: string | null } {
-  const ilce = (hucreler[0] ?? '').trim();
-  const aciklama = (hucreler[2] ?? '').trim();
-  if (!ilce || !aciklama) {
-    return { input: null, hata: 'İlçe / Mahalle ve Açıklama zorunludur' };
-  }
-  const tarih = csvGgAaYyyyTarihiCevir(hucreler[1] ?? '');
-  if (!tarih) {
-    return { input: null, hata: `Tarih anlaşılamadı: "${hucreler[1] ?? ''}"` };
-  }
-  return { input: { ilce, tarih, aciklama }, hata: null };
-}
-
-const TURKCE_AYLAR: Record<string, string> = {
-  ocak: '01',
-  şubat: '02',
-  subat: '02',
-  mart: '03',
-  nisan: '04',
-  mayıs: '05',
-  mayis: '05',
-  haziran: '06',
-  temmuz: '07',
-  ağustos: '08',
-  agustos: '08',
-  eylül: '09',
-  eylul: '09',
-  ekim: '10',
-  kasım: '11',
-  kasim: '11',
-  aralık: '12',
-  aralik: '12',
-};
-
-// TESKİ'nin sitesindeki "09 Eylül 10:30" gibi Turkce ay adli tarihi ISO'ya
-// cevirir - yil bilgisi sayfada yok, icinde bulunulan yil varsayilir.
-function turkceTarihiIsoyaCevir(raw: string): string {
-  const eslesme = raw.trim().match(/(\d{1,2})\s+([A-Za-zİıŞşĞğÜüÖöÇç]+)/);
-  if (eslesme) {
-    const ay = TURKCE_AYLAR[eslesme[2].toLocaleLowerCase('tr-TR')];
-    if (ay) {
-      return `${new Date().getFullYear()}-${ay}-${eslesme[1].padStart(2, '0')}`;
-    }
-  }
-  return bugununTarihi();
-}
-
-// Bir tarayicidan HTML tablosu kopyalanip textarea'ya yapistirildiginda
-// satirlar \n, hucreler genelde \t ile ayrilir - \t kaybolmussa (bazi
-// taraycilar/OS'lar) 2+ bosluk bir yedek ayirac olarak denenir.
-function yapistirilanSatiriHucrelereAyir(satir: string): string[] {
-  if (satir.includes('\t')) return satir.split('\t');
-  return satir.split(/ {2,}/);
-}
-
-interface KaynaktanCikarimSonucu<T> {
-  gecerli: T[];
-  toplamSatir: number;
-}
-
-// TESKİ'nin sukesintileri sayfasindaki tablo yapisi: Baslangic | Bitis |
-// Nedeni | Yer (ör. "KAPAKLI / VATAN MAH. /") - sadece Kapakli'ya ait
-// satirlar alinir (bkz. su-hizmetleri-kaynak.service.ts'teki eski backend
-// filtresiyle ayni mantik, burada tarayicidan yapistirilan metin uzerinde).
-function tesikiMetniniCevir(
-  metin: string,
-): KaynaktanCikarimSonucu<PlanliKesintiInput> {
-  const satirlar = metin
-    .split('\n')
-    .map((s) => s.trim())
-    .filter(Boolean);
-  const gecerli: PlanliKesintiInput[] = [];
-  for (const satir of satirlar) {
-    const hucreler = yapistirilanSatiriHucrelereAyir(satir).map((h) => h.trim());
-    if (hucreler.length < 4) continue;
-    const [baslangic, bitis, nedeni, yer] = hucreler;
-    const parcalar = yer.split('/').map((p) => p.trim());
-    const ilce = parcalar[0] ?? '';
-    const mahalle = parcalar[1] ?? '';
-    if (ilce.toLocaleUpperCase('tr-TR') !== 'KAPAKLI') continue;
-    gecerli.push({
-      ilce: mahalle || '-',
-      tarih: turkceTarihiIsoyaCevir(baslangic),
-      aciklama: `${nedeni} (${baslangic} - ${bitis})`,
-    });
-  }
-  return { gecerli, toplamSatir: satirlar.length };
+  isSuperAdmin: boolean;
 }
 
 const emptyElektrikForm: ElektrikKesintisiInput = { mahalle: '', tarih: '', aciklama: '' };
 const emptyKesintiForm: PlanliKesintiInput = { tarih: '', ilce: '', aciklama: '' };
 
-function SuHizmetleriPage({ canManageSu, canManageElektrik }: Props) {
+function SuHizmetleriPage({ canManageSu, canManageElektrik, isSuperAdmin }: Props) {
   const [elektrikKesintileri, setElektrikKesintileri] = useState<AdminElektrikKesintisi[]>([]);
   const [kesintiler, setKesintiler] = useState<PlanliKesinti[]>([]);
   const [loading, setLoading] = useState(true);
@@ -180,9 +41,8 @@ function SuHizmetleriPage({ canManageSu, canManageElektrik }: Props) {
   });
   const [editingElektrikId, setEditingElektrikId] = useState<string | null>(null);
   const [editElektrikForm, setEditElektrikForm] = useState<ElektrikKesintisiInput>(emptyElektrikForm);
-  const [elektrikCsvYukleniyor, setElektrikCsvYukleniyor] = useState(false);
-  const [elektrikCsvSonuc, setElektrikCsvSonuc] = useState<string | null>(null);
-  const elektrikCsvInputRef = useRef<HTMLInputElement>(null);
+  const [elektrikApiYukleniyor, setElektrikApiYukleniyor] = useState(false);
+  const [elektrikApiSonuc, setElektrikApiSonuc] = useState<string | null>(null);
 
   const [kesintiForm, setKesintiForm] = useState<PlanliKesintiInput>({
     ...emptyKesintiForm,
@@ -190,15 +50,28 @@ function SuHizmetleriPage({ canManageSu, canManageElektrik }: Props) {
   });
   const [editingKesintiId, setEditingKesintiId] = useState<string | null>(null);
   const [editKesintiForm, setEditKesintiForm] = useState<PlanliKesintiInput>(emptyKesintiForm);
-  const [suCsvYukleniyor, setSuCsvYukleniyor] = useState(false);
-  const [suCsvSonuc, setSuCsvSonuc] = useState<string | null>(null);
-  const suCsvInputRef = useRef<HTMLInputElement>(null);
-  const [teskiMetni, setTeskiMetni] = useState('');
-  const [teskiSonuc, setTeskiSonuc] = useState<string | null>(null);
+  const [suApiYukleniyor, setSuApiYukleniyor] = useState(false);
+  const [suApiSonuc, setSuApiSonuc] = useState<string | null>(null);
+
+  // Su/elektrik API adresleri - sadece Super Admin gorebilir/degistirebilir
+  // (bkz. isSuperAdmin prop'u, backend SuperAdminGuard). Diger admin
+  // kullanicilari icin bu blok hic render edilmez, deger hic cekilmez.
+  const [suApiUrl, setSuApiUrl] = useState('');
+  const [suApiUrlKaydediliyor, setSuApiUrlKaydediliyor] = useState(false);
+  const [suApiUrlMesaj, setSuApiUrlMesaj] = useState<string | null>(null);
+  const [elektrikApiUrl, setElektrikApiUrl] = useState('');
+  const [elektrikApiUrlKaydediliyor, setElektrikApiUrlKaydediliyor] = useState(false);
+  const [elektrikApiUrlMesaj, setElektrikApiUrlMesaj] = useState<string | null>(null);
 
   useEffect(() => {
     load();
   }, []);
+
+  useEffect(() => {
+    if (!isSuperAdmin) return;
+    getKesintiApiAyari('su').then((r) => setSuApiUrl(r.apiUrl)).catch(() => {});
+    getKesintiApiAyari('elektrik').then((r) => setElektrikApiUrl(r.apiUrl)).catch(() => {});
+  }, [isSuperAdmin]);
 
   async function load() {
     setLoading(true);
@@ -260,71 +133,36 @@ function SuHizmetleriPage({ canManageSu, canManageElektrik }: Props) {
     }
   }
 
-  function handleElektrikSablonIndir() {
-    const ornekSatirlar =
-      elektrikKesintileri.length > 0
-        ? elektrikKesintileri.map((item) => elektrikCsvSatiriHazirla(item))
-        : [
-            elektrikCsvSatiriHazirla({
-              mahalle: 'İsmetpaşa',
-              tarih: bugununTarihi(),
-              aciklama: 'Bakım çalışması nedeniyle planlı kesinti',
-            }),
-          ];
-    csvIndir('elektrik-kesintileri-sablon.csv', ELEKTRIK_CSV_BASLIKLAR, ornekSatirlar);
-  }
-
-  async function handleElektrikCsvSec(e: ChangeEvent<HTMLInputElement>) {
-    const dosya = e.target.files?.[0];
-    e.target.value = '';
-    if (!dosya) return;
-
+  async function handleElektrikApiCek() {
     setError(null);
-    setElektrikCsvSonuc(null);
-    setElektrikCsvYukleniyor(true);
+    setElektrikApiSonuc(null);
+    setElektrikApiYukleniyor(true);
     try {
-      const icerik = await dosya.text();
-      const satirlar = csvOku(icerik).slice(1); // ilk satir baslik
-      const hatalar: ElektrikCsvHatasi[] = [];
-      const gecerliKayitlar: ElektrikKesintisiInput[] = [];
-
-      satirlar.forEach((hucreler, index) => {
-        const { input, hata } = elektrikCsvSatiriniCevir(hucreler);
-        if (!input) {
-          hatalar.push({ satirNo: index + 2, mesaj: hata ?? 'geçersiz satır' });
-        } else {
-          gecerliKayitlar.push(input);
-        }
-      });
-
-      let basarili = 0;
-      for (const kayit of gecerliKayitlar) {
-        try {
-          await createElektrikKesintisi(kayit);
-          basarili++;
-        } catch (err) {
-          hatalar.push({
-            satirNo: 0,
-            mesaj: `${kayit.mahalle}: ${err instanceof Error ? err.message : 'oluşturulamadı'}`,
-          });
-        }
-      }
-
+      const { basarili, hatalar } = await senkronizeElektrikKesintileriApiIle();
       const parcalar = [`${basarili} kayıt eklendi.`];
       if (hatalar.length > 0) {
-        parcalar.push(
-          `${hatalar.length} satır atlandı: ` +
-            hatalar
-              .map((h) => (h.satirNo > 0 ? `satır ${h.satirNo} (${h.mesaj})` : h.mesaj))
-              .join('; '),
-        );
+        parcalar.push(`${hatalar.length} kayıt atlandı: ${hatalar.join('; ')}`);
       }
-      setElektrikCsvSonuc(parcalar.join(' '));
+      setElektrikApiSonuc(parcalar.join(' '));
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'CSV dosyası okunamadı');
+      setError(err instanceof Error ? err.message : 'API üzerinden kesinti çekilemedi');
     } finally {
-      setElektrikCsvYukleniyor(false);
+      setElektrikApiYukleniyor(false);
+    }
+  }
+
+  async function handleElektrikApiUrlKaydet(e: FormEvent) {
+    e.preventDefault();
+    setElektrikApiUrlMesaj(null);
+    setElektrikApiUrlKaydediliyor(true);
+    try {
+      await setKesintiApiAyari('elektrik', elektrikApiUrl);
+      setElektrikApiUrlMesaj('API adresi kaydedildi.');
+    } catch (err) {
+      setElektrikApiUrlMesaj(err instanceof Error ? err.message : 'API adresi kaydedilemedi');
+    } finally {
+      setElektrikApiUrlKaydediliyor(false);
     }
   }
 
@@ -362,83 +200,36 @@ function SuHizmetleriPage({ canManageSu, canManageElektrik }: Props) {
     }
   }
 
-  function handleTeskiCikar() {
-    const { gecerli, toplamSatir } = tesikiMetniniCevir(teskiMetni);
-    if (gecerli.length === 0) {
-      setTeskiSonuc(`${toplamSatir} satır tarandı, Kapaklı'ya ait kayıt bulunamadı.`);
-      return;
-    }
-    csvIndir('su-kesintileri-kapakli.csv', SU_CSV_BASLIKLAR, gecerli.map(suCsvSatiriHazirla));
-    setTeskiSonuc(
-      `${toplamSatir} satır tarandı, ${gecerli.length} tanesi Kapaklı'ya ait - CSV indirildi. "CSV Seç ve İçe Aktar" ile ekleyebilirsiniz.`,
-    );
-  }
-
-  function handleSuSablonIndir() {
-    const ornekSatirlar =
-      kesintiler.length > 0
-        ? kesintiler.map((item) => suCsvSatiriHazirla(item))
-        : [
-            suCsvSatiriHazirla({
-              ilce: 'İsmetpaşa',
-              tarih: bugununTarihi(),
-              aciklama: 'Bakım çalışması nedeniyle planlı kesinti',
-            }),
-          ];
-    csvIndir('su-kesintileri-sablon.csv', SU_CSV_BASLIKLAR, ornekSatirlar);
-  }
-
-  async function handleSuCsvSec(e: ChangeEvent<HTMLInputElement>) {
-    const dosya = e.target.files?.[0];
-    e.target.value = '';
-    if (!dosya) return;
-
+  async function handleSuApiCek() {
     setError(null);
-    setSuCsvSonuc(null);
-    setSuCsvYukleniyor(true);
+    setSuApiSonuc(null);
+    setSuApiYukleniyor(true);
     try {
-      const icerik = await dosya.text();
-      const satirlar = csvOku(icerik).slice(1); // ilk satir baslik
-      const hatalar: SuCsvHatasi[] = [];
-      const gecerliKayitlar: PlanliKesintiInput[] = [];
-
-      satirlar.forEach((hucreler, index) => {
-        const { input, hata } = suCsvSatiriniCevir(hucreler);
-        if (!input) {
-          hatalar.push({ satirNo: index + 2, mesaj: hata ?? 'geçersiz satır' });
-        } else {
-          gecerliKayitlar.push(input);
-        }
-      });
-
-      let basarili = 0;
-      for (const kayit of gecerliKayitlar) {
-        try {
-          await createPlanliKesinti(kayit);
-          basarili++;
-        } catch (err) {
-          hatalar.push({
-            satirNo: 0,
-            mesaj: `${kayit.ilce}: ${err instanceof Error ? err.message : 'oluşturulamadı'}`,
-          });
-        }
-      }
-
+      const { basarili, hatalar } = await senkronizeSuKesintileriApiIle();
       const parcalar = [`${basarili} kayıt eklendi.`];
       if (hatalar.length > 0) {
-        parcalar.push(
-          `${hatalar.length} satır atlandı: ` +
-            hatalar
-              .map((h) => (h.satirNo > 0 ? `satır ${h.satirNo} (${h.mesaj})` : h.mesaj))
-              .join('; '),
-        );
+        parcalar.push(`${hatalar.length} kayıt atlandı: ${hatalar.join('; ')}`);
       }
-      setSuCsvSonuc(parcalar.join(' '));
+      setSuApiSonuc(parcalar.join(' '));
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'CSV dosyası okunamadı');
+      setError(err instanceof Error ? err.message : 'API üzerinden kesinti çekilemedi');
     } finally {
-      setSuCsvYukleniyor(false);
+      setSuApiYukleniyor(false);
+    }
+  }
+
+  async function handleSuApiUrlKaydet(e: FormEvent) {
+    e.preventDefault();
+    setSuApiUrlMesaj(null);
+    setSuApiUrlKaydediliyor(true);
+    try {
+      await setKesintiApiAyari('su', suApiUrl);
+      setSuApiUrlMesaj('API adresi kaydedildi.');
+    } catch (err) {
+      setSuApiUrlMesaj(err instanceof Error ? err.message : 'API adresi kaydedilemedi');
+    } finally {
+      setSuApiUrlKaydediliyor(false);
     }
   }
 
@@ -459,66 +250,44 @@ function SuHizmetleriPage({ canManageSu, canManageElektrik }: Props) {
       <div className="guncel-sayfa-govde">
       <div className="guncel-sol">
       <h3>Planlı Su Kesintileri</h3>
-      {canManageSu && (
-        <details className="disable-blok">
-          <summary>Kaynaktan Yapıştır (TESKİ)</summary>
-          <div className="inline-form">
-            <p>
-              TESKİ'nin{' '}
-              <a href="https://www.teski.gov.tr/sukesintileri/" target="_blank" rel="noreferrer">
-                sukesintileri
-              </a>{' '}
-              sayfasını açın, kesinti tablosunu seçip kopyalayın (Ctrl+C) ve
-              aşağıya yapıştırın - sadece Kapaklı'ya ait satırlar otomatik
-              ayıklanıp CSV olarak indirilir (site bot korumalı olduğu için
-              otomatik çekme yapılamıyor, kopyala-yapıştır gerekiyor).
-            </p>
-            <textarea
-              className="kaynak-yapistir-alani"
-              value={teskiMetni}
-              onChange={(e) => setTeskiMetni(e.target.value)}
-              placeholder="TESKİ sayfasındaki tabloyu buraya yapıştırın..."
-              rows={6}
-            />
-            <div className="row-actions">
-              <button type="button" onClick={handleTeskiCikar} disabled={!teskiMetni.trim()}>
-                Ayıkla ve CSV İndir
-              </button>
-            </div>
-            {teskiSonuc && <p className="success-message">{teskiSonuc}</p>}
-          </div>
-        </details>
-      )}
 
-      {canManageSu && (
+      {isSuperAdmin && (
         <details className="disable-blok">
-          <summary>CSV ile Toplu Ekle</summary>
-          <div className="inline-form">
+          <summary>API Ayarları (Süper Admin)</summary>
+          <form className="inline-form" onSubmit={handleSuApiUrlKaydet}>
             <p>
-              Şablonu indirip TESKİ'den (ya da başka bir kaynaktan) baktığınız
-              kesintileri doldurun, ardından dosyayı seçip içe aktarın.
+              Bu alan yalnızca süper admin tarafından görülebilir ve
+              değiştirilebilir. Su kesintileri API'si hazır olduğunda adresini
+              buraya girin.
             </p>
-            <div className="row-actions">
-              <button type="button" onClick={handleSuSablonIndir}>
-                Şablonu İndir
-              </button>
-              <button
-                type="button"
-                onClick={() => suCsvInputRef.current?.click()}
-                disabled={suCsvYukleniyor}
-              >
-                {suCsvYukleniyor ? 'İçe Aktarılıyor...' : 'CSV Seç ve İçe Aktar'}
-              </button>
+            <p className="map-editor-readonly-note">
+              Beklenen yanıt formatı: her biri
+              <code>{'{"ilce": "...", "tarih": "YYYY-AA-GG", "aciklama": "..."}'}</code>
+              şeklinde nesnelerden oluşan bir JSON dizisi.
+            </p>
+            <label>
+              API Adresi
               <input
-                ref={suCsvInputRef}
-                type="file"
-                accept=".csv,text/csv"
-                onChange={handleSuCsvSec}
-                hidden
+                type="password"
+                autoComplete="off"
+                value={suApiUrl}
+                onChange={(e) => setSuApiUrl(e.target.value)}
+                placeholder="https://..."
               />
+            </label>
+            <div className="row-actions">
+              <button type="submit" disabled={suApiUrlKaydediliyor}>
+                {suApiUrlKaydediliyor ? 'Kaydediliyor...' : 'Kaydet'}
+              </button>
             </div>
-            {suCsvSonuc && <p className="success-message">{suCsvSonuc}</p>}
-          </div>
+            {suApiUrlMesaj && <p className="success-message">{suApiUrlMesaj}</p>}
+            <div className="row-actions">
+              <button type="button" onClick={handleSuApiCek} disabled={suApiYukleniyor}>
+                {suApiYukleniyor ? 'Çekiliyor...' : 'API\'den Çek'}
+              </button>
+            </div>
+            {suApiSonuc && <p className="success-message">{suApiSonuc}</p>}
+          </form>
         </details>
       )}
 
@@ -653,36 +422,44 @@ function SuHizmetleriPage({ canManageSu, canManageElektrik }: Props) {
       </table>
 
       <h3>Elektrik Kesintileri</h3>
-      {canManageElektrik && (
+
+      {isSuperAdmin && (
         <details className="disable-blok">
-          <summary>CSV ile Toplu Ekle</summary>
-          <div className="inline-form">
+          <summary>API Ayarları (Süper Admin)</summary>
+          <form className="inline-form" onSubmit={handleElektrikApiUrlKaydet}>
             <p>
-              TREDAŞ'ın kesinti sayfası bot korumalı olduğu için otomatik
-              çekilemiyor - şablonu indirip TREDAŞ'tan baktığınız kesintileri
-              elle doldurun, ardından dosyayı seçip içe aktarın.
+              Bu alan yalnızca süper admin tarafından görülebilir ve
+              değiştirilebilir. Elektrik kesintileri API'si hazır olduğunda
+              adresini buraya girin.
             </p>
-            <div className="row-actions">
-              <button type="button" onClick={handleElektrikSablonIndir}>
-                Şablonu İndir
-              </button>
-              <button
-                type="button"
-                onClick={() => elektrikCsvInputRef.current?.click()}
-                disabled={elektrikCsvYukleniyor}
-              >
-                {elektrikCsvYukleniyor ? 'İçe Aktarılıyor...' : 'CSV Seç ve İçe Aktar'}
-              </button>
+            <p className="map-editor-readonly-note">
+              Beklenen yanıt formatı: her biri
+              <code>{'{"mahalle": "...", "tarih": "YYYY-AA-GG", "aciklama": "..."}'}</code>
+              şeklinde nesnelerden oluşan bir JSON dizisi.
+            </p>
+            <label>
+              API Adresi
               <input
-                ref={elektrikCsvInputRef}
-                type="file"
-                accept=".csv,text/csv"
-                onChange={handleElektrikCsvSec}
-                hidden
+                type="password"
+                autoComplete="off"
+                value={elektrikApiUrl}
+                onChange={(e) => setElektrikApiUrl(e.target.value)}
+                placeholder="https://..."
               />
+            </label>
+            <div className="row-actions">
+              <button type="submit" disabled={elektrikApiUrlKaydediliyor}>
+                {elektrikApiUrlKaydediliyor ? 'Kaydediliyor...' : 'Kaydet'}
+              </button>
             </div>
-            {elektrikCsvSonuc && <p className="success-message">{elektrikCsvSonuc}</p>}
-          </div>
+            {elektrikApiUrlMesaj && <p className="success-message">{elektrikApiUrlMesaj}</p>}
+            <div className="row-actions">
+              <button type="button" onClick={handleElektrikApiCek} disabled={elektrikApiYukleniyor}>
+                {elektrikApiYukleniyor ? 'Çekiliyor...' : 'API\'den Çek'}
+              </button>
+            </div>
+            {elektrikApiSonuc && <p className="success-message">{elektrikApiSonuc}</p>}
+          </form>
         </details>
       )}
 

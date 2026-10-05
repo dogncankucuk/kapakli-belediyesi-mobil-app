@@ -26,7 +26,7 @@ export const tr = {
 
   girisEkrani_welcomeTitle: "Kapaklı Belediyesi'ne Hoş Geldiniz",
   girisEkrani_subtitle: "Dijital belediyecilik kapınız.",
-  girisEkrani_identifierLabel: "T.C. Kimlik No / Telefon / E-posta",
+  girisEkrani_identifierLabel: "T.C. Kimlik No",
   girisEkrani_identifierPlaceholder: "11 haneli T.C. numaranız",
   girisEkrani_passwordLabel: "Şifre",
   girisEkrani_loginButton: "Giriş Yap",
@@ -36,6 +36,10 @@ export const tr = {
   girisEkrani_tcKimlikLabel: "T.C. Kimlik No",
   girisEkrani_telefonLabel: "Telefon",
   girisEkrani_telefonPlaceholder: "5XXXXXXXXX (başında 0 olmadan)",
+  girisEkrani_epostaLabel: "E-posta",
+  girisEkrani_epostaPlaceholder: "ornek@eposta.com",
+  girisEkrani_epostaGecersiz: "Geçerli bir e-posta adresi girin",
+  girisEkrani_epostaZorunlu: "E-posta adresi zorunludur",
   girisEkrani_passwordPlaceholderRegister:
     "En az 8 karakter; büyük harf, küçük harf, rakam ve noktalama işareti içermeli",
   girisEkrani_noAccountQuestion: "Henüz hesabınız yok mu?",
@@ -52,7 +56,7 @@ export const tr = {
 
   forgotPassword_title: "Şifremi Unuttum",
   forgotPassword_step1Info:
-    "Hesabınıza kayıtlı T.C. kimlik no, telefon veya e-postanızı girin, telefonunuza bir doğrulama kodu gönderelim.",
+    "Hesabınıza kayıtlı T.C. kimlik numaranızı girin, kayıtlı telefonunuza bir doğrulama kodu gönderelim.",
   forgotPassword_sendCodeButton: "Kod Gönder",
   forgotPassword_codeLabel: "Doğrulama Kodu",
   forgotPassword_codePlaceholder: "6 haneli kod",

@@ -1,9 +1,8 @@
 // Sidebar gruplamasi + yardimci fonksiyonlar - ayri bir dosyada, cunku hem
-// App.tsx (sidebar'i cizmek icin) hem RolesPage.tsx (izin gruplarini turetmek
-// icin) buna ihtiyac duyuyor. Ikisi arasinda dairesel import olusmasin diye
-// (App.tsx RolesPage'i render eder, RolesPage App.tsx'ten bunlari import
-// ederse modul yuklenirken "Cannot access before initialization" hatasi
-// verir) tek gercek kaynak burasi.
+// App.tsx (sidebar'i cizmek icin) hem YetkiMatrisEditor.tsx (izin gruplarini
+// turetmek icin, AdminUsersPage'deki kullanici/departman yetki matrisinde
+// kullanilir) buna ihtiyac duyuyor. Ikisi arasinda dairesel import
+// olusmasin diye tek gercek kaynak burasi.
 export type Page =
   | 'haberler'
   | 'announcements'
@@ -43,7 +42,6 @@ export type Page =
   | 'basvurular'
   | 'mapEditor'
   | 'users'
-  | 'roles'
   | 'adminUsers'
   | 'notifications';
 
@@ -137,8 +135,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { page: 'panelTemasi', label: 'Panel Görünümü' },
       { page: 'temaAyarlari', label: 'Mobil Görünüm Ayarları' },
-      { page: 'roles', label: 'Roller' },
-      { page: 'adminUsers', label: 'Yönetici Kullanıcılar' },
+      { page: 'adminUsers', label: 'Kullanıcılar ve Yetkiler' },
       { page: 'users', label: 'Mobil Uygulama Kullanıcıları' },
     ],
   },

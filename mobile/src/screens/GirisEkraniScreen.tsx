@@ -14,6 +14,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -119,6 +120,8 @@ export default function GirisEkraniScreen() {
   const [tcKimlikNo, setTcKimlikNo] = useState("");
   const [telefon, setTelefon] = useState("");
   const [telefonHata, setTelefonHata] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [emailHata, setEmailHata] = useState<string | null>(null);
   const [sartlarKabul, setSartlarKabul] = useState(false);
 
   const tcHataGoster =
@@ -252,6 +255,16 @@ export default function GirisEkraniScreen() {
       return;
     }
     setTelefonHata(null);
+    const temizEmail = email.trim();
+    if (!temizEmail) {
+      setEmailHata(t("girisEkrani_epostaZorunlu"));
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(temizEmail)) {
+      setEmailHata(t("girisEkrani_epostaGecersiz"));
+      return;
+    }
+    setEmailHata(null);
     setIsSubmitting(true);
     try {
       const { user } = await register({
@@ -259,6 +272,7 @@ export default function GirisEkraniScreen() {
         soyad: soyad.trim(),
         tcKimlikNo: tcKimlikNo.trim(),
         telefon: normalTelefon,
+        eposta: temizEmail,
         password,
       });
       enterApp(user);
@@ -273,7 +287,11 @@ export default function GirisEkraniScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
-      <View style={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.header}>
           <View style={styles.logoContainer}>
             <Image
@@ -297,9 +315,10 @@ export default function GirisEkraniScreen() {
                   style={styles.input}
                   placeholder={t("girisEkrani_identifierPlaceholder")}
                   placeholderTextColor={colors.outline}
-                  autoCapitalize="none"
+                  keyboardType="number-pad"
+                  maxLength={11}
                   value={identifier}
-                  onChangeText={setIdentifier}
+                  onChangeText={(text) => setIdentifier(text.replace(/\D/g, "").slice(0, 11))}
                 />
               </View>
               <View style={styles.field}>
@@ -396,6 +415,26 @@ export default function GirisEkraniScreen() {
               </View>
               <View style={styles.field}>
                 <Text style={styles.label}>
+                  {t("girisEkrani_epostaLabel")}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder={t("girisEkrani_epostaPlaceholder")}
+                  placeholderTextColor={colors.outline}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  value={email}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    if (emailHata) setEmailHata(null);
+                  }}
+                />
+                {emailHata && (
+                  <Text style={styles.fieldHata}>{emailHata}</Text>
+                )}
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.label}>
                   {t("girisEkrani_passwordLabel")}
                 </Text>
                 <TextInput
@@ -454,21 +493,6 @@ export default function GirisEkraniScreen() {
               </View>
             </>
           )}
-
-          <View style={styles.dividerRow}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>{t("girisEkrani_or")}</Text>
-            <View style={styles.dividerLine} />
-          </View>
-          <SecondaryButton
-            label={t("girisEkrani_googleButton")}
-            onPress={handleGoogle}
-            disabled={
-              !googleRequest ||
-              isSubmitting ||
-              (mode === "kayit" && !sartlarKabul)
-            }
-          />
 
           {error && <Text style={styles.errorText}>{error}</Text>}
 
@@ -536,7 +560,7 @@ export default function GirisEkraniScreen() {
             <Text style={styles.footerLink}>{t("girisEkrani_helpCenter")}</Text>
           </Pressable>
         </View>
-      </View>
+      </ScrollView>
 
       <Modal
         visible={infoModal !== null}
@@ -566,7 +590,11 @@ export default function GirisEkraniScreen() {
         onRequestClose={() => setForgotPasswordVisible(false)}
       >
         <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
-          <View style={styles.content}>
+          <ScrollView
+            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
             <View style={styles.header}>
               <Text style={styles.title}>{t("forgotPassword_title")}</Text>
               <Text style={styles.subtitle}>
@@ -588,9 +616,10 @@ export default function GirisEkraniScreen() {
                     style={styles.input}
                     placeholder={t("girisEkrani_identifierPlaceholder")}
                     placeholderTextColor={colors.outline}
-                    autoCapitalize="none"
+                    keyboardType="number-pad"
+                    maxLength={11}
                     value={fpIdentifier}
-                    onChangeText={setFpIdentifier}
+                    onChangeText={(text) => setFpIdentifier(text.replace(/\D/g, "").slice(0, 11))}
                   />
                 </View>
               ) : (
@@ -650,7 +679,7 @@ export default function GirisEkraniScreen() {
               label={t("forgotPassword_backToLogin")}
               onPress={() => setForgotPasswordVisible(false)}
             />
-          </View>
+          </ScrollView>
         </SafeAreaView>
       </Modal>
     </SafeAreaView>
@@ -664,7 +693,7 @@ const createStyles = (colors: Colors, typography: Typography) =>
       backgroundColor: colors.background,
     },
     content: {
-      flex: 1,
+      flexGrow: 1,
       padding: spacing.containerMargin,
       justifyContent: "center",
       gap: spacing.containerMargin,

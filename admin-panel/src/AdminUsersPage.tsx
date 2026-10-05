@@ -2,56 +2,72 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import {
   createAdminUser,
+  createDepartman,
   deleteAdminUser,
+  deleteDepartman,
   getAdminUsers,
-  getRoles,
+  getDepartmanlar,
   updateAdminUser,
 } from './api';
 import type { AdminAccountInput, AdminAccountUpdateInput } from './api';
-import type { AdminAccount, AdminRole } from './types';
+import type { AdminAccount, Departman, ResourcePermission } from './types';
+import YetkiMatrisEditor from './YetkiMatrisEditor';
 
 interface Props {
   canManage: boolean;
 }
 
-const emptyCreateForm: AdminAccountInput = {
+const emptyCreateForm: Omit<AdminAccountInput, 'isFullAccess' | 'permissions'> = {
   email: '',
   password: '',
   ad: '',
-  roleId: '',
+  departmanId: '',
 };
 
-const emptyEditForm: AdminAccountUpdateInput & { password: string } = {
+const emptyEditForm: Omit<AdminAccountUpdateInput, 'isFullAccess' | 'permissions'> & {
+  password: string;
+} = {
   ad: '',
-  roleId: '',
+  departmanId: '',
   disabled: false,
   password: '',
 };
 
 function AdminUsersPage({ canManage }: Props) {
   const [users, setUsers] = useState<AdminAccount[]>([]);
-  const [roles, setRoles] = useState<AdminRole[]>([]);
+  const [departmanlar, setDepartmanlar] = useState<Departman[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState<AdminAccountInput>(emptyCreateForm);
+
+  const [createFormAcik, setCreateFormAcik] = useState(false);
+  const [form, setForm] = useState(emptyCreateForm);
+  const [formIsFullAccess, setFormIsFullAccess] = useState(false);
+  const [formPermissions, setFormPermissions] = useState<ResourcePermission[]>([]);
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState(emptyEditForm);
+  const [editIsFullAccess, setEditIsFullAccess] = useState(false);
+  const [editPermissions, setEditPermissions] = useState<ResourcePermission[]>([]);
+
+  const [departmanFormAcik, setDepartmanFormAcik] = useState(false);
+  const [yeniDepartmanAdi, setYeniDepartmanAdi] = useState('');
+  const [yeniDepartmanYetkiler, setYeniDepartmanYetkiler] = useState<ResourcePermission[]>([]);
+  const [departmanError, setDepartmanError] = useState<string | null>(null);
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function load() {
     setLoading(true);
     setError(null);
     try {
-      const [usersData, rolesData] = await Promise.all([getAdminUsers(), getRoles()]);
+      const [usersData, departmanlarData] = await Promise.all([
+        getAdminUsers(),
+        getDepartmanlar(),
+      ]);
       setUsers(usersData);
-      setRoles(rolesData);
-      if (!form.roleId && rolesData.length > 0) {
-        setForm((f) => ({ ...f, roleId: rolesData[0].id }));
-      }
+      setDepartmanlar(departmanlarData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Kullanıcılar yüklenemedi');
     } finally {
@@ -59,12 +75,30 @@ function AdminUsersPage({ canManage }: Props) {
     }
   }
 
+  function resetCreateForm() {
+    setForm(emptyCreateForm);
+    setFormIsFullAccess(false);
+    setFormPermissions([]);
+    setCreateFormAcik(false);
+  }
+
+  function handleFormDepartmanChange(depId: string) {
+    const dep = departmanlar.find((d) => d.id === depId);
+    setForm({ ...form, departmanId: depId });
+    setFormPermissions(dep?.varsayilanYetkiler ?? []);
+  }
+
   async function handleCreate(e: FormEvent) {
     e.preventDefault();
     setError(null);
     try {
-      await createAdminUser(form);
-      setForm({ ...emptyCreateForm, roleId: roles[0]?.id ?? '' });
+      await createAdminUser({
+        ...form,
+        departmanId: form.departmanId || undefined,
+        isFullAccess: formIsFullAccess,
+        permissions: formIsFullAccess ? undefined : formPermissions,
+      });
+      resetCreateForm();
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Kullanıcı oluşturulamadı');
@@ -73,15 +107,27 @@ function AdminUsersPage({ canManage }: Props) {
 
   function startEdit(user: AdminAccount) {
     setEditingId(user.id);
-    setEditForm({ ad: user.ad ?? '', roleId: user.roleId, disabled: user.disabled, password: '' });
+    setEditForm({
+      ad: user.ad ?? '',
+      departmanId: user.departmanId ?? '',
+      disabled: user.disabled,
+      password: '',
+    });
+    setEditIsFullAccess(user.isFullAccess);
+    setEditPermissions(user.permissions);
   }
 
   async function handleUpdate(id: string) {
     setError(null);
     try {
       const { password, ...rest } = editForm;
-      const payload = password ? { ...rest, password } : rest;
-      await updateAdminUser(id, payload);
+      await updateAdminUser(id, {
+        ...rest,
+        departmanId: rest.departmanId || null,
+        isFullAccess: editIsFullAccess,
+        permissions: editIsFullAccess ? undefined : editPermissions,
+        ...(password ? { password } : {}),
+      });
       setEditingId(null);
       await load();
     } catch (err) {
@@ -110,14 +156,56 @@ function AdminUsersPage({ canManage }: Props) {
     }
   }
 
+  async function handleDepartmanEkle(e: FormEvent) {
+    e.preventDefault();
+    const ad = yeniDepartmanAdi.trim();
+    if (!ad) return;
+    setDepartmanError(null);
+    try {
+      await createDepartman(ad, yeniDepartmanYetkiler);
+      setYeniDepartmanAdi('');
+      setYeniDepartmanYetkiler([]);
+      setDepartmanFormAcik(false);
+      await load();
+    } catch (err) {
+      setDepartmanError(err instanceof Error ? err.message : 'Departman oluşturulamadı');
+    }
+  }
+
+  async function handleDepartmanSil(id: string) {
+    if (!confirm('Bu departman silinsin mi?')) return;
+    setDepartmanError(null);
+    try {
+      await deleteDepartman(id);
+      await load();
+    } catch (err) {
+      setDepartmanError(err instanceof Error ? err.message : 'Departman silinemedi');
+    }
+  }
+
   return (
     <div className="page">
-      <h2>Yönetici Kullanıcılar</h2>
-      <p>Admin panele giriş yapabilen personel hesapları ve rolleri.</p>
+      <h2>Kullanıcılar ve Yetkiler</h2>
+      <p>
+        Admin panele giriş yapabilen personel hesaplarını, yetkilerini ve
+        departmanlarını buradan yönetin. Her kullanıcının kendine özel bir
+        yetki seti vardır (rol paylaşımı yok) - "Tam Yetkili" işaretlenirse
+        kullanıcı tüm bölümlere erişir.
+      </p>
       {error && <p className="error-message">{error}</p>}
 
-      {canManage && (
-        <form className="inline-form" onSubmit={handleCreate}>
+      {canManage && !createFormAcik && (
+        <button
+          type="button"
+          className="medya-klasor-yeni-ac"
+          onClick={() => setCreateFormAcik(true)}
+        >
+          + Yeni Kullanıcı Oluştur
+        </button>
+      )}
+
+      {canManage && createFormAcik && (
+        <form className="inline-form role-form" onSubmit={handleCreate}>
           <h3>Yeni Kullanıcı</h3>
           <label>
             E-posta
@@ -148,20 +236,36 @@ function AdminUsersPage({ canManage }: Props) {
             />
           </label>
           <label>
-            Rol
+            Departman (opsiyonel)
             <select
-              value={form.roleId}
-              onChange={(e) => setForm({ ...form, roleId: e.target.value })}
-              required
+              value={form.departmanId ?? ''}
+              onChange={(e) => handleFormDepartmanChange(e.target.value)}
             >
-              {roles.map((role) => (
-                <option key={role.id} value={role.id}>
-                  {role.name}
+              <option value="">Departman seçilmedi</option>
+              {departmanlar.map((departman) => (
+                <option key={departman.id} value={departman.id}>
+                  {departman.ad}
                 </option>
               ))}
             </select>
           </label>
-          <button type="submit">Kaydet</button>
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={formIsFullAccess}
+              onChange={(e) => setFormIsFullAccess(e.target.checked)}
+            />
+            Tam Yetkili (Süper Admin - tüm bölümlere erişir)
+          </label>
+          {!formIsFullAccess && (
+            <YetkiMatrisEditor value={formPermissions} onChange={setFormPermissions} />
+          )}
+          <div className="row-actions">
+            <button type="submit">Oluştur</button>
+            <button type="button" className="btn-neutral" onClick={resetCreateForm}>
+              Vazgeç
+            </button>
+          </div>
         </form>
       )}
 
@@ -173,7 +277,8 @@ function AdminUsersPage({ canManage }: Props) {
             <tr>
               <th>E-posta</th>
               <th>Ad Soyad</th>
-              <th>Rol</th>
+              <th>Departman</th>
+              <th>Tam Yetkili</th>
               <th>Durum</th>
               {canManage && <th>İşlemler</th>}
             </tr>
@@ -182,7 +287,7 @@ function AdminUsersPage({ canManage }: Props) {
             {users.map((user) =>
               editingId === user.id ? (
                 <tr key={user.id}>
-                  <td colSpan={canManage ? 5 : 4}>
+                  <td colSpan={canManage ? 6 : 5}>
                     <div className="edit-row">
                       <label>
                         Ad Soyad
@@ -192,14 +297,17 @@ function AdminUsersPage({ canManage }: Props) {
                         />
                       </label>
                       <label>
-                        Rol
+                        Departman (opsiyonel)
                         <select
-                          value={editForm.roleId}
-                          onChange={(e) => setEditForm({ ...editForm, roleId: e.target.value })}
+                          value={editForm.departmanId ?? ''}
+                          onChange={(e) =>
+                            setEditForm({ ...editForm, departmanId: e.target.value })
+                          }
                         >
-                          {roles.map((role) => (
-                            <option key={role.id} value={role.id}>
-                              {role.name}
+                          <option value="">Departman seçilmedi</option>
+                          {departmanlar.map((departman) => (
+                            <option key={departman.id} value={departman.id}>
+                              {departman.ad}
                             </option>
                           ))}
                         </select>
@@ -223,6 +331,17 @@ function AdminUsersPage({ canManage }: Props) {
                         />
                         Pasif (giriş yapamaz)
                       </label>
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={editIsFullAccess}
+                          onChange={(e) => setEditIsFullAccess(e.target.checked)}
+                        />
+                        Tam Yetkili (Süper Admin - tüm bölümlere erişir)
+                      </label>
+                      {!editIsFullAccess && (
+                        <YetkiMatrisEditor value={editPermissions} onChange={setEditPermissions} />
+                      )}
                       <div className="row-actions">
                         <button type="button" onClick={() => handleUpdate(user.id)}>
                           Kaydet
@@ -242,7 +361,8 @@ function AdminUsersPage({ canManage }: Props) {
                 <tr key={user.id}>
                   <td>{user.email}</td>
                   <td>{user.ad ?? '—'}</td>
-                  <td>{user.roleName}</td>
+                  <td>{user.departmanAdi ?? '—'}</td>
+                  <td>{user.isFullAccess ? 'Evet' : 'Hayır'}</td>
                   <td>{user.disabled ? 'Pasif' : 'Aktif'}</td>
                   {canManage && (
                     <td className="row-actions">
@@ -267,6 +387,85 @@ function AdminUsersPage({ canManage }: Props) {
           </tbody>
         </table>
       )}
+
+      <h2>Departmanlar</h2>
+      <p>
+        Personelin hangi birimde çalıştığını belirtir. Bir departman
+        oluştururken belirlenen yetkiler, o departman seçildiğinde yeni
+        kullanıcı formunda öneri olarak doldurulur (kullanıcı bazında
+        değiştirilebilir). Medya klasörleri de görünürlük için departmana
+        göre kısıtlanabilir.
+      </p>
+      {departmanError && <p className="error-message">{departmanError}</p>}
+
+      {canManage && !departmanFormAcik && (
+        <button
+          type="button"
+          className="medya-klasor-yeni-ac"
+          onClick={() => setDepartmanFormAcik(true)}
+        >
+          + Yeni Departman Oluştur
+        </button>
+      )}
+
+      {canManage && departmanFormAcik && (
+        <form className="inline-form role-form" onSubmit={handleDepartmanEkle}>
+          <h3>Yeni Departman</h3>
+          <label>
+            Departman Adı
+            <input
+              value={yeniDepartmanAdi}
+              onChange={(e) => setYeniDepartmanAdi(e.target.value)}
+              placeholder="Lütfen veri girişi yapınız"
+              required
+            />
+          </label>
+          <p className="map-editor-readonly-note">
+            Bu departmana atanacak kullanıcılar için önerilen (varsayılan)
+            yetkiler:
+          </p>
+          <YetkiMatrisEditor value={yeniDepartmanYetkiler} onChange={setYeniDepartmanYetkiler} />
+          <div className="row-actions">
+            <button type="submit">Oluştur</button>
+            <button
+              type="button"
+              className="btn-neutral"
+              onClick={() => {
+                setDepartmanFormAcik(false);
+                setYeniDepartmanAdi('');
+                setYeniDepartmanYetkiler([]);
+              }}
+            >
+              Vazgeç
+            </button>
+          </div>
+        </form>
+      )}
+
+      <table>
+        <thead>
+          <tr>
+            <th>Ad</th>
+            <th>Kullanıcı Sayısı</th>
+            {canManage && <th>İşlemler</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {departmanlar.map((departman) => (
+            <tr key={departman.id}>
+              <td>{departman.ad}</td>
+              <td>{departman.kullaniciSayisi}</td>
+              {canManage && (
+                <td className="row-actions">
+                  <button type="button" onClick={() => handleDepartmanSil(departman.id)}>
+                    Sil
+                  </button>
+                </td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

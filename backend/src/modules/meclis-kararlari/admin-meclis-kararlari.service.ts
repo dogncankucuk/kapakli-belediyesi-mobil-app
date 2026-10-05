@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import { NotificationsService } from '../notifications/notifications.service';
+import { zenginMetinTemizle } from '../../zengin-metin-sanitize';
 import { CreateMeclisKarariDto } from './dto/create-meclis-karari.dto';
 import { UpdateMeclisKarariDto } from './dto/update-meclis-karari.dto';
 import {
@@ -16,6 +17,8 @@ export interface AdminMeclisKarari {
   kategori: string;
   tarih: string;
   baslik: string;
+  icerik: string;
+  resimUrlleri: string[];
   dosyaUrlleri: string[];
   youtubeUrl: string | null;
   updatedBy: string | null;
@@ -60,6 +63,7 @@ export class AdminMeclisKararlariService {
   ): Promise<AdminMeclisKarari> {
     const created = (await this.meclisKarariModel.create({
       ...dto,
+      ...(dto.icerik !== undefined && { icerik: zenginMetinTemizle(dto.icerik) }),
       updatedBy,
     })) as unknown as TimestampedMeclisKarari;
 
@@ -83,7 +87,15 @@ export class AdminMeclisKararlariService {
   ): Promise<AdminMeclisKarari | null> {
     if (!Types.ObjectId.isValid(id)) return null;
     const doc = await this.meclisKarariModel
-      .findByIdAndUpdate(id, { ...dto, updatedBy }, { new: true })
+      .findByIdAndUpdate(
+        id,
+        {
+          ...dto,
+          ...(dto.icerik !== undefined && { icerik: zenginMetinTemizle(dto.icerik) }),
+          updatedBy,
+        },
+        { new: true },
+      )
       .exec();
     return doc ? this.toAdmin(doc as unknown as TimestampedMeclisKarari) : null;
   }
@@ -101,6 +113,8 @@ export class AdminMeclisKararlariService {
       kategori: doc.kategori,
       tarih: doc.tarih.toISOString(),
       baslik: doc.baslik,
+      icerik: doc.icerik ?? '',
+      resimUrlleri: doc.resimUrlleri ?? [],
       dosyaUrlleri: doc.dosyaUrlleri ?? [],
       youtubeUrl: doc.youtubeUrl ?? null,
       updatedBy: doc.updatedBy ?? null,

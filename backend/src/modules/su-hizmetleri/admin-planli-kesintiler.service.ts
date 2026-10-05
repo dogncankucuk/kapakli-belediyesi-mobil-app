@@ -1,8 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import { NotificationsService } from '../notifications/notifications.service';
+import { KesintiApiAyarlariService } from '../kesinti-api-ayarlari/kesinti-api-ayarlari.service';
 import { CreatePlanliKesintiDto } from './dto/create-planli-kesinti.dto';
 import { UpdatePlanliKesintiDto } from './dto/update-planli-kesinti.dto';
 import {
@@ -20,6 +21,11 @@ export interface AdminPlanliKesinti {
   updatedAt: string;
 }
 
+export interface KesintiApiSenkronizasyonSonucu {
+  basarili: number;
+  hatalar: string[];
+}
+
 type TimestampedPlanliKesinti = PlanliKesintiDocument & {
   createdAt: Date;
   updatedAt: Date;
@@ -33,6 +39,7 @@ export class AdminPlanliKesintilerService {
     @InjectModel(PlanliKesinti.name)
     private readonly planliKesintiModel: Model<PlanliKesintiDocument>,
     private readonly notificationsService: NotificationsService,
+    private readonly kesintiApiAyarlariService: KesintiApiAyarlariService,
   ) {}
 
   async findAll(): Promise<AdminPlanliKesinti[]> {
@@ -94,6 +101,60 @@ export class AdminPlanliKesintilerService {
     if (!Types.ObjectId.isValid(id)) return false;
     const res = await this.planliKesintiModel.findByIdAndDelete(id).exec();
     return !!res;
+  }
+
+  // API henuz TESKI tarafindan saglanmadigi icin beklenen format kendi
+  // CreatePlanliKesintiDto'muzla birebir ayni tutuldu: {ilce, tarih,
+  // aciklama}[] JSON dizisi. Gercek API geldiginde format farkli cikarsa
+  // bu metod (sadece alan eslemesi) guncellenir.
+  async senkronizeApiIle(
+    updatedBy: string,
+  ): Promise<KesintiApiSenkronizasyonSonucu> {
+    const apiUrl = await this.kesintiApiAyarlariService.getApiUrl('su');
+    if (!apiUrl) {
+      throw new BadRequestException(
+        'Su kesintileri için API adresi henüz tanımlanmamış.',
+      );
+    }
+
+    let veri: unknown;
+    try {
+      const yanit = await fetch(apiUrl);
+      if (!yanit.ok) {
+        throw new Error(`API ${yanit.status} döndü`);
+      }
+      veri = await yanit.json();
+    } catch (err) {
+      this.logger.error('Su kesintileri API senkronizasyonu başarısız', err as Error);
+      throw new BadRequestException('API adresine ulaşılamadı');
+    }
+
+    if (!Array.isArray(veri)) {
+      throw new BadRequestException('API beklenmeyen bir formatta yanıt döndü');
+    }
+
+    const hatalar: string[] = [];
+    let basarili = 0;
+    for (const [index, kayit] of veri.entries()) {
+      const ilce = typeof kayit?.ilce === 'string' ? kayit.ilce.trim() : '';
+      const tarih = typeof kayit?.tarih === 'string' ? kayit.tarih : '';
+      const aciklama =
+        typeof kayit?.aciklama === 'string' ? kayit.aciklama.trim() : '';
+      if (!ilce || !tarih || !aciklama) {
+        hatalar.push(`Kayıt ${index + 1}: eksik alan`);
+        continue;
+      }
+      try {
+        await this.create({ ilce, tarih, aciklama }, updatedBy);
+        basarili++;
+      } catch (err) {
+        hatalar.push(
+          `Kayıt ${index + 1}: ${err instanceof Error ? err.message : 'oluşturulamadı'}`,
+        );
+      }
+    }
+
+    return { basarili, hatalar };
   }
 
   private toAdmin(doc: TimestampedPlanliKesinti): AdminPlanliKesinti {

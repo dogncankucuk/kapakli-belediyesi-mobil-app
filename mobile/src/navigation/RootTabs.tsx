@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { ComponentProps, useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import HavaStack from "./HavaStack";
+import HaritaStack from "./HaritaStack";
 import HomeStack from "./HomeStack";
 import ProfileStack from "./ProfileStack";
 import ServicesStack from "./ServicesStack";
@@ -16,12 +16,12 @@ import { Colors, useThemeColors } from "../theme";
 // listeyi ve asagidaki iki bileseni RootTabs'in kendi native tab bar'i
 // (asagida tabBarStyle:{display:'none'} ile gizlendi) yerine kullanir.
 export const TAB_ITEMS: {
-  name: "Home" | "Hava" | "Services" | "Profile";
+  name: "Home" | "Harita" | "Services" | "Profile";
   icon: ComponentProps<typeof MaterialIcons>["name"];
   labelKey: TranslationKey;
 }[] = [
   { name: "Home", icon: "home", labelKey: "tabs_home" },
-  { name: "Hava", icon: "air", labelKey: "tabs_hava" },
+  { name: "Harita", icon: "map", labelKey: "tabs_map" },
   { name: "Services", icon: "apps", labelKey: "tabs_services" },
   { name: "Profile", icon: "person", labelKey: "tabs_profile" },
 ];
@@ -107,12 +107,12 @@ const RootTabs = createBottomTabNavigator({
         ),
       },
     },
-    Hava: {
-      screen: HavaStack,
+    Harita: {
+      screen: HaritaStack,
       options: {
-        tabBarLabel: ({ color }) => <TabLabel tKey="tabs_hava" color={color} />,
+        tabBarLabel: ({ color }) => <TabLabel tKey="tabs_map" color={color} />,
         tabBarIcon: ({ color, size }) => (
-          <MaterialIcons name="air" color={color} size={size} />
+          <MaterialIcons name="map" color={color} size={size} />
         ),
       },
     },

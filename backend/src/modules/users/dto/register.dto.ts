@@ -1,7 +1,6 @@
 import {
   IsEmail,
   IsNotEmpty,
-  IsOptional,
   IsString,
   Matches,
   MinLength,
@@ -29,9 +28,8 @@ export class RegisterDto {
   })
   telefon: string;
 
-  @IsOptional()
   @IsEmail()
-  eposta?: string;
+  eposta: string;
 
   @IsString()
   @MinLength(8, { message: 'Şifre en az 8 karakter olmalı' })

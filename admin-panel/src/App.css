@@ -259,7 +259,7 @@ main {
 }
 
 .page {
-  max-width: 1040px;
+  max-width: 1390px;
   margin: 0 auto;
 }
 
@@ -1424,8 +1424,27 @@ td.row-actions button.btn-neutral:hover:not(:disabled) {
   color: var(--color-danger);
 }
 
+.medya-klasor-yeni-ac {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px dashed var(--color-border);
+  border-radius: 6px;
+  background: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.medya-klasor-yeni-ac:hover {
+  background: var(--color-primary-light);
+}
+
 .medya-klasor-yeni {
   display: flex;
+  flex-direction: column;
   gap: 6px;
   margin-top: 8px;
   padding-top: 8px;
@@ -1433,15 +1452,32 @@ td.row-actions button.btn-neutral:hover:not(:disabled) {
 }
 
 .medya-klasor-yeni input {
-  flex: 1;
-  min-width: 0;
+  width: 100%;
   font-size: 13px;
 }
 
 .medya-klasor-yeni button {
-  flex-shrink: 0;
+  align-self: flex-start;
   font-size: 13px;
   white-space: nowrap;
+}
+
+.medya-klasor-rol-secimi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.medya-klasor-rol-baslik {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  line-height: 1.3;
+}
+
+.medya-klasor-rol-secimi .checkbox-label {
+  font-size: 12.5px;
+  font-weight: 400;
 }
 
 @media (max-width: 720px) {

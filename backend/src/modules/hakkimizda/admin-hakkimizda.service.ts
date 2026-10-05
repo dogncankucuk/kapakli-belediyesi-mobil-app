@@ -9,7 +9,7 @@ import { Hakkimizda, HakkimizdaDocument } from './schemas/hakkimizda.schema';
 export interface AdminHakkimizda {
   baskanOzetMetni: string;
   tarihcePhotoUrl: string | null;
-  tarihceParagraflari: string[];
+  tarihce: string;
   kurulusYili: string;
   buyuksehirYili: string;
   nufus: string;
@@ -40,6 +40,9 @@ export class AdminHakkimizdaService {
           ...(dto.baskanOzetMetni !== undefined && {
             baskanOzetMetni: zenginMetinTemizle(dto.baskanOzetMetni),
           }),
+          ...(dto.tarihce !== undefined && {
+            tarihce: zenginMetinTemizle(dto.tarihce),
+          }),
           updatedBy,
         },
         { new: true, upsert: true },
@@ -52,7 +55,7 @@ export class AdminHakkimizdaService {
     return {
       baskanOzetMetni: doc?.baskanOzetMetni ?? '',
       tarihcePhotoUrl: doc?.tarihcePhotoUrl ?? null,
-      tarihceParagraflari: doc?.tarihceParagraflari ?? [],
+      tarihce: doc?.tarihce ?? '',
       kurulusYili: doc?.kurulusYili ?? '',
       buyuksehirYili: doc?.buyuksehirYili ?? '',
       nufus: doc?.nufus ?? '',

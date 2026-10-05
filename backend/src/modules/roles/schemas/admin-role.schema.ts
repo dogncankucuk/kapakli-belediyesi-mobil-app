@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
 export type AdminRoleDocument = HydratedDocument<AdminRole>;
 
@@ -38,6 +38,12 @@ export class AdminRole {
 
   @Prop({ type: [ResourcePermissionSchema], default: [] })
   permissions: ResourcePermission[];
+
+  // Bu role atanan kullanicilarin departman alanini otomatik doldurmak
+  // icin (bkz. AdminUsersPage) - opsiyonel, rolun kendisi departmandan
+  // bagimsiz calisabilir (isFullAccess/Super Admin gibi).
+  @Prop({ type: Types.ObjectId, ref: 'Departman' })
+  departmanId?: Types.ObjectId;
 
   @Prop()
   updatedBy?: string;

@@ -28,7 +28,7 @@ export const en: Record<TranslationKey, string> = {
 
   girisEkrani_welcomeTitle: "Welcome to Kapaklı Municipality",
   girisEkrani_subtitle: "Your gateway to digital municipal services.",
-  girisEkrani_identifierLabel: "National ID / Phone / Email",
+  girisEkrani_identifierLabel: "National ID",
   girisEkrani_identifierPlaceholder: "Your 11-digit national ID",
   girisEkrani_passwordLabel: "Password",
   girisEkrani_loginButton: "Log In",
@@ -38,6 +38,10 @@ export const en: Record<TranslationKey, string> = {
   girisEkrani_tcKimlikLabel: "National ID",
   girisEkrani_telefonLabel: "Phone",
   girisEkrani_telefonPlaceholder: "5XXXXXXXXX (no leading 0)",
+  girisEkrani_epostaLabel: "Email",
+  girisEkrani_epostaPlaceholder: "example@email.com",
+  girisEkrani_epostaGecersiz: "Enter a valid email address",
+  girisEkrani_epostaZorunlu: "Email address is required",
   girisEkrani_passwordPlaceholderRegister:
     "At least 8 characters, with an uppercase letter, a lowercase letter, a number and a punctuation mark",
   girisEkrani_noAccountQuestion: "Don't have an account yet?",
@@ -54,7 +58,7 @@ export const en: Record<TranslationKey, string> = {
 
   forgotPassword_title: "Forgot Password",
   forgotPassword_step1Info:
-    "Enter the national ID, phone, or email registered on your account and we'll send a verification code to your phone.",
+    "Enter your national ID number and we'll send a verification code to your registered phone.",
   forgotPassword_sendCodeButton: "Send Code",
   forgotPassword_codeLabel: "Verification Code",
   forgotPassword_codePlaceholder: "6-digit code",

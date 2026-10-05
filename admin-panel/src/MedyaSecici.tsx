@@ -133,7 +133,6 @@ export function MedyaSeciciModal({
           <MedyaKlasorListesi
             seciliKlasorId={seciliKlasorId}
             onSecim={setSeciliKlasorId}
-            canManage
           />
 
           <div className="medya-icerik">

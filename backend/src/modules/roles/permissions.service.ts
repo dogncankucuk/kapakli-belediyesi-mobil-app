@@ -45,6 +45,14 @@ export class PermissionsService {
     return { id: role._id.toString(), name: role.name, isFullAccess: role.isFullAccess };
   }
 
+  // Rol izinlerini degil, sadece id+ad listesini dondurur - klasor gibi
+  // "hangi rol(ler) gorebilir" secimi yapan formlarda, kullaniciya 'roles'
+  // kaynagina (Roller sayfasi) ayrica yetki vermeden kullanilabilir.
+  async listRoleOptions(): Promise<{ id: string; name: string }[]> {
+    const roles = await this.roleModel.find().sort({ name: 1 }).exec();
+    return roles.map((role) => ({ id: role._id.toString(), name: role.name }));
+  }
+
   // "Görüntüle"/"Yönet" seklinde 2 seviyeye indirgenmis, admin panelin
   // sidebar/canManage mantigini beslemek icin kullandigi tam yetki
   // haritasi. isFullAccess ise tum kaynaklar icin ["list","manage"] doner.

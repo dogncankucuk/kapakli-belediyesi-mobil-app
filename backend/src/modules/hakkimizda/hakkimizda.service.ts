@@ -7,7 +7,7 @@ import { Hakkimizda, HakkimizdaDocument } from './schemas/hakkimizda.schema';
 export interface PublicHakkimizda {
   baskanOzetMetni: string;
   tarihcePhotoUrl: string | null;
-  tarihceParagraflari: string[];
+  tarihce: string;
   kurulusYili: string;
   buyuksehirYili: string;
   nufus: string;
@@ -25,7 +25,7 @@ export class HakkimizdaService {
     return {
       baskanOzetMetni: doc?.baskanOzetMetni ?? '',
       tarihcePhotoUrl: doc?.tarihcePhotoUrl ?? null,
-      tarihceParagraflari: doc?.tarihceParagraflari ?? [],
+      tarihce: doc?.tarihce ?? '',
       kurulusYili: doc?.kurulusYili ?? '',
       buyuksehirYili: doc?.buyuksehirYili ?? '',
       nufus: doc?.nufus ?? '',

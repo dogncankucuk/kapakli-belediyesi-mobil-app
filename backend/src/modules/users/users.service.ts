@@ -52,14 +52,12 @@ export class UsersService {
     private readonly smsService: SmsService,
   ) {}
 
+  // Giris/sifre sifirlama artik sadece T.C. kimlik no ile yapilabiliyor -
+  // telefon/e-posta ile giris kabul edilmiyor (urun karari). Sifre
+  // sifirlama SMS'i yine de kullanicinin kayitli telefonuna gider, bu
+  // sadece "hangi alanla kullanici bulunur" kismini kisitlar.
   private findByIdentifier(identifier: string) {
-    return this.userModel.findOne({
-      $or: [
-        { tcKimlikNo: identifier },
-        { telefon: identifier },
-        { eposta: identifier.toLowerCase().trim() },
-      ],
-    });
+    return this.userModel.findOne({ tcKimlikNo: identifier });
   }
 
   private toPublicUser(user: UserDocument): PublicUser {

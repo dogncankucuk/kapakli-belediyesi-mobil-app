@@ -23,6 +23,15 @@ export class CreateMeclisKarariDto {
   baslik: string;
 
   @IsOptional()
+  @IsString()
+  icerik?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  resimUrlleri?: string[];
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   dosyaUrlleri?: string[];

@@ -5,6 +5,7 @@ declare module 'express-session' {
     adminUser?: {
       email: string;
       roleId: string;
+      departmanId: string | null;
     };
   }
 }

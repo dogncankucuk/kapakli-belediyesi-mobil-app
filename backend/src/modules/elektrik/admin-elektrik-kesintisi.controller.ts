@@ -18,6 +18,7 @@ import { SessionAuthGuard } from '../../admin/auth/session-auth.guard';
 import {
   AdminElektrikKesintisi,
   AdminElektrikKesintisiService,
+  KesintiApiSenkronizasyonSonucu,
 } from './admin-elektrik-kesintisi.service';
 import { CreateElektrikKesintisiDto } from './dto/create-elektrik-kesintisi.dto';
 import { UpdateElektrikKesintisiDto } from './dto/update-elektrik-kesintisi.dto';
@@ -83,5 +84,15 @@ export class AdminElektrikKesintisiController {
       throw new NotFoundException();
     }
     return { success: true };
+  }
+
+  @Post('senkronize-api')
+  @RequirePermission('elektrikKesintileri', 'create')
+  senkronizeApiIle(
+    @Req() req: Request,
+  ): Promise<KesintiApiSenkronizasyonSonucu> {
+    return this.adminElektrikKesintisiService.senkronizeApiIle(
+      req.session.adminUser!.email,
+    );
   }
 }

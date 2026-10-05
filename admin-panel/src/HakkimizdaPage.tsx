@@ -13,7 +13,7 @@ interface Props {
 const emptyForm: HakkimizdaInput = {
   baskanOzetMetni: '',
   tarihcePhotoUrl: '',
-  tarihceParagraflari: [],
+  tarihce: '',
   kurulusYili: '',
   buyuksehirYili: '',
   nufus: '',
@@ -21,7 +21,6 @@ const emptyForm: HakkimizdaInput = {
 
 function HakkimizdaPage({ canManage }: Props) {
   const [form, setForm] = useState<HakkimizdaInput>(emptyForm);
-  const [paragraflarText, setParagraflarText] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -39,12 +38,11 @@ function HakkimizdaPage({ canManage }: Props) {
       setForm({
         baskanOzetMetni: data.baskanOzetMetni,
         tarihcePhotoUrl: data.tarihcePhotoUrl ?? '',
-        tarihceParagraflari: data.tarihceParagraflari,
+        tarihce: data.tarihce,
         kurulusYili: data.kurulusYili,
         buyuksehirYili: data.buyuksehirYili,
         nufus: data.nufus,
       });
-      setParagraflarText(data.tarihceParagraflari.join('\n\n'));
       setUpdatedBy(data.updatedBy);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Hakkımızda içeriği yüklenemedi');
@@ -58,14 +56,9 @@ function HakkimizdaPage({ canManage }: Props) {
     setError(null);
     setSaved(false);
     try {
-      const tarihceParagraflari = paragraflarText
-        .split(/\n{2,}/)
-        .map((p) => p.trim())
-        .filter(Boolean);
       const updated = await updateHakkimizda({
         ...form,
         tarihcePhotoUrl: form.tarihcePhotoUrl || null,
-        tarihceParagraflari,
       });
       setUpdatedBy(updated.updatedBy);
       setSaved(true);
@@ -103,12 +96,11 @@ function HakkimizdaPage({ canManage }: Props) {
           />
         </label>
         <label>
-          Kapaklı'nın Tarihçesi (paragraflar arasına boş satır bırakın)
-          <textarea
-            value={paragraflarText}
-            onChange={(e) => setParagraflarText(e.target.value)}
+          Kapaklı'nın Tarihçesi
+          <ZenginMetinEditor
+            value={form.tarihce}
+            onChange={(tarihce) => setForm({ ...form, tarihce })}
             disabled={!canManage}
-            rows={8}
           />
         </label>
         <label>
@@ -148,10 +140,7 @@ function HakkimizdaPage({ canManage }: Props) {
         <TelefonOnizleme baslik="Kapaklı Belediyesi" varyant="duz" sagIkon="search">
           <HakkimizdaOnizleme
             baskanOzetMetni={form.baskanOzetMetni}
-            tarihceParagraflari={paragraflarText
-              .split(/\n{2,}/)
-              .map((p) => p.trim())
-              .filter(Boolean)}
+            tarihce={form.tarihce}
             kurulusYili={form.kurulusYili}
             buyuksehirYili={form.buyuksehirYili}
             nufus={form.nufus}
